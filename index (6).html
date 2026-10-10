@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little Hero – Kỹ năng sống cho bé</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--sky:#EAF6FF;--ink:#26325B;--sun:#FFC93C;--mint:#2EC4A6;--coral:#FF6B6B;--vio:#7B5CFF;--blue:#4F8DF7;--w:#fff;--r:24px}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Baloo 2','Segoe UI',system-ui,sans-serif;background:var(--sky) radial-gradient(circle at 10% 0,#fff8 0,#0000 40%);color:var(--ink);font-size:18px;line-height:1.4;padding-bottom:84px}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0}
+:focus-visible{outline:4px solid var(--vio);outline-offset:3px}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--w);border-bottom:4px solid var(--sun);flex-wrap:wrap}
+.logo{font-weight:800;font-size:24px;background:none;display:flex;align-items:center;gap:6px}
+.logo i{background:var(--vio);color:var(--sun);border-radius:12px;padding:0 8px;font-style:normal}
+nav{display:flex;gap:4px}
+nav button{background:none;padding:6px 12px;border-radius:99px;font-weight:700;display:flex;gap:6px;align-items:center}
+nav button.on{background:var(--ink);color:var(--w)}
+.right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.chip{background:var(--sky);border-radius:99px;padding:4px 14px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.xp{width:70px;height:10px;background:var(--w);border-radius:9px;overflow:hidden}.xp i{display:block;height:100%;background:var(--mint)}
+.btn{background:var(--ink);color:var(--w);padding:10px 22px;border-radius:99px;font-weight:700;box-shadow:0 4px 0 #0003;transition:transform .1s}
+.btn:active{transform:translateY(3px);box-shadow:none}.btn.sun{background:var(--sun);color:var(--ink)}.btn.ghost{background:var(--sky);color:var(--ink)}.btn:disabled{opacity:.4}
+main{max-width:1020px;margin:0 auto;padding:18px}
+h2{font-size:30px;margin:8px 0}h3{margin:0}
+.banner{display:flex;align-items:center;gap:10px;background:linear-gradient(120deg,var(--vio),#A58BFF 60%,#FF9FD0);color:var(--w);border-radius:32px;padding:22px 30px;overflow:hidden;position:relative}
+.banner h1{font-size:clamp(26px,5vw,44px);margin:0;line-height:1.05;font-weight:800}.banner p{margin:4px 0 10px;font-size:20px}
+.bh{width:190px;flex:none;margin:-6px 10px -34px auto}
+.seg button,.chips button{background:#fff3;color:inherit;padding:6px 16px;border-radius:99px;font-weight:700;margin:0 6px 8px 0}
+.seg button.on,.chips button.on{background:var(--ink);color:var(--w)}.chips button{background:var(--w)}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.cat{color:#fff;border-radius:var(--r);padding:14px;text-align:left;box-shadow:0 6px 0 #0002;transition:transform .15s}.cat:hover{transform:translateY(-4px) rotate(-1deg)}
+.cat b{font-size:40px;display:block}.cat span{font-weight:800;font-size:19px}.cat .bar{margin-top:6px;background:#fff5}.cat .bar i{background:#fff}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.promo{background:var(--w);border-radius:var(--r);padding:16px;text-align:left;font-weight:800;font-size:22px;box-shadow:0 6px 0 #26325B22}.promo small{display:block;font-weight:500;font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin:10px 0 18px}
+.card{background:var(--w);border-radius:var(--r);overflow:hidden;text-align:left;padding:0;box-shadow:0 6px 0 #26325B26;transition:transform .15s}.card:hover{transform:translateY(-4px)}
+.thumb{height:120px;display:grid;place-items:center;font-size:58px;position:relative}.thumb b{position:absolute;left:10px;top:10px;font-size:13px;padding:1px 12px;border-radius:99px}
+.thumb s{position:absolute;right:10px;bottom:4px;font-size:22px;text-decoration:none}.pm{position:absolute;right:10px;top:8px;font-style:normal;font-size:22px}
+.card .t{padding:8px 14px 12px}.card h3{font-size:20px}.card p{margin:0;font-size:15px;opacity:.75}.lock .thumb{filter:grayscale(.8);opacity:.7}
+.chd{border-left:8px solid;padding-left:10px;margin:18px 0 4px}.chd small{opacity:.6}
+.stage{position:relative;height:340px;border-radius:32px;overflow:hidden;box-shadow:inset 0 -6px 0 #0001}
+.pn{height:290px}.ground{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(#A6E884,#6FCB5A);border-top:5px solid #86D96C}
+.cl{position:absolute;top:8%;left:-10%;font-size:48px;animation:drift 40s linear infinite}.cl2{top:22%;font-size:34px;animation-duration:60s;animation-delay:-25s}
+.sn{position:absolute;right:5%;top:5%;font-size:52px;animation:spin 40s linear infinite}
+.prop{position:absolute;font-size:44px;animation:fl 3s ease-in-out infinite}
+.actor{position:absolute;bottom:28px;width:calc(var(--h)*min(21vw,150px))}
+.say{background:var(--w);border-radius:var(--r);padding:14px 18px;margin-top:14px;font-size:21px;font-weight:700;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.tools{display:flex;gap:8px;flex:none}.tools button{background:var(--sky);width:50px;height:50px;border-radius:50%;font-size:22px}.live{background:var(--coral)!important}
+.choices{display:grid;gap:12px;margin-top:14px}
+.choice{color:var(--w);padding:14px 20px;border-radius:var(--r);font-size:21px;font-weight:700;text-align:left;box-shadow:0 6px 0 #0003}
+.c0{background:var(--mint)}.c1{background:var(--blue)}.c2{background:var(--coral)}.choice:disabled{opacity:.55}.choice:active{transform:translateY(4px);box-shadow:none}
+.panel{background:var(--w);border-radius:var(--r);padding:18px 22px;margin-top:16px}
+.end{text-align:center}.big{font-size:50px}.out{font-size:21px;font-weight:700}.lesson{background:var(--sky);border-radius:var(--r);padding:12px 16px;margin:12px 0}
+.reward{display:flex;justify-content:center;gap:12px;font-size:24px;font-weight:800;margin:6px 0}.reward span{background:var(--sun);border-radius:99px;padding:2px 16px}.reward .neg{background:var(--coral);color:#fff}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:2px dashed var(--sky);gap:10px}
+.bar{height:14px;background:var(--sky);border-radius:99px;overflow:hidden;flex:1}.bar i{display:block;height:100%;background:var(--mint)}
+.note{font-size:15px;opacity:.75;margin:6px 0}.back{background:none;font-weight:700;padding:0 0 8px}.cnt{font-weight:700;margin-bottom:6px}.pg{display:flex;justify-content:space-between;margin-top:12px}
+.chat{display:flex;flex-direction:column;height:min(58vh,500px)}.msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:4px}
+.m{max-width:82%;padding:10px 16px;border-radius:20px;background:var(--sky)}.m.me{align-self:flex-end;background:var(--vio);color:var(--w)}
+.inp{display:flex;gap:8px;margin-top:10px}.inp input{flex:1;min-width:0;border:3px solid var(--sky);border-radius:99px;padding:10px 18px}
+.chead{display:flex;align-items:center;gap:12px}.chead .av{width:70px}
+.modal{position:fixed;inset:0;background:#26325B99;z-index:50;display:grid;place-items:center;padding:16px}
+.box{background:var(--w);border-radius:32px;padding:24px;max-width:640px;width:100%;max-height:90vh;overflow:auto}
+.box label,.panel label{display:block;font-weight:700;margin-top:8px}.box input,.box select,.panel input[type=text],.panel input[type=password],.panel input[type=url]{width:100%;border:3px solid var(--sky);border-radius:16px;padding:8px 14px}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:14px}.plan{border:4px solid var(--sky);border-radius:var(--r);padding:16px}.plan.pro{border-color:var(--vio)}.plan ul{padding-left:20px;margin:8px 0}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--w);padding:10px 22px;border-radius:99px;z-index:60;font-weight:700;max-width:90vw}
+.cf{position:fixed;top:-30px;font-size:28px;animation:fall 2.2s linear forwards;z-index:70;pointer-events:none}
+.fcs{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}.fc{perspective:900px;height:250px;cursor:pointer}.fi{position:relative;height:100%;transition:transform .6s;transform-style:preserve-3d}.fc.on .fi{transform:rotateY(180deg)}
+.ff{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r);padding:14px;text-align:center;box-shadow:0 6px 0 #26325B26;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.ff.fr{color:#fff}.ff.fr .e{font-size:64px}.ff.bk{background:var(--w);transform:rotateY(180deg);font-size:16px;text-align:left}.ff.bk b{font-size:13px;opacity:.6}
+#sheet{display:none}footer{text-align:center;font-size:14px;opacity:.7;padding:16px}
+/* ===== nhân vật ===== */
+svg.ch{display:block;width:100%;overflow:visible;transform-origin:50% 100%}svg.ch g{transform-box:fill-box}
+.aL,.aR,.lL,.lR{transform-origin:50% 4%}.cp{transform-origin:50% 0}
+.a-idle{animation:bob 2.2s ease-in-out infinite}
+.a-walk .lL,.a-walk .aR{animation:sw .7s ease-in-out infinite alternate;--a:22deg}.a-walk .lR,.a-walk .aL{animation:sw .7s ease-in-out infinite alternate-reverse;--a:22deg}
+.a-run{transform:rotate(8deg)}.a-run .lL,.a-run .aR{animation:sw .3s ease-in-out infinite alternate;--a:48deg}.a-run .lR,.a-run .aL{animation:sw .3s ease-in-out infinite alternate-reverse;--a:48deg}.a-run .cp{animation:flap .25s ease-in-out infinite alternate}
+.a-wave .aR{animation:wv .5s ease-in-out infinite alternate}
+.a-no .aR{transform:rotate(-100deg)}.a-no .aL{transform:rotate(100deg)}.a-no .hd{animation:hs .35s ease-in-out infinite alternate}
+.a-cheer{animation:hop .7s ease-in-out infinite}.a-cheer .aL{transform:rotate(158deg)}.a-cheer .aR{transform:rotate(-158deg)}
+.a-sad{animation:sway 2.4s ease-in-out infinite}.a-sad .hd{transform:translateY(8px) rotate(6deg)}.a-sad .aL{transform:rotate(8deg)}.a-sad .aR{transform:rotate(-8deg)}
+.a-hug .aL{animation:hgL 1s ease-in-out infinite alternate}.a-hug .aR{animation:hgR 1s ease-in-out infinite alternate}.a-hug .hd{transform:rotate(6deg)}
+.a-bow{animation:bw 1.3s ease-in-out infinite alternate}.a-bow .aL{transform:rotate(-35deg)}.a-bow .aR{transform:rotate(35deg)}
+.a-give .aR{transform:rotate(-80deg)}.a-give .aL{transform:rotate(80deg)}.a-hold .aR{transform:rotate(-78deg)}.a-hold .aL{transform:rotate(78deg)}
+.eye{animation:bl 4s infinite;transform-origin:center}
+@keyframes sw{from{transform:rotate(calc(var(--a)*-1))}to{transform:rotate(var(--a))}}
+@keyframes wv{from{transform:rotate(-135deg)}to{transform:rotate(-172deg)}}@keyframes hs{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+@keyframes hgL{from{transform:rotate(70deg)}to{transform:rotate(-38deg)}}@keyframes hgR{from{transform:rotate(-70deg)}to{transform:rotate(38deg)}}
+@keyframes bw{to{transform:rotate(16deg)}}@keyframes flap{to{transform:skewX(-16deg) scaleX(.85)}}
+@keyframes hop{50%{transform:translateY(-22px)}}@keyframes bob{50%{transform:translateY(-5px)}}@keyframes sway{50%{transform:translateY(5px) rotate(2deg)}}
+@keyframes fl{50%{transform:translateY(-12px)}}@keyframes bl{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes drift{to{transform:translateX(130vw)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:760px){
+ nav{position:fixed;bottom:0;left:0;right:0;background:var(--w);justify-content:space-around;padding:6px;border-top:4px solid var(--sun);z-index:30}
+ nav button{flex-direction:column;gap:0;padding:4px 6px;font-size:12px;border-radius:14px}nav button b{font-size:22px}
+ .bh{display:none}.stage{height:280px}.pn{height:250px}.plans,.two{grid-template-columns:1fr}.xp,.logo span{display:none}.btn{padding:8px 14px;font-size:16px}}
+@media print{body>*:not(#sheet){display:none!important}#sheet{display:grid!important;grid-template-columns:repeat(3,1fr);gap:6mm;padding:8mm}
+ .pc{border:2px dashed #888;border-radius:10px;padding:10px;text-align:center;break-inside:avoid;font-size:13px;color:#000}.pe{font-size:50px}}
+#crumb{max-width:1020px;margin:0 auto;padding:10px 18px 0;font-size:15px}#crumb button{background:none;color:var(--vio);font-weight:700;padding:0}#crumb span{opacity:.75}
+footer{background:var(--w);border-top:4px solid var(--sun);margin-top:30px;opacity:1;font-size:15px;padding:24px 16px}
+.fg{max-width:1020px;margin:0 auto 14px;display:grid;grid-template-columns:2fr 1fr 1fr 1.4fr;gap:20px;text-align:left}.fg b{display:block;margin-bottom:6px;font-size:17px}.fg p{margin:0;opacity:.8}.lk{display:block;background:none;padding:2px 0;opacity:.85;text-align:left}.lk:hover{color:var(--vio)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:16px 0}.st{background:var(--w);border-radius:var(--r);padding:12px 16px;box-shadow:0 5px 0 #26325B22}.st b{display:block;font-size:28px;line-height:1.1}.st small{opacity:.7}
+.ql{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 18px}.ql button{background:var(--w);border-radius:var(--r);padding:12px;font-weight:800;box-shadow:0 5px 0 #26325B22;text-align:left}.ql b{display:block;font-size:30px}
+.ch2{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.menu button{display:flex;gap:12px;align-items:center;width:100%;background:var(--sky);margin:6px 0;padding:12px 16px;border-radius:18px;font-weight:700;text-align:left}.menu b{font-size:24px}
+.panel select,.panel textarea,.panel input[type=text]{width:100%;border:3px solid var(--sky);border-radius:16px;padding:8px 14px;margin:4px 0;font:inherit}
+.pay{display:grid;grid-template-columns:290px 1fr;gap:16px}.pay img{max-width:100%;height:auto}.qrf{padding:30px;background:var(--sky);border-radius:16px}
+.post{border-bottom:2px dashed var(--sky);padding:12px 0}.post .cm{background:var(--sky);border-radius:14px;padding:6px 12px;margin:6px 0 0 18px;font-size:16px}
+.tg{display:inline-block;font-size:13px;border-radius:99px;padding:0 10px;background:var(--sun);font-weight:700}.stars button{background:none;font-size:34px;padding:0 2px;filter:grayscale(1);opacity:.5}.stars button.on{filter:none;opacity:1}
+.bdg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.bd2{background:var(--w);border-radius:var(--r);padding:14px;text-align:center;box-shadow:0 5px 0 #26325B22}.bd2 i{display:block;font-size:46px;font-style:normal}.bd2.off{filter:grayscale(1);opacity:.55}
+.prop2{position:absolute;bottom:34px;font-size:40px;transition:all .9s;z-index:5}.prop2.lift{bottom:130px;transform:rotate(-15deg)}
+.a-pick{animation:pk 1.1s ease-in-out infinite alternate}.a-pick .aL{animation:pL .55s ease-in-out infinite alternate}.a-pick .aR{animation:pR .55s ease-in-out infinite alternate}.a-pick .hd{transform:translateY(12px)}
+@keyframes pk{to{transform:rotate(24deg) translate(10px,8px)}}@keyframes pL{from{transform:rotate(15deg)}to{transform:rotate(-55deg)}}@keyframes pR{from{transform:rotate(-15deg)}to{transform:rotate(55deg)}}
+@media(max-width:760px){.fg{grid-template-columns:1fr 1fr}.pay{grid-template-columns:1fr}}
+.un{display:inline-block;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+.acc{display:flex;gap:12px;align-items:center;margin-bottom:10px}.av2{width:56px;height:56px;border-radius:50%;background:var(--vio);color:#fff;font-size:26px;font-weight:800;display:grid;place-items:center;flex:none}.row2{display:flex;gap:8px;margin:6px 0}
+.pbs{position:relative;margin-bottom:14px}.pb{display:none;align-items:center;gap:16px;border-radius:32px;padding:20px 26px;color:#fff;animation:pop .4s}.pb.on{display:flex}.pb h3{font-size:24px}.pb p{margin:2px 0 10px}.pe2{font-size:64px}.dots{display:flex;gap:6px;justify-content:center;margin-top:8px}.dots i{width:10px;height:10px;border-radius:50%;background:#26325B33}.dots i.on{background:var(--vio);width:26px;border-radius:9px}
+@keyframes pop{from{transform:scale(.96);opacity:0}}
+.about{margin-top:20px}.ab{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:8px 0 14px}.ab .st b{font-size:34px}.ab .st h3{font-size:19px}.adm{text-align:center;margin:20px 0 0}
+.spin{width:70px;height:70px;border:8px solid var(--sky);border-top-color:var(--vio);border-radius:50%;margin:10px auto;animation:spn 1s linear infinite}@keyframes spn{to{transform:rotate(360deg)}}
+.lb{max-height:420px;overflow:auto}
+/* bối cảnh */
+.th{position:absolute;inset:0;overflow:hidden}.flr{position:absolute;left:0;right:0;bottom:0;height:62px}.sc{position:absolute;line-height:1}
+.board{position:absolute;left:8%;top:10%;width:34%;height:34%;background:#2F5D50;border:6px solid #A87B4F;border-radius:8px;color:#fff;font-weight:800;display:grid;place-items:center}
+.desk{position:absolute;bottom:40px;width:26%;height:46px;background:#C98F5A;border-radius:8px 8px 0 0;box-shadow:0 38px 0 -28px #8C5A33}
+.water{position:absolute;left:40%;right:0;bottom:0;height:46%;z-index:7;background:linear-gradient(rgba(70,170,240,.55),rgba(30,120,210,.78));animation:wv2 2s ease-in-out infinite alternate}@keyframes wv2{to{transform:translateY(6px)}}
+.road{position:absolute;left:0;right:0;bottom:0;height:70px;background:#5D6475;border-top:6px solid #C9CEDA}.road:after{content:"";position:absolute;left:30%;width:36%;top:0;bottom:0;background:repeating-linear-gradient(90deg,#fff 0 14px,transparent 14px 30px)}
+.car{position:absolute;bottom:14px;font-size:50px;animation:drv 7s linear infinite}@keyframes drv{from{left:-15%}to{left:110%}}
+.rain{position:absolute;inset:0;background:repeating-linear-gradient(105deg,transparent 0 10px,rgba(255,255,255,.5) 10px 11px);background-size:60px 60px;animation:rn .5s linear infinite}@keyframes rn{to{background-position:-20px 60px}}
+/* tư thế mới + chuyển động mượt */
+.aL,.aR,.lL,.lR,.hd,.cp{transition:transform .3s ease}
+.a-flail{animation:fb .5s ease-in-out infinite alternate}.a-flail .aL{animation:fa1 .3s ease-in-out infinite alternate}.a-flail .aR{animation:fa2 .3s ease-in-out infinite alternate}
+@keyframes fb{to{transform:translateY(-8px)}}@keyframes fa1{from{transform:rotate(130deg)}to{transform:rotate(170deg)}}@keyframes fa2{from{transform:rotate(-170deg)}to{transform:rotate(-130deg)}}
+.a-point .aR{transform:rotate(-105deg)}.a-point .aL{transform:rotate(8deg)}
+/* bộ thẻ */
+.fc{height:300px}.ff.fr{align-items:flex-start;text-align:left;justify-content:flex-end;position:relative;color:#fff}
+.lg2{position:absolute;top:10px;left:12px;font-weight:800;font-size:13px;background:#fff;color:#26325B;border-radius:99px;padding:0 10px}.lg2.dk{background:#EAF6FF}
+.fr .art{position:absolute;top:38px;left:10px;right:10px;height:122px;border-radius:14px;overflow:hidden}.ae{position:absolute;left:8px;top:4px;font-size:44px}.ach{position:absolute;right:8px;bottom:-6px;width:74px}
+.fr h3{margin:0 66px 0 0;font-size:19px}.fr small{margin-right:66px}
+.qr{position:absolute;right:10px;bottom:10px;width:58px;height:58px;background:#fff;border-radius:8px;padding:2px}.ff.bk{padding-top:36px;position:relative}
+.pc img{float:right}
+</style>
+</head>
+<body>
+<header><button class="logo" id="goHome"><i>★</i><span>Little Hero</span></button><nav id="nav"></nav><div class="right" id="right"></div></header>
+<div id="crumb"></div>
+<main id="app"></main>
+<footer><div class="fg"><div><b>🦸 Little Hero</b><p>Học kỹ năng sống qua những câu chuyện tương tác cùng Hero và bạn bè.</p></div>
+<div><b>Khám phá</b><button class="lk" data-nv="learn">Bài học</button><button class="lk" data-nv="quiz">Bài kiểm tra</button><button class="lk" data-nv="forum">Diễn đàn</button></div>
+<div><b>Phụ huynh</b><button class="lk" data-nv="parent">Theo dõi tiến độ</button><button class="lk" data-nv="pay">Gói Premium</button><button class="lk" data-nv="reviews">Đánh giá</button></div>
+<div><b>Liên hệ</b><p>hello@littlehero.vn<br>Hotline: 1900 0000</p></div></div><small>© 2026 Little Hero – bản demo. Dữ liệu lưu trên trình duyệt này.</small></footer>
+<div id="sheet"></div>
+
+<script>
+/* ============ CẤU HÌNH ============ */
+const CONFIG={model:'claude-haiku-5-5'}; // địa chỉ máy chủ hoặc API key nhập trong mục Phụ huynh > Kết nối AI
+
+/* ============ DANH MỤC & BÀI HỌC ============ */
+const CATS=[
+{id:'sv',n:'Sinh tồn',e:'🏕️',c:'#F08A24',bg:'linear-gradient(#FFD9A8,#FFF3DC)'},
+{id:'bv',n:'Tự bảo vệ',e:'🛡️',c:'#7B5CFF',bg:'linear-gradient(#D9CCFF,#F1EBFF)'},
+{id:'ks',n:'Kỹ năng sống',e:'🧼',c:'#1FA98E',bg:'linear-gradient(#BDEFE3,#E9FBF5)'},
+{id:'lp',n:'Lễ phép',e:'🙏',c:'#E8559A',bg:'linear-gradient(#FFCFE3,#FFEEF5)'},
+{id:'vl',n:'Vâng lời',e:'👍',c:'#3A7BE0',bg:'linear-gradient(#C4DDFF,#EAF3FF)'},
+{id:'xl',n:'Xin lỗi & bạn bè',e:'🤝',c:'#E5A800',bg:'linear-gradient(#FFEBA3,#FFF9DE)'}];
+/* o = [lời chọn, đi tới(id|'>'|'<'|''), tư thế, phản ứng, đúng(1/0), kết quả, chạy(1)] */
+const LESSONS=[
+['duong','sv','Qua đường an toàn','🚦',0,'mom:42','Hero và mẹ đứng trước đường lớn. Đèn đang đỏ nhưng đường có vẻ vắng xe. Hero làm gì?',
+ [['Nắm tay mẹ, đợi đèn xanh rồi mới qua','mom','hold','hold',1,'Hero nắm tay mẹ và chờ đèn xanh. Cả hai qua đường an toàn!'],
+  ['Chạy vụt qua khi không thấy xe','>','idle','no',0,'Một chiếc xe máy bất ngờ lao tới! Mẹ hốt hoảng. Chạy qua đường rất nguy hiểm.',1],
+  ['Tự đi trước, mẹ sẽ đuổi kịp','>','idle','no',0,'Hero đi một mình giữa đường nên mẹ rất lo. Trẻ em phải đi cùng người lớn.']],
+ 'Luôn nắm tay người lớn, đợi đèn xanh và nhìn hai bên trước khi qua đường.','qua đường|đèn đỏ|đèn xanh|giao thông'],
+['lac','sv','Lạc ở siêu thị','🛒',0,'staff:46,stranger:72','Hero bị lạc mẹ trong siêu thị. Gần đó có cô nhân viên và một chú lạ mặt. Hero chọn gì?',
+ [['Đến nhờ cô nhân viên gọi mẹ','staff','wave','wave',1,'Cô nhân viên phát loa gọi mẹ. Mẹ chạy đến ôm Hero thật chặt!'],
+  ['Đi theo chú lạ ra ngoài','stranger','walk','idle',0,'Đi theo người lạ rất nguy hiểm! Hero càng xa mẹ hơn.'],
+  ['Chạy khắp nơi tìm mẹ','>','idle','sad',0,'Hero chạy xa dần và càng lạc hơn. Đứng yên và nhờ giúp mới đúng.',1]],
+ 'Khi bị lạc: đứng yên, tìm cô chú nhân viên hoặc công an để nhờ giúp.','lạc|siêu thị|mất mẹ|đi lạc'],
+['chay','sv','Có khói trong nhà','🔥',1,'dad:46','Hero ngửi thấy mùi khói trong nhà. Bố đang ở phòng bên cạnh. Hero làm gì?',
+ [['Chạy đến báo ngay cho bố','dad','wave','cheer',1,'Bố gọi 114 và dắt Hero ra khỏi nhà. Hero an toàn!',1],
+  ['Trốn vào gầm giường','<','sad','sad',0,'Trốn đi thì không ai biết Hero ở đâu. Rất nguy hiểm!'],
+  ['Tự đi lấy nước dập lửa','>','idle','no',0,'Trẻ em không được tự dập lửa. Hãy báo người lớn và ra ngoài.']],
+ 'Thấy khói hoặc lửa: báo ngay người lớn, ra khỏi nhà và gọi 114.','cháy|khói|lửa|114'],
+['keo','bv','Chú lạ cho kẹo','🍬',0,'stranger:46,teacher:74','Chú lạ mặt cho Hero cây kẹo và rủ lên xe đi chơi. Cô giáo đứng gần đó. Hero làm gì?',
+ [['Nói "Không ạ!" rồi chạy về chỗ cô giáo','teacher','hug','hug',1,'Cô giáo ôm Hero và gọi bảo vệ. Hero thật dũng cảm!',1],
+  ['Nhận kẹo và lên xe với chú','stranger','give','idle',0,'Lên xe người lạ rất nguy hiểm! Hero thấy sợ và muốn về nhà.'],
+  ['Đứng im vì sợ, không biết làm gì','','sad','idle',0,'Hero sợ quá không nhúc nhích. Nhớ nói KHÔNG và chạy đến chỗ người lớn nhé.']],
+ 'Không nhận quà, không đi theo người lạ. Hãy nói KHÔNG, chạy đến người lớn và kể ngay.','kẹo|người lạ|lên xe|bắt cóc'],
+['cua','bv','Có người gõ cửa','🚪',0,'stranger:60','Hero ở nhà một mình. Có một chú lạ gõ cửa, nói là bạn của bố mẹ. Hero làm gì?',
+ [['Không mở cửa, gọi điện cho bố mẹ','','wave','sad',1,'Hero gọi cho bố mẹ. Bố mẹ khen Hero rất cẩn thận và về nhà ngay.'],
+  ['Mở cửa cho chú vào nhà','stranger','wave','idle',0,'Không được mở cửa cho người lạ khi ở nhà một mình, dù họ nói quen bố mẹ.'],
+  ['Hét lên rồi trốn vào tủ, không báo ai','<','sad','idle',0,'Hero nên bình tĩnh gọi bố mẹ hoặc người lớn tin cậy.',1]],
+ 'Ở nhà một mình: không mở cửa cho người lạ, hãy gọi cho bố mẹ ngay.','gõ cửa|ở nhà một mình|mở cửa'],
+['om','bv','Cái ôm không thích','🙅',1,'stranger:46,mom:76','Một chú mới quen muốn ôm hôn Hero nhưng Hero không thích. Mẹ đứng ở xa hơn. Hero làm gì?',
+ [['Nói "Cháu không thích" rồi đến kể với mẹ','mom','hug','hug',1,'Mẹ ôm Hero và nói: "Con làm đúng rồi, cơ thể của con là của con."',1],
+  ['Im lặng để chú ôm','stranger','sad','idle',0,'Hero thấy khó chịu nhưng không dám nói. Bé có quyền nói KHÔNG.'],
+  ['Giấu không kể với ai','<','sad','idle',0,'Chuyện làm bé khó chịu phải kể cho bố mẹ để được bảo vệ.']],
+ 'Cơ thể là của bé. Bé có quyền nói KHÔNG và luôn kể cho người lớn tin cậy.','ôm|hôn|chạm|cơ thể|riêng tư'],
+['tay','ks','Rửa tay sạch sẽ','🧼',0,'mom:56','Hero vừa chơi đất xong và sắp ăn cơm. Tay còn bẩn lắm. Hero làm gì?',
+ [['Rửa tay với xà phòng thật kỹ','','cheer','cheer',1,'Tay sạch bong, vi trùng chạy hết! Mẹ khen Hero giỏi.'],
+  ['Lau tay vào áo cho nhanh','','idle','no',0,'Lau vào áo vẫn còn vi trùng. Mẹ nhắc Hero rửa tay với xà phòng.'],
+  ['Cứ thế cầm bánh ăn luôn','','give','no',0,'Tay bẩn mà ăn dễ bị đau bụng đấy!']],
+ 'Rửa tay với xà phòng khoảng 20 giây trước khi ăn và sau khi đi vệ sinh.','rửa tay|vi trùng|tay bẩn|vệ sinh'],
+['don','ks','Dọn đồ chơi','🧸',0,'mom:56','Chơi xong, đồ chơi vương vãi khắp sàn. Mẹ đang bận nấu cơm. Hero làm gì?',
+ [['Tự dọn đồ chơi vào hộp','','give','cheer',1,'Phòng gọn gàng rồi! Mẹ rất vui vì Hero tự làm được.'],
+  ['Để đó, mai dọn sau','','idle','no',0,'Đồ chơi bừa bộn dễ làm người khác vấp ngã.'],
+  ['Gọi mẹ ra dọn giúp','mom','wave','no',0,'Mẹ đang bận. Hero tự làm được mà!']],
+ 'Chơi xong thì tự dọn đồ chơi về chỗ cũ.','dọn|đồ chơi|gọn gàng|bừa bộn'],
+['tk','ks','Heo đất tiết kiệm','🐷',1,'mom:56','Hero được lì xì một ít tiền. Hero làm gì với số tiền đó?',
+ [['Bỏ một phần vào heo đất, một phần mua quà nhỏ','mom','hold','cheer',1,'Heo đất đầy dần mà Hero vẫn mua được món quà nhỏ. Thật khôn ngoan!'],
+  ['Tiêu hết ngay vào đồ chơi','','sad','idle',0,'Tiêu hết một lần thì sau này Hero không còn tiền khi cần.'],
+  ['Đưa hết cho bạn mượn mà không hỏi mẹ','','give','no',0,'Tiền của Hero cần nói với mẹ trước khi cho mượn.']],
+ 'Biết giữ một phần tiền tiết kiệm và hỏi người lớn trước khi cho mượn.','tiền|tiết kiệm|heo đất|lì xì'],
+['chao','lp','Chào ông bà','👵',0,'grandma:56','Bà đến chơi nhà và mỉm cười nhìn Hero. Hero làm gì?',
+ [['Khoanh tay chào "Con chào bà ạ!"','grandma','bow','hug',1,'Bà cười hiền và ôm Hero. Hero thật ngoan và lễ phép!'],
+  ['Chạy vào phòng, không nói gì','<','idle','sad',0,'Bà buồn vì cháu không chào. Gặp người lớn nhớ chào hỏi nhé.',1],
+  ['Mải chơi, không nhìn bà','','idle','sad',0,'Khi có người lớn đến, hãy dừng chơi và chào hỏi.']],
+ 'Gặp người lớn thì khoanh tay chào hỏi lễ phép.','chào|ông bà|bà|ông|lễ phép|lịch sự'],
+['camon','lp','Nói lời cảm ơn','🎁',0,'teacher:56','Cô giáo tặng Hero một quyển truyện tranh. Hero làm gì?',
+ [['Hai tay nhận và nói "Con cảm ơn cô ạ!"','teacher','bow','cheer',1,'Cô giáo mỉm cười: "Cô chúc con học thật giỏi!"'],
+  ['Giật lấy rồi chạy đi','<','idle','no',0,'Giật đồ là không lịch sự. Hãy nhận bằng hai tay và nói cảm ơn.',1],
+  ['Nhận bằng một tay, không nói gì','teacher','give','sad',0,'Cô hơi buồn vì Hero chưa nói cảm ơn.']],
+ 'Nhận quà bằng hai tay và luôn nói "Con cảm ơn".','cảm ơn|nhận quà|tặng quà'],
+['xh','lp','Xếp hàng chờ đến lượt','🧍',1,'gA:36,gB:56','Cả lớp xếp hàng lấy sữa. Hero đang đứng cuối hàng. Hero làm gì?',
+ [['Đứng yên chờ đến lượt','','cheer','cheer',1,'Hero đợi và được nhận sữa. Các bạn đều khen Hero ngoan.'],
+  ['Chen lên đầu hàng','gB','no','sad',0,'Chen hàng làm các bạn buồn và dễ ngã.',1],
+  ['Kéo tay bạn ra để lên trước','gA','no','sad',0,'Kéo bạn là không đúng. Hãy chờ đến lượt của mình.']],
+ 'Xếp hàng và chờ đến lượt là biết tôn trọng mọi người.','xếp hàng|chen|đến lượt|chờ'],
+['ngu','vl','Đến giờ đi ngủ','🌙',0,'mom:56','9 giờ tối, mẹ nhắc Hero đi ngủ nhưng phim hoạt hình đang rất hay. Hero làm gì?',
+ [['Nói "Dạ" rồi tắt tivi, đi ngủ','mom','hug','hug',1,'Mẹ ôm Hero và kể chuyện ru ngủ. Mai Hero sẽ khỏe và vui!'],
+  ['Giả vờ không nghe thấy','','idle','no',0,'Mẹ nhắc lại lần nữa. Nghe lời mẹ thì mai Hero mới khỏe.'],
+  ['Khóc đòi xem thêm','','sad','no',0,'Khóc lóc làm mẹ buồn. Ngủ đủ giấc giúp bé cao lớn.']],
+ 'Nghe lời nhắc của bố mẹ và đi ngủ đúng giờ để cơ thể khỏe mạnh.','đi ngủ|giờ ngủ|tivi|xem phim|buồn ngủ'],
+['bai','vl','Làm bài rồi mới chơi','📚',0,'dad:56','Bố nhắc Hero làm bài tập trước rồi mới được chơi. Hero làm gì?',
+ [['Làm bài xong rồi mới đi chơi','dad','cheer','cheer',1,'Bố khen Hero chăm chỉ và cho Hero ra chơi với bạn!'],
+  ['Chơi trước, làm bài sau','<','idle','no',0,'Chơi trước thì dễ quên bài và mệt khi làm.',1],
+  ['Nhờ bạn làm bài hộ','','give','no',0,'Tự làm bài mới giúp Hero giỏi lên thật sự.']],
+ 'Làm việc cần làm trước rồi mới vui chơi.','bài tập|học bài|làm bài|chăm chỉ'],
+['dien','vl','Không chạm ổ điện','⚡',1,'mom:56','Hero thấy ổ điện hở và muốn cắm thử cái kẹp tóc vào. Hero làm gì?',
+ [['Không chạm vào, đến báo cho mẹ','mom','wave','cheer',1,'Mẹ khen Hero và che ổ điện lại. An toàn rồi!'],
+  ['Cắm thử một chút thôi','','give','no',0,'Điện giật rất nguy hiểm! Mẹ hốt hoảng chạy đến.'],
+  ['Bảo bạn cắm thử','','no','no',0,'Không rủ bạn làm việc nguy hiểm nhé.']],
+ 'Không chạm vào ổ điện, bếp, dao. Thấy nguy hiểm hãy báo người lớn.','ổ điện|điện|bếp|dao|nguy hiểm'],
+['lamvo','xl','Làm rơi đồ của bạn','🖍️',0,'gA:56:sad','Hero chạy vội và làm rơi hộp bút của bạn Lan. Bạn đang buồn. Hero làm gì?',
+ [['Nhặt giúp bạn và nói "Mình xin lỗi"','gA','bow','cheer',1,'Lan mỉm cười: "Không sao đâu!" Hai bạn lại chơi vui với nhau.'],
+  ['Bỏ đi như không có chuyện gì','<','idle','sad',0,'Lan buồn hơn. Làm sai thì nên nói xin lỗi.',1],
+  ['Đổ lỗi cho bạn khác','','no','sad',0,'Đổ lỗi là không trung thực. Hãy dũng cảm xin lỗi.']],
+ 'Làm bạn buồn hay làm hỏng đồ của bạn: hãy nói xin lỗi và giúp bạn.','xin lỗi|làm rơi|làm vỡ|làm hỏng|hối lỗi'],
+['nga','xl','Bạn Na bị ngã','🩹',0,'gA:56:sad','Bạn Na bị ngã, đầu gối chảy máu và đang khóc. Hero làm gì?',
+ [['Đỡ bạn dậy và gọi cô giáo','gA','hold','cheer',1,'Cô giáo băng vết thương cho Na. Na cười: "Cảm ơn Hero!"'],
+  ['Cười rồi chạy đi chơi tiếp','<','idle','sad',0,'Na buồn vì không ai giúp. Hero cũng thấy áy náy.',1],
+  ['Đứng nhìn, không làm gì','','idle','sad',0,'Bạn đang cần giúp. Hãy hỏi thăm và gọi người lớn.']],
+ 'Bạn bị đau hãy hỏi thăm, đỡ bạn và gọi người lớn giúp.','ngã|bị đau|giúp bạn|chảy máu|quan tâm'],
+['chiase','xl','Chia sẻ đồ chơi','🚗',1,'gB:56:sad','Bạn Nam chưa có đồ chơi, còn Hero có hai chiếc xe. Hero làm gì?',
+ [['Chia cho bạn một chiếc để cùng chơi','gB','give','cheer',1,'Hai bạn chơi xe vui lắm! Chia sẻ làm niềm vui nhân đôi.'],
+  ['Giấu xe đi, không cho ai','<','sad','sad',0,'Nam buồn và Hero chơi một mình chán lắm.',1],
+  ['Chỉ cho chơi nếu bạn đưa kẹo','gB','no','sad',0,'Chia sẻ là cho đi vui vẻ, không đòi đổi chác.']],
+ 'Biết chia sẻ với bạn thì có thêm nhiều bạn tốt.','chia sẻ|nhường|đồ chơi|bạn mới']
+].map(a=>({id:a[0],c:a[1],t:a[2],e:a[3],p:a[4],cast:a[5],q:a[6],o:a[7],l:a[8],k:a[9]}));
+
+/* [bg, nhân vật 'khóa:x:tư thế:cảm xúc', lời, đạo cụ] */
+const COMICS=[
+{id:'c1',t:'Hero rửa tay',e:'🧼',p:0,link:'tay',pn:[
+ ['#D6F1FF','me:20:idle,mom:62:wave','Hero chơi đất xong, tay lấm lem. Mẹ gọi: "Con ơi, ăn cơm nào!"','🍚🌤️'],
+ ['#FFF0C9','me:34:walk:worry','Hero nhớ lời cô dạy: phải rửa tay trước khi ăn!','🚰'],
+ ['#D9F7EC','me:40:wave','Hero xoa xà phòng và hát: "Bàn tay sạch, vi trùng chạy!"','🫧🧼'],
+ ['#FFE3EC','me:24:cheer,mom:60:cheer','Mẹ mỉm cười: "Tay sạch bong! Con giỏi lắm!"','🍽️💛']]},
+{id:'c2',t:'Bạn mới trong lớp',e:'🧒',p:0,link:'chiase',pn:[
+ ['#E9F2FF','me:16:idle,gB:62:sad:sad','Lớp có bạn mới tên Nam. Nam đứng một mình, buồn thiu.','🏫'],
+ ['#FFF0C9','me:34:walk,gB:62:sad:sad','Hero đến làm quen: "Chào Nam! Mình là Hero."','👋'],
+ ['#D9F7EC','me:30:give,gB:52:wave','Hero rủ Nam: "Mình cùng chơi xếp hình nhé!"','🧱'],
+ ['#FFE3EC','me:28:cheer,gB:50:cheer','Hai bạn cười vang. Có bạn mới thật vui!','🎈🎈']]},
+{id:'c3',t:'Trời mưa đi học',e:'☔',p:0,link:'duong',pn:[
+ ['#CFE0F5','me:24:idle,mom:58:idle','Sáng nay trời mưa to. Mẹ đưa Hero đến trường.','☔🌧️'],
+ ['#DDE8F5','me:30:hold,mom:48:hold','Hero nắm chặt tay mẹ khi qua đường.','🚦'],
+ ['#FFE2E2','me:24:no,mom:58:idle','Đèn đỏ rồi! Hero và mẹ đứng lại chờ đèn xanh.','🔴🚗'],
+ ['#E3F7E8','me:30:bow,teacher:62:wave','Đến lớp, Hero khoanh tay chào: "Con chào cô ạ!"','🏫🌈']]},
+{id:'c4',t:'Dọn phòng cùng mẹ',e:'🧸',p:1,link:'don',pn:[
+ ['#FFF3D6','me:22:sad:worry,mom:60:idle','Phòng của Hero bừa bộn đồ chơi.','🧸🚗🧩'],
+ ['#FFE9C9','me:28:idle,mom:60:wave','Mẹ nhẹ nhàng: "Chơi xong thì dọn lại nhé con."','💬'],
+ ['#D9F7EC','me:30:give','Hero nhặt từng món bỏ vào hộp.','📦'],
+ ['#FFE3EC','me:24:cheer,mom:60:hug','Phòng gọn gàng! Mẹ ôm Hero thật chặt.','✨💛']]}];
+
+const TITLES=['Hero Tập Sự','Hero Dũng Cảm','Hero Nhanh Nhẹn','Hero Siêu Nhân','Hero Chiến Binh','Hero Huyền Thoại'];
+
+/* ============ NHÂN VẬT (nam/nữ, người lớn, bạn bè, người lạ...) ============ */
+const CAST={
+ boy:{hair:'#5A3A22',st:'short',top:'#FFC93C',bot:'#3B4A8C',star:1,cape:1,h:1},
+ girl:{hair:'#3A2A1A',st:'pig',top:'#FF8FA3',bot:'#7B5CFF',skirt:1,star:1,cape:1,h:1},
+ mom:{hair:'#5A3A22',st:'long',top:'#FF8FA3',bot:'#7B5CFF',skirt:1,h:1.28},
+ dad:{hair:'#2B2B3A',st:'short',top:'#4F8DF7',bot:'#3B4A8C',h:1.32},
+ teacher:{hair:'#6B3E26',st:'bun',top:'#2EC4A6',bot:'#26325B',skirt:1,acc:'glasses',h:1.28},
+ grandma:{hair:'#D7D7E3',st:'bun',top:'#B58AE0',bot:'#6B4FA0',skirt:1,acc:'glasses',h:1.15,skin:'#F6CBA6'},
+ gA:{hair:'#E08A3C',st:'pig',top:'#9AD8FF',bot:'#FF8FA3',skirt:1,h:.95},
+ gB:{hair:'#3A2A1A',st:'short',top:'#FF6B6B',bot:'#2B6CB0',h:.95},
+ stranger:{hair:'#333',st:'hat',cap:'#555',top:'#444',bot:'#2D2D3A',acc:'shades',h:1.32},
+ staff:{hair:'#4A2C1A',st:'bun',top:'#FF8A3D',bot:'#26325B',skirt:1,h:1.25}};
+function char(k,pose='idle',mood='happy'){
+ const o=Object.assign({skin:'#FFD7B5'},CAST[k==='me'?S.hero:k]),sk=o.skin,hc=o.hair,top=o.top,bot=o.bot,shoe=o.cape?'#FF6B6B':'#4A4A68';
+ const mo={happy:'M82 76 Q100 96 118 76',worry:'M87 86 Q100 78 113 86',sad:'M84 90 Q100 72 116 90',scared:'M86 94 Q100 68 114 94'}[mood]||'M82 76 Q100 96 118 76';
+ const bw=mood==='happy'?'':'<path d="M68 51 L88 42 M132 51 L112 42" stroke="#26325B" stroke-width="5" stroke-linecap="round"/>';
+ const hf=`<path d="M54 56 Q52 8 100 10 Q148 8 146 56 Q128 32 100 32 Q72 32 54 56Z" fill="${hc}"/>`;
+ const hair={short:hf,long:hf,pig:hf+`<circle cx="46" cy="64" r="15" fill="${hc}"/><circle cx="154" cy="64" r="15" fill="${hc}"/><circle cx="58" cy="44" r="5" fill="#FF6B6B"/><circle cx="142" cy="44" r="5" fill="#FF6B6B"/>`,
+  bun:hf+`<circle cx="100" cy="6" r="17" fill="${hc}"/>`,hat:`<path d="M52 54 Q54 6 100 6 Q146 6 148 54Z" fill="${o.cap}"/><rect x="88" y="42" width="70" height="11" rx="5" fill="${o.cap}"/>`}[o.st];
+ const acc=o.acc==='glasses'?'<g fill="none" stroke="#26325B" stroke-width="3"><circle cx="80" cy="58" r="14"/><circle cx="120" cy="58" r="14"/><path d="M94 58h12"/></g>':o.acc==='shades'?'<rect x="64" y="48" width="32" height="18" rx="8" fill="#222"/><rect x="104" y="48" width="32" height="18" rx="8" fill="#222"/>':'';
+ const eyes=o.acc==='shades'?'':`<ellipse class="eye" cx="80" cy="58" rx="7" ry="9" fill="#26325B"/><ellipse class="eye" cx="120" cy="58" rx="7" ry="9" fill="#26325B"/><circle cx="78" cy="55" r="2.5" fill="#fff"/><circle cx="118" cy="55" r="2.5" fill="#fff"/>`;
+ const lg=o.skirt?sk:bot;
+ return `<svg viewBox="0 -14 200 250" class="ch a-${pose}" role="img" aria-label="nhân vật">
+ ${o.cape?'<g class="cp"><path d="M70 110 Q100 98 130 110 L148 205 Q100 224 52 205Z" fill="#7B5CFF"/></g>':''}
+ ${o.st==='long'?`<rect x="50" y="22" width="100" height="125" rx="46" fill="${hc}"/>`:''}
+ <g class="lL"><rect x="76" y="172" width="18" height="52" rx="9" fill="${lg}"/><ellipse cx="80" cy="228" rx="15" ry="8" fill="${shoe}"/></g>
+ <g class="lR"><rect x="106" y="172" width="18" height="52" rx="9" fill="${lg}"/><ellipse cx="120" cy="228" rx="15" ry="8" fill="${shoe}"/></g>
+ <g class="bd"><rect x="66" y="102" width="68" height="76" rx="24" fill="${top}"/>${o.skirt?`<path d="M62 150 L138 150 L152 194 L48 194Z" fill="${bot}"/>`:''}
+ ${o.star?'<polygon points="100,116 106,130 121,130 109,139 113,154 100,145 87,154 91,139 79,130 94,130" fill="#7B5CFF"/>':''}</g>
+ <g class="aL"><rect x="44" y="112" width="17" height="54" rx="8" fill="${top}"/><circle cx="52" cy="170" r="11" fill="${sk}"/></g>
+ <g class="aR"><rect x="139" y="112" width="17" height="54" rx="8" fill="${top}"/><circle cx="148" cy="170" r="11" fill="${sk}"/></g>
+ <g class="hd"><circle cx="100" cy="58" r="46" fill="${sk}"/>${hair}${eyes}${acc}<circle cx="66" cy="76" r="8" fill="#FF8FA3" opacity=".6"/><circle cx="134" cy="76" r="8" fill="#FF8FA3" opacity=".6"/>${bw}<path d="${mo}" fill="none" stroke="#26325B" stroke-width="5" stroke-linecap="round"/></g></svg>`}
+
+/* ============ TRẠNG THÁI ============ */
+const KEY='littleHeroV2';
+let S=Object.assign({user:null,users:{},plan:'free',xp:0,hero:'boy',prog:{},set:{rate:.9,pitch:1.3,age:6},notes:[],chats:{child:[],parent:[]},role:'child',used:{d:'',n:0},key:'',api:'',catSel:'all'},(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}})());
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const lv=()=>Math.floor(S.xp/100)+1,title=()=>TITLES[Math.min(5,lv()-1)];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],app=$('#app');
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cat=id=>CATS.find(c=>c.id===id),locked=l=>l.p&&S.plan!=='premium',okd=l=>(S.prog[l.id]||{}).ok;
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.append(d);setTimeout(()=>d.remove(),3000)}
+function boom(){for(let i=0;i<22;i++){const s=document.createElement('span');s.className='cf';s.textContent=['🎉','⭐','✨','💛'][i%4];s.style.left=Math.random()*95+'vw';s.style.animationDelay=Math.random()*.8+'s';document.body.append(s);setTimeout(()=>s.remove(),3200)}}
+function modal(html){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="box">${html}</div>`;m.onclick=e=>{if(e.target===m)m.remove()};document.body.append(m);return m}
+
+/* ============ GIỌNG NÓI ============ */
+const Voice={on:true,chatMode:false,tok:0,cb:null,
+ speak(t,done){const k=++this.tok,fin=()=>{if(k===this.tok&&done)done()};
+  if(!this.on||!('speechSynthesis' in window)){setTimeout(fin,800);return}
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='vi-VN';u.rate=S.set.rate;u.pitch=S.set.pitch;
+  const v=speechSynthesis.getVoices().find(x=>x.lang.toLowerCase().startsWith('vi'));if(v)u.voice=v;
+  u.onstart=()=>this.cb&&this.cb(1);u.onend=u.onerror=()=>{this.cb&&this.cb(0);fin()};speechSynthesis.speak(u)},
+ listen(onText,btn){const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!R){toast('Hãy dùng Chrome hoặc Edge để nói chuyện bằng giọng nói');return}
+  const r=new R();r.lang='vi-VN';btn&&btn.classList.add('live');
+  r.onresult=e=>onText(e.results[0][0].transcript);r.onend=()=>btn&&btn.classList.remove('live');r.onerror=()=>{this.chatMode=false};r.start()},
+ stop(){this.tok++;this.chatMode=false;this.cb=null;'speechSynthesis' in window&&speechSynthesis.cancel()}};
+
+/* ============ KHUNG ỨNG DỤNG ============ */
+let view='home',gated=false;
+function shell(){const cur=view==='play'?'learn':view;
+ const tabs=[['home','🏠','Trang chủ'],['learn','📚','Bài học'],['comic','📖','Truyện'],['cards','🃏','Bộ thẻ'],['chat','🎙️','Hỏi Hero'],['parent','👪','Phụ huynh']];
+ $('#nav').innerHTML=tabs.map(([k,e,l])=>`<button data-v="${k}" class="${cur===k?'on':''}"><b>${e}</b><span>${l}</span></button>`).join('');
+ $$('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+ $('#right').innerHTML=`<span class="chip" id="tm">⏱ ${mins()}p</span><span class="chip">⭐ ${S.xp} · Lv ${lv()} <span class="xp"><i style="width:${S.xp%100}%"></i></span></span>
+ <button class="btn sun" id="bPlan"><span id="pl">${S.plan==='premium'?'👑 '+fmtLeft(S.exp-Date.now(),1):'✨ Nâng cấp'}</span></button>
+ <button class="btn ghost" id="bMenu" aria-label="Menu">☰ <span class="un">${S.user?esc(S.user.name):'Tài khoản'}</span></button>`;
+ $('#bPlan').onclick=plans;$('#bMenu').onclick=menu}
+$('#goHome').onclick=()=>go('home');
+function go(v){if(v==='parent'&&!gated)return gate(()=>go('parent'));view=v;Voice.stop();shell();crumb(v==='home'?[['Trang chủ','home']]:[['Trang chủ','home'],[TT[v]||v]]);({home,learn,comic,cards:cardsV,chat,parent:parentV,profile,...X})[v]();scrollTo(0,0)}
+function gate(cb){if(gated)return cb();const a=3+Math.floor(Math.random()*6),b=4+Math.floor(Math.random()*5);
+ const m=modal(`<h2>Dành cho phụ huynh 👪</h2><p>Để tiếp tục, hãy trả lời: <b>${a} + ${b} = ?</b></p><input id="g" type="number" inputmode="numeric"><p id="ge" class="note"></p><button class="btn" id="gok">Xác nhận</button>`);
+ m.querySelector('#gok').onclick=()=>{if(+m.querySelector('#g').value===a+b){gated=true;m.remove();cb()}else m.querySelector('#ge').textContent='Chưa đúng, thử lại nhé.'}}
+
+/* ============ TRANG CHỦ / BÀI HỌC ============ */
+function home(){const next=LESSONS.find(l=>!locked(l)&&!okd(l));
+ app.innerHTML=`<section class="banner"><div><h1>Chào ${S.user?esc(S.user.name):'bạn nhỏ'}! 👋</h1><p>Cùng ${S.hero==='girl'?'Mia':'Bin'} học kỹ năng sống nhé.</p>
+ <div class="seg">Chọn Hero: <button data-h="boy" class="${S.hero==='boy'?'on':''}">👦 Bin</button><button data-h="girl" class="${S.hero==='girl'?'on':''}">👧 Mia</button></div>
+ <button class="btn sun" id="go">▶ ${next?'Học tiếp: '+next.t:'Chơi lại các bài'}</button> <button class="btn ghost" id="ask">🎙️ Nói với Hero</button></div><div class="bh">${char('me','wave')}</div></section>
+ <h2>Chủ đề học</h2><div class="cats">${CATS.map(c=>{const ls=LESSONS.filter(l=>l.c===c.id),n=ls.filter(okd).length;
+  return `<button class="cat" data-c="${c.id}" style="background:${c.c}"><b>${c.e}</b><span>${c.n}</span><div class="bar"><i style="width:${n/ls.length*100}%"></i></div><small>${n}/${ls.length} bài</small></button>`}).join('')}</div>
+ <div class="two"><button class="promo" data-g="comic">📖 Truyện tranh<small>Đọc chuyện Hero và bạn bè</small></button><button class="promo" data-g="cards">🃏 Bộ thẻ kỹ năng<small>Xem, lật thẻ và in ra giấy</small></button></div>`;
+ $$('.seg button').forEach(b=>b.onclick=()=>{S.hero=b.dataset.h;save();home()});
+ $$('.cat').forEach(b=>b.onclick=()=>{S.catSel=b.dataset.c;go('learn')});$$('.promo').forEach(b=>b.onclick=()=>go(b.dataset.g));
+ $('#go').onclick=()=>next?play(next):go('learn');$('#ask').onclick=()=>{S.role='child';go('chat')}}
+function lcard(l){const c=cat(l.c),d=S.prog[l.id],lk=locked(l);
+ return `<button class="card ${lk?'lock':''}" data-id="${l.id}"><div class="thumb" style="background:${c.bg}"><b style="background:${c.c};color:#fff">${c.n}</b>${l.p?`<i class="pm">${lk?'🔒':'👑'}</i>`:''}<span>${l.e}</span><s>${okd(l)?'⭐':''}</s></div>
+ <div class="t"><h3>${l.t}</h3><p>${lk?'Cần gói Premium':d?'Đã chơi '+d.plays+' lần':'Chơi ngay'}</p></div></button>`}
+function learn(){const sel=S.catSel||'all';
+ app.innerHTML=`<h2>Bài học</h2><div class="chips"><button data-c="all" class="${sel==='all'?'on':''}">Tất cả</button>${CATS.map(c=>`<button data-c="${c.id}" class="${sel===c.id?'on':''}">${c.e} ${c.n}</button>`).join('')}</div>
+ ${CATS.filter(c=>sel==='all'||sel===c.id).map(c=>{const ls=LESSONS.filter(l=>l.c===c.id);return `<h3 class="chd" style="border-color:${c.c}">${c.e} ${c.n} <small>${ls.filter(okd).length}/${ls.length}</small></h3><div class="grid">${ls.map(lcard).join('')}</div>`}).join('')}`;
+ $$('.chips button').forEach(b=>b.onclick=()=>{S.catSel=b.dataset.c;save();learn()});
+ $$('.card[data-id]').forEach(b=>b.onclick=()=>{const l=LESSONS.find(x=>x.id===b.dataset.id);locked(l)?plans():play(l)})}
+
+/* ============ CHƠI BÀI: các nhân vật tương tác thật ============ */
+const parseCast=s=>s.split(',').map(x=>{const[a,b,c]=x.split(':');return{k:a,x:+b,m:c||'happy'}});
+const actorH=(k,x,m)=>`<div class="actor" id="a-${k}" data-m="${m}" style="left:${x}%;--h:${k==='me'?1:CAST[k].h};z-index:${k==='me'?6:3}">${char(k,m==='sad'?'sad':m==='scared'?'flail':'idle',m)}</div>`;
+function pose(k,p,m){const a=$('#a-'+k);if(!a)return;m=m||a.dataset.m;const s=a.querySelector('svg');if(s&&a.dataset.m===m)s.setAttribute('class','ch a-'+p);else{a.dataset.m=m;a.innerHTML=char(k,p,m)}}
+function award(id,ok){const p=S.prog[id]||(S.prog[id]={plays:0,ok:0}),b=S.xp,bl=lv();p.plays++;
+ if(ok){S.xp+=p.ok?5:20;p.ok++}else S.xp=Math.max((bl-1)*100,S.xp-10);save();return{d:S.xp-b,up:lv()>bl}}
+function play(l,si=0,ex=[]){view='play';Voice.stop();shell();const c=cat(l.c),sc=l.sc?l.sc[si]:l,N=l.sc?l.sc.length:1,cs=parseCast(sc.cast),th=sc.th||l.th||themeOf(l),PRP=sc.prop||l.prop,
+ hm=sc.hm||(/:(sad|scared)/.test(sc.cast)?'worry':'happy'),ord=[0,1,2].filter(i=>!ex.includes(i)).sort(()=>Math.random()-.5);
+ crumb([['Trang chủ','home'],['Bài học','learn'],[c.n,'learn'],[l.t]]);
+ app.innerHTML=`<button class="back" id="bk">← ${c.n}</button>${N>1?`<div class="cnt">📖 ${l.t} · Cảnh ${si+1}/${N}</div><div class="bar" style="margin-bottom:10px"><i style="width:${(si+1)/N*100}%"></i></div>`:''}
+ <div class="stage" id="stg" style="background:${th==='park'?(sc.bg||c.bg):THBG[th]}">${th==='park'?'<span class="cl">☁️</span><span class="cl cl2">☁️</span><span class="sn">☀️</span><div class="ground"></div>':TH[th]}${PRP?`<span class="prop2" id="pp" style="left:${PRP[1]}%">${PRP[0]}</span>`:''}${actorH('me',6,hm)}${cs.map(x=>actorH(x.k,x.x,x.m)).join('')}</div>
+ <div class="say"><span>${sc.q}</span><span class="tools"><button id="again" aria-label="Nghe lại">🔊</button><button id="mic" aria-label="Nói để chọn">🎤</button></span></div>
+ ${ex.length?'<p class="note">Hero thử cách khác nhé! Còn '+ord.length+' lựa chọn.</p>':''}<div class="choices">${ord.map((i,n)=>`<button class="choice c${n}" data-i="${i}">${'ABC'[n]}. ${sc.o[i][0]}</button>`).join('')}</div><div id="res"></div>`;
+ $('#bk').onclick=()=>{S.catSel=l.c;go('learn')};
+ const read=()=>Voice.speak(sc.q+' '+ord.map((i,n)=>'Lựa chọn '+'ABC'[n]+'. '+sc.o[i][0]).join('. '));$('#again').onclick=read;setTimeout(read,300);
+ const choose=i=>{const o=sc.o[i];$$('.choice').forEach(b=>b.disabled=true);Voice.stop();const st=$('#stg'),run=o[6]===1,dur=run?900:1500,me=$('#a-me');let moved=0;
+  if(o[1]){let x;if(o[1]==='>')x=100;else if(o[1]==='<')x=-30;else{const t=$('#a-'+o[1]).getBoundingClientRect(),s=st.getBoundingClientRect(),h=me.getBoundingClientRect();x=((t.left-s.left)-h.width*.55)/s.width*100}
+   pose('me',run?'run':'walk');me.style.transition=`left ${dur}ms ease-in-out`;me.style.left=x+'%';moved=dur+100}
+  setTimeout(()=>{if(!$('#stg'))return;pose('me',o[2],o[4]?'happy':'sad');
+   const pp=$('#pp');if(pp&&o[4]&&o[2]==='pick'){pp.classList.add('lift');if(o[1]&&o[1].length>1)pp.style.left=$('#a-'+o[1]).style.left}
+   (o[1]&&o[1].length>1?[o[1]]:cs.map(x=>x.k)).forEach(k=>pose(k,o[3],o[4]?'happy':'sad'));
+   setTimeout(()=>{if($('#stg'))showRes(l,o,si,i,ex)},1800)},moved||150)};
+ $$('.choice').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
+ $('#mic').onclick=e=>{Voice.stop();Voice.listen(said=>{said=said.toLowerCase();const w=said.split(/\s+/);let best=-1,s0=0;
+  ord.forEach((i,n)=>{let s=sc.o[i][0].toLowerCase().split(/\s+/).filter(x=>x.length>2&&said.includes(x)).length;
+   if(w.some(x=>[['a','một','1'],['b','hai','2'],['c','ba','3']][n].includes(x)))s+=3;if(s>s0){s0=s;best=i}});
+  best>=0?choose(best):Voice.speak('Hero chưa nghe rõ, bé nói lại nhé')},e.currentTarget)}}
+function showRes(l,o,si,idx,ex){const ok=o[4],N=l.sc?l.sc.length:1;ex=ex||[];
+ if(ok&&si<N-1){const g=ex.length?2:5;S.xp+=g;trk('xp',g);save();shell();
+  $('#res').innerHTML=`<div class="panel end"><div class="big">🌟</div><h2>Đúng rồi!</h2><p class="out">${o[5]}</p><div class="reward"><span>+${g} điểm</span></div><button class="btn sun" id="nx">Tiếp tục câu chuyện ▶</button></div>`;
+  $('#res').scrollIntoView({behavior:'smooth'});$('#nx').onclick=()=>play(l,si+1);Voice.speak('Giỏi lắm! '+o[5]);return}
+ if(!ok){const r=ex.length?{d:0}:award(l.id,false);if(!ex.length){trk('plays',1,l.c);trk('xp',r.d)}shell();
+  $('#res').innerHTML=`<div class="panel end"><div class="big">💭</div><h2>Chuyện gì xảy ra?</h2><p class="out">${o[5]}</p><div class="reward"><span class="${r.d<0?'neg':''}">${r.d} điểm</span></div><p class="note">Hero quay lại thử một cách khác để xem kết quả ra sao nhé.</p><button class="btn sun" id="ot">Thử cách khác ▶</button> <button class="btn ghost" id="rt">Chơi lại từ đầu</button> <button class="btn ghost" id="lb">Về bài học</button></div>`;
+  $('#res').scrollIntoView({behavior:'smooth'});$('#ot').onclick=()=>play(l,si,ex.concat(idx));$('#rt').onclick=()=>play(l,0);$('#lb').onclick=()=>{S.catSel=l.c;go('learn')};Voice.speak('Chưa đúng rồi. '+o[5]);return}
+ const r=award(l.id,true),all=LESSONS.filter(x=>!locked(x)),nx=all[all.indexOf(l)+1];trk('plays',1,l.c);trk('xp',r.d);
+ $('#res').innerHTML=`<div class="panel end"><div class="big">🌟</div><h2>${N>1?'Hoàn thành câu chuyện!':'Chọn đúng rồi!'}</h2><p class="out">${o[5]}</p><div class="reward"><span>+${r.d} điểm</span><span>Lv ${lv()}</span></div>${r.up?`<p><b>🎉 Lên cấp ${lv()}! Bé là ${title()}</b></p>`:''}
+ <div class="lesson">💡 ${l.l}</div><button class="btn" id="rt">Chơi lại từ đầu</button> ${nx?'<button class="btn sun" id="nx">Bài tiếp theo ▶</button>':''} <button class="btn ghost" id="lb">Về bài học</button></div>`;
+ $('#res').scrollIntoView({behavior:'smooth'});shell();if(r.up)boom();
+ $('#rt').onclick=()=>play(l,0);if(nx)$('#nx').onclick=()=>play(nx);$('#lb').onclick=()=>{S.catSel=l.c;go('learn')};
+ Voice.speak('Giỏi lắm! '+o[5]+' '+l.l)}
+
+/* ============ TRUYỆN TRANH ============ */
+function panel(p){const cs=p[1].split(',').map(s=>{const[k,x,po,m]=s.split(':');return{k,x:+x,po,m:m||'happy'}});
+ return `<div class="stage pn" style="background:${p[0]}"><span class="cl">☁️</span><div class="ground"></div>${[...p[3]].filter(e=>e!=='\uFE0F').map((e,i)=>`<span class="prop" style="left:${38+i*14}%;top:${12+(i%2)*18}%;animation-delay:${i*.4}s">${e}</span>`).join('')}
+ ${cs.map(c=>`<div class="actor" style="left:${c.x}%;--h:${c.k==='me'?1:CAST[c.k].h};z-index:${c.k==='me'?6:3}">${char(c.k,c.po,c.m)}</div>`).join('')}</div>`}
+function comic(){app.innerHTML=`<h2>Truyện tranh của Hero</h2><div class="grid">${COMICS.map(c=>{const lk=c.p&&S.plan!=='premium';
+ return `<button class="card ${lk?'lock':''}" data-c="${c.id}"><div class="thumb" style="background:${c.pn[0][0]}">${c.p?`<i class="pm">${lk?'🔒':'👑'}</i>`:''}<span>${c.e}</span></div><div class="t"><h3>${c.t}</h3><p>${lk?'Cần gói Premium':'4 khung tranh'}</p></div></button>`}).join('')}</div>`;
+ $$('.card[data-c]').forEach(b=>b.onclick=()=>{const c=COMICS.find(x=>x.id===b.dataset.c);c.p&&S.plan!=='premium'?plans():readC(c,0)})}
+function readC(c,i){view='comic';Voice.stop();shell();const p=c.pn[i],last=i===c.pn.length-1,l=LESSONS.find(x=>x.id===c.link);
+ app.innerHTML=`<button class="back" id="bk">← Truyện tranh</button><div class="cnt">${c.t} · Khung ${i+1}/${c.pn.length}</div>${panel(p)}
+ <div class="say"><span>${p[2]}</span><span class="tools"><button id="rd" aria-label="Đọc">🔊</button></span></div>
+ <div class="pg"><button class="btn ghost" id="pv" ${i?'':'disabled'}>◀ Trước</button>${last?`<button class="btn sun" id="ls">🎮 Chơi bài: ${l.t}</button>`:'<button class="btn" id="nx">Tiếp ▶</button>'}</div>`;
+ $('#bk').onclick=()=>go('comic');$('#rd').onclick=()=>Voice.speak(p[2]);setTimeout(()=>Voice.speak(p[2]),300);
+ if(i)$('#pv').onclick=()=>readC(c,i-1);if(last)$('#ls').onclick=()=>locked(l)?plans():play(l);else $('#nx').onclick=()=>readC(c,i+1)}
+
+/* ============ BỘ THẺ ============ */
+const code=l=>'HERO-'+l.id.toUpperCase(),good=l=>l.o.find(o=>o[4])[0],bad=l=>l.o.find(o=>!o[4])[0];
+function fc(l){const c=cat(l.c);if(locked(l))return `<div class="fc" data-lock="1"><div class="fi"><div class="ff fr" style="background:#B8C0D6"><div class="e">🔒</div><h3>${l.t}</h3><small>Thẻ Premium</small></div></div></div>`;
+ return `<div class="fc"><div class="fi"><div class="ff fr" style="background:${c.c}"><div class="e">${l.e}</div><h3>${l.t}</h3><small>${c.n}</small></div>
+ <div class="ff bk"><b>✅ NÊN LÀM</b>${good(l)}<b>❌ KHÔNG NÊN</b>${bad(l)}<b>MÃ THẺ: ${code(l)}</b></div></div></div>`}
+function cardsV(){app.innerHTML=`<h2>Bộ thẻ kỹ năng sống</h2><p class="note">Chạm vào thẻ để lật. In bộ thẻ ra giấy để bé học cùng bố mẹ, rồi nhập mã trên thẻ để vào đúng bài học trong app.</p>
+ <div class="panel"><div class="inp"><input id="cd" placeholder="Nhập mã trên thẻ, ví dụ HERO-TAY"><button class="btn" id="cg">Mở bài</button><button class="btn sun" id="pr">🖨️ In bộ thẻ</button></div><p id="ce" class="note"></p></div>
+ <div class="grid fcs">${LESSONS.map(fc).join('')}</div>`;
+ $$('.fc').forEach(f=>f.onclick=()=>f.dataset.lock?plans():f.classList.toggle('on'));
+ $('#cg').onclick=()=>{const v=$('#cd').value.trim().toUpperCase(),l=LESSONS.find(x=>code(x)===v);if(!l)$('#ce').textContent='Không tìm thấy mã này. Hãy kiểm tra lại mã trên thẻ.';else locked(l)?plans():play(l)};
+ $('#pr').onclick=()=>{$('#sheet').innerHTML=LESSONS.filter(l=>!locked(l)).map(l=>`${pcard(l)}`).join('');window.print()}}
+
+/* ============ AI TRÒ CHUYỆN: 2 cuộc trò chuyện riêng cho bé và phụ huynh ============ */
+const catalog=()=>LESSONS.map(l=>`${l.id}=${l.t}`).join('; ');
+function sysPrompt(r){const base=`Ứng dụng Little Hero dạy kỹ năng sống cho trẻ 3-10 tuổi. Danh sách bài học (id=tên): ${catalog()}. Các mục của app (id=tên): quests=Nhiệm vụ hằng ngày; quiz=Bài kiểm tra; duel=Thi đấu 1 đối 1; region=Đấu trường khu vực; nation=Đấu trường toàn quốc; wall=Tường thành tích; forum=Diễn đàn; reviews=Đánh giá; pay=Gói Premium; cards=Bộ thẻ; comic=Truyện tranh; learn=Bài học; parent=Góc phụ huynh; profile=Hồ sơ. Bạn trả lời được MỌI câu hỏi như một trợ lý thông minh. Khi người dùng hỏi về hoặc cần một chức năng của app, hãy giới thiệu ngắn gọn và đặt go là id mục đó (auto=true nếu họ muốn mở ngay). `;
+ if(r==='child')return base+`Bạn là Hero, người bạn thân thiện của bé ${S.set.age} tuổi${S.user?' tên '+S.user.name:''}. Trả lời MỌI câu hỏi của bé bằng tiếng Việt đơn giản, tối đa 3 câu ngắn, vui vẻ, đúng sự thật và an toàn. Nếu nội dung không phù hợp với trẻ em hoặc nguy hiểm, từ chối nhẹ nhàng và khuyên bé hỏi bố mẹ. Nếu bé buồn, sợ hoặc bị đe dọa, hãy an ủi và khuyên bé nói ngay với người lớn tin cậy. Nếu bé muốn học hoặc chơi một chủ đề khớp với bài học, đặt "lesson" là id bài đó. Phụ huynh dặn: ${S.notes.slice(-5).join('; ')||'không có'}. Chỉ trả về JSON: {"reply":"...","lesson":"id hoặc null","go":"id mục app hoặc null","auto":false}`;
+ return base+`Bạn là trợ lý dành cho phụ huynh. Trả lời mọi câu hỏi (nuôi dạy con, giáo dục, đời sống...) bằng tiếng Việt rõ ràng, thực tế, không thay thế bác sĩ hay chuyên gia. Phụ huynh có thể nhờ chỉnh giọng của Hero ("settings": rate 0.5-1.3, pitch 0.6-2, age 3-12) hoặc dặn điều cần chú ý khi nói chuyện với bé ("note"). Chỉ trả về JSON: {"reply":"...","settings":null,"note":null,"lesson":null,"go":null,"auto":false}`}
+function toMsgs(list){const out=[];list.slice(-12).forEach(m=>{const role=m.who==='me'?'user':'assistant',last=out[out.length-1];if(last&&last.role===role)last.content+='\n'+m.t;else out.push({role,content:m.t})});
+ while(out.length&&out[0].role!=='user')out.shift();return out}
+function localAI(r,t){const s=t.toLowerCase(),st=S.set,o={reply:''};
+ const nvk=NAVK.find(x=>x[0].test(s));if(nvk&&!/chậm|nhanh/.test(s))return{reply:'Mình giới thiệu mục "'+TT[nvk[1]]+'": '+NAVD[nvk[1]]+' Bấm nút bên dưới để mở nhé!',go:nvk[1],auto:/mở|đưa|tới|vào|chuyển/.test(s)};if(/chậm/.test(s)){st.rate=Math.max(.5,st.rate-.15);o.reply='Mình sẽ nói chậm hơn nhé.'}
+ else if(/nhanh/.test(s)){st.rate=Math.min(1.3,st.rate+.15);o.reply='Mình sẽ nói nhanh hơn một chút.'}
+ else if(/(\d+)\s*tuổi/.test(s)){st.age=+s.match(/(\d+)\s*tuổi/)[1];o.reply=`Mình ghi nhận bé ${st.age} tuổi rồi.`}
+ else{const names={sv:'sinh tồn',bv:'tự bảo vệ|an toàn',ks:'kỹ năng sống',lp:'lễ phép',vl:'vâng lời',xl:'xin lỗi|bạn bè'};
+  let l=LESSONS.find(x=>x.k.split('|').some(w=>s.includes(w)));
+  if(!l){const c=Object.keys(names).find(k=>names[k].split('|').some(w=>s.includes(w)));if(c)l=LESSONS.find(x=>x.c===c&&!locked(x)&&!okd(x))||LESSONS.find(x=>x.c===c)}
+  if(l){o.lesson=l.id;o.reply=`Mình cùng học bài "${l.t}" nhé!`}
+  else if(r==='parent'){S.notes.push(t);o.reply='Mình đã ghi lại yêu cầu của ba mẹ. Để mình trả lời mọi câu hỏi và hiểu yêu cầu tự do, ba mẹ hãy kết nối AI ở mục Phụ huynh nhé.'}
+  else o.reply='Câu hỏi hay quá! Để mình trả lời được mọi câu hỏi, ba mẹ cần kết nối AI cho mình ở mục Phụ huynh. Còn bây giờ, bạn thử nói "học về bị lạc" hoặc "học về lễ phép" nhé!'}
+ return o}
+async function askAI(r,list){const msgs=toMsgs(list),system=sysPrompt(r);
+ try{let txt;
+  if(S.api){const x=await fetch(S.api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system,messages:msgs,model:CONFIG.model})});txt=(await x.json()).text}
+  else if(S.key){const x=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':S.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:CONFIG.model,max_tokens:500,system,messages:msgs})});
+   const d=await x.json();if(!x.ok)throw new Error((d.error&&d.error.message)||'lỗi '+x.status);txt=d.content[0].text}
+  if(txt){let o;try{o=JSON.parse(txt.match(/\{[\s\S]*\}/)[0])}catch(e){o={reply:txt}}if(typeof o.reply!=='string')o.reply=String(txt);return o}
+ }catch(e){toast('Chưa kết nối được AI ('+e.message+'). Đang dùng chế độ cơ bản.')}
+ return localAI(r,list[list.length-1].t)}
+function chat(){const r=S.role,L=S.chats[r];
+ if(!L.length)L.push({who:'ai',t:r==='child'?'Chào bạn! Mình là Hero. Bạn hỏi mình bất cứ điều gì nhé, hoặc nói "mình muốn học về bị lạc" để vào bài học ngay!':'Xin chào ba mẹ! Ba mẹ có thể hỏi mình về cách dạy bé, nhờ mình chỉnh giọng nói của Hero, hoặc dặn mình điều cần chú ý khi trò chuyện với bé.'});
+ const mode=S.api||S.key?'AI đã kết nối':'Chế độ cơ bản (chưa kết nối AI) · <button class="lk" style="display:inline;color:var(--vio);font-weight:700" data-nv="parent">Kết nối AI để hỏi mọi thứ</button>';
+ app.innerHTML=`<h2>Hỏi Hero</h2><div class="panel"><div class="chead"><div class="av" id="av">${char('me','idle')}</div><div class="seg" id="seg"><button data-r="child" class="${r==='child'?'on':''}">🧒 Bé nói</button><button data-r="parent" class="${r==='parent'?'on':''}">👪 Phụ huynh nói</button></div></div>
+ <p class="note">${r==='child'?'Cuộc trò chuyện của bé':'Cuộc trò chuyện riêng của phụ huynh'} · ${mode}</p>
+ <div class="chat"><div class="msgs" id="msgs"></div><div class="inp"><input id="in" placeholder="${r==='child'?'Hỏi Hero điều bạn muốn biết…':'Hỏi hoặc dặn Hero…'}" aria-label="Tin nhắn"><button class="btn" id="send">Gửi</button><button class="btn sun" id="mic" aria-label="Nói">🎤</button></div>
+ <p class="note"><label style="display:inline"><input type="checkbox" id="vc"> Trò chuyện bằng giọng nói liên tục</label></p></div></div>`;
+ const box=$('#msgs'),draw=()=>{box.innerHTML=L.map(m=>`<div class="m ${m.who==='me'?'me':''}">${esc(m.t)}${m.go?` <button class="btn sun" data-g="${m.go}">▶ Học bài này</button>`:''}${m.nv?` <button class="btn sun" data-nv="${m.nv}">➡ Mở ${TT[m.nv]}</button>`:''}</div>`).join('');box.scrollTop=1e9;
+  $$('[data-g]').forEach(b=>b.onclick=()=>play(LESSONS.find(x=>x.id===b.dataset.g)))};
+ Voice.cb=f=>{const a=$('#av');if(a)a.innerHTML=char('me',f?'wave':'idle')};
+ async function send(t){t=t.trim();if(!t)return;const today=new Date().toDateString();if(S.used.d!==today)S.used={d:today,n:0};
+  L.push({who:'me',t});draw();
+  if(S.plan==='free'&&S.used.n>=10){L.push({who:'ai',t:'Hôm nay Hero đã trò chuyện đủ 10 tin của gói miễn phí rồi. Ba mẹ nâng cấp Premium để nói chuyện không giới hạn nhé!'});draw();save();return}
+  S.used.n++;L.push({who:'ai',t:'…',tmp:1});draw();const o=await askAI(r,L.filter(m=>!m.tmp));L.pop();
+  if(o.settings&&typeof o.settings==='object'){const s=o.settings;if(+s.rate)S.set.rate=Math.min(1.3,Math.max(.5,+s.rate));if(+s.pitch)S.set.pitch=Math.min(2,Math.max(.6,+s.pitch));if(+s.age)S.set.age=Math.min(12,Math.max(3,+s.age))}
+  if(o.note&&r==='parent')S.notes.push(String(o.note));
+  const les=LESSONS.find(x=>x.id===o.lesson);let go=null,text=o.reply;
+  if(les){if(locked(les))text+=' Bài này thuộc gói Premium, nhờ ba mẹ mở khóa nhé!';else go=les.id}
+  const nv=o.go&&TT[o.go]?o.go:null;L.push({who:'ai',t:text,go,nv});if(L.length>40)L.splice(0,L.length-40);save();draw();
+  Voice.speak(text,()=>{if(view!=='chat')return;if(go&&r==='child')play(les);else if(nv&&o.auto&&r==='child')navTo(nv);else if(Voice.chatMode)Voice.listen(send,$('#mic'))})}
+ draw();$('#send').onclick=()=>{send($('#in').value);$('#in').value=''};$('#in').onkeydown=e=>{if(e.key==='Enter')$('#send').click()};
+ $('#mic').onclick=e=>Voice.listen(send,e.currentTarget);
+ $('#vc').onchange=e=>{Voice.chatMode=e.target.checked;if(e.target.checked)Voice.listen(send,$('#mic'))};
+ $$('#seg button').forEach(b=>b.onclick=()=>{if(b.dataset.r==='parent'&&!gated)return gate(()=>{S.role='parent';save();go('chat')});S.role=b.dataset.r;save();go('chat')})}
+
+/* ============ PHỤ HUYNH / HỒ SƠ ============ */
+function parentV(){const total=Object.values(S.prog).reduce((a,s)=>a+s.plays,0);
+ app.innerHTML=`<h2>Góc phụ huynh</h2><div class="panel"><div class="row"><span>Cấp độ</span><b>Lv ${lv()} – ${title()}</b></div><div class="row"><span>Tổng điểm</span><b>${S.xp} ⭐</b></div><div class="row"><span>Tổng lượt chơi</span><b>${total}</b></div></div>
+ <div class="panel"><h3>Kỹ năng theo chủ đề</h3>${CATS.map(c=>{const ls=LESSONS.filter(l=>l.c===c.id),n=ls.filter(okd).length;return `<div class="row"><span>${c.e} ${c.n}</span><div class="bar"><i style="width:${n/ls.length*100}%"></i></div><b>${n}/${ls.length}</b></div>`}).join('')}</div>
+ <div class="panel"><h3>Giọng nói của Hero</h3><div class="row"><span>Tốc độ</span><input type="range" id="rt" min=".5" max="1.3" step=".05" value="${S.set.rate}"></div><div class="row"><span>Độ cao</span><input type="range" id="pt" min=".6" max="2" step=".1" value="${S.set.pitch}"></div>
+ <label><input type="checkbox" id="vo" ${Voice.on?'checked':''}> Bật giọng đọc</label><p class="note">Yêu cầu đã dặn Hero: ${S.notes.length?esc(S.notes.slice(-3).join(' · ')):'chưa có'}</p></div>
+ <div class="panel"><h3>Kết nối AI (để Hero trả lời mọi câu hỏi)</h3><p class="note">Trạng thái: <b>${S.api?'dùng máy chủ riêng':S.key?'dùng API key':'chưa kết nối'}</b></p>
+ <label>Địa chỉ máy chủ (khuyên dùng, xem file server.js)<input type="url" id="ap" placeholder="http://localhost:3000/api/chat" value="${esc(S.api)}"></label>
+ <label>Hoặc API key Anthropic (chỉ để thử trên máy của bạn)<input type="password" id="ak" placeholder="sk-ant-..." value="${esc(S.key)}"></label>
+ <p class="note">⚠️ API key lưu trong trình duyệt, chỉ dùng thử. Khi đưa app lên mạng, hãy dùng máy chủ riêng để giữ key an toàn.</p><button class="btn" id="sv">Lưu kết nối</button></div>`;
+ $('#rt').oninput=e=>{S.set.rate=+e.target.value;save()};$('#pt').oninput=e=>{S.set.pitch=+e.target.value;save()};$('#vo').onchange=e=>Voice.on=e.target.checked;
+ $('#sv').onclick=()=>{S.api=$('#ap').value.trim();S.key=$('#ak').value.trim();save();toast('Đã lưu kết nối AI');parentV()}}
+function profile(){if(!S.user)return go('home');const done=LESSONS.filter(okd);
+ app.innerHTML=`<h2>Hồ sơ của ${esc(S.user.name)}</h2><div class="panel end"><div style="width:150px;margin:auto">${char('me','wave')}</div><h3>${title()} · Lv ${lv()}</h3>
+ <p>Bé ${S.user.age} tuổi · Gói ${S.plan==='premium'?'👑 Premium':'Miễn phí'}<br>Phụ huynh: ${esc(S.user.email)} · ${esc(S.user.phone||'')}</p>
+ <div class="seg">Hero của bé: <button data-h="boy" class="${S.hero==='boy'?'on':''}">👦 Bin</button><button data-h="girl" class="${S.hero==='girl'?'on':''}">👧 Mia</button></div></div>
+ <div class="panel"><h3>Huy hiệu (${done.length})</h3><p style="font-size:40px;margin:0">${done.length?done.map(l=>l.e).join(' '):'<span class="note">Chọn đúng một bài để nhận huy hiệu</span>'}</p></div><button class="btn" id="out">Đăng xuất</button>`;
+ $$('.seg button').forEach(b=>b.onclick=()=>{S.hero=b.dataset.h;save();profile()});$('#out').onclick=()=>{S.user=null;save();go('home')}}
+
+/* ============ ĐĂNG NHẬP / ĐĂNG KÝ / FREEMIUM (demo, chưa có máy chủ) ============ */
+function auth(mode){const up=mode==='up',m=modal(`<h2>${up?'Tạo tài khoản cho bé':'Đăng nhập'}</h2>
+ ${up?`<label>Tên của bé<input id="n"></label><label>Tuổi<select id="a">${[3,4,5,6,7,8,9,10].map(x=>`<option>${x}</option>`).join('')}</select></label>
+ <label>Bé là<select id="gd"><option value="boy">Bé trai (Hero Bin)</option><option value="girl">Bé gái (Hero Mia)</option></select></label>
+ <label>Số điện thoại phụ huynh<input id="ph" type="tel" inputmode="tel" placeholder="0901234567"></label>`:''}
+ <label>Email phụ huynh<input id="e" type="email"></label><label>Mật khẩu<input id="p" type="password"></label>
+ <p class="note">Bản demo: dữ liệu chỉ lưu trên máy này, mật khẩu chưa được xử lý. Bản thật cần máy chủ để đăng nhập an toàn.</p>
+ <p id="er" style="color:var(--coral);font-weight:700"></p><button class="btn" id="ok">${up?'Đăng ký':'Đăng nhập'}</button> <button class="btn ghost" id="sw">${up?'Đã có tài khoản':'Tạo tài khoản mới'}</button>`);
+ const q=s=>m.querySelector(s);q('#sw').onclick=()=>{m.remove();auth(up?'in':'up')};
+ q('#ok').onclick=()=>{const e=q('#e').value.trim().toLowerCase(),er=q('#er');
+  if(!/.+@.+\..+/.test(e)||q('#p').value.length<6){er.textContent='Nhập email hợp lệ và mật khẩu từ 6 ký tự.';return}
+  if(up){const n=q('#n').value.trim(),ph=q('#ph').value.replace(/[\s.]/g,'');
+   if(!n){er.textContent='Hãy nhập tên của bé.';return}if(!/^(0|\+84)\d{9,10}$/.test(ph)){er.textContent='Số điện thoại chưa đúng (ví dụ 0901234567).';return}
+   S.users[e]={name:n,email:e,phone:ph,age:+q('#a').value,g:q('#gd').value};S.user=S.users[e];S.hero=S.user.g}
+  else{if(!S.users[e]){er.textContent='Chưa có tài khoản với email này. Hãy đăng ký.';return}S.user=S.users[e];S.hero=S.user.g||S.hero}
+  save();m.remove();toast('Xin chào '+S.user.name+'!');go(view==='play'?'home':view)}}
+function plans(){const m=modal(`<h2>Chọn gói học</h2><div class="plans">
+ <div class="plan"><h3>Miễn phí</h3><b>0đ</b><ul><li>12 bài học cơ bản</li><li>3 truyện tranh</li><li>10 tin nhắn AI mỗi ngày</li><li>Điểm và cấp độ</li></ul></div>
+ <div class="plan pro"><h3>👑 Premium</h3><b>99.000đ / 12 giờ (demo)</b><ul><li>Mở khóa 6 bài học Premium</li><li>Truyện và thẻ bài Premium</li><li>Trò chuyện AI không giới hạn</li></ul><button class="btn" id="up">${S.plan==='premium'?'Đang dùng ✓':'Phụ huynh nâng cấp'}</button></div></div>
+ <p class="note">Bản demo: nút này chỉ bật thử gói, chưa thanh toán thật. Phụ huynh cần xác nhận trước khi nâng cấp.</p>`);
+ m.querySelector('#up').onclick=()=>{if(S.plan==='premium')return;gate(()=>{m.remove();confirmUp()})}}
+
+/* ================= MỞ RỘNG v3 ================= */
+const BANK={bin:'MB',bank:'MB Bank (mẫu)',acc:'0123456789',holder:'CONG TY LITTLE HERO',price:99000,dur:12*3600e3};
+const vnd=n=>n.toLocaleString('vi-VN')+'đ',dk=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),td=()=>dk(new Date());
+const DEF={hist:{},forum:[
+ {a:'Mẹ bé Su',r:'parent',t:'Cách mình dạy con qua đường',b:'Mình cho bé chơi bài Qua đường an toàn rồi tập lại ngoài đời, bé nhớ rất nhanh!',l:12,c:[['Bố Tôm','Cảm ơn bạn, mình sẽ thử!']]},
+ {a:'Bé Khoai',r:'child',t:'Mình lên cấp 3 rồi!',b:'Mình vừa nhặt vở giúp bạn Na trong truyện và được thêm điểm.',l:8,c:[]},
+ {a:'Cô Lan',r:'parent',t:'Mẹo giới hạn thời gian dùng app',b:'Mình đặt giới hạn 30 phút mỗi ngày trong mục Phụ huynh, bé tự giác nghỉ.',l:5,c:[]}],
+ rev:[{n:'Mẹ bé Su',s:5,t:'Bé thích nhân vật, học được nhiều điều.'},{n:'Bố Tôm',s:4,t:'Nội dung hay, mong có thêm bài.'}],rp:{},region:'Hà Nội',limit:0,qc:{},pays:[],quizH:[]};
+for(const k in DEF)if(S[k]==null)S[k]=DEF[k];
+if(S.plan==='premium'&&S.exp&&Date.now()>S.exp)S.plan='free';
+CATS.push(
+{id:'sk',n:'Sức khỏe',e:'🦷',c:'#E5484D',bg:'linear-gradient(#FFD0D2,#FFF0F0)'},
+{id:'cx',n:'Cảm xúc',e:'😊',c:'#9B51E0',bg:'linear-gradient(#E4CCFF,#F6EEFF)'},
+{id:'tc',n:'Tiền bạc',e:'🐷',c:'#0E9F6E',bg:'linear-gradient(#BDF0DC,#EAFBF3)'},
+{id:'mt',n:'Môi trường',e:'🌱',c:'#4C9F3A',bg:'linear-gradient(#D2F2BE,#F0FBE8)'},
+{id:'cn',n:'An toàn mạng',e:'📱',c:'#2F6FED',bg:'linear-gradient(#C9DBFF,#EBF1FF)'});
+LESSONS.push(...[
+['rang','sk','Đánh răng mỗi tối','🦷',0,'mom:46','Đến giờ đi ngủ, Hero rất buồn ngủ và muốn bỏ qua việc đánh răng. Hero làm gì?',
+ [['Đánh răng sạch rồi mới đi ngủ','mom','wave','cheer',1,'Răng Hero sạch bóng, mẹ khen Hero giỏi lắm!'],['Đi ngủ luôn cho nhanh','>','idle','sad',0,'Răng bị sâu sẽ rất đau. Cần đánh răng trước khi ngủ.',1],['Ăn thêm kẹo rồi ngủ','','idle','sad',0,'Kẹo làm răng dễ sâu hơn. Hãy đánh răng nhé.']],'Đánh răng 2 lần mỗi ngày: sáng và tối.','đánh răng|sâu răng|răng miệng'],
+['gian','cx','Khi bé đang giận','😠',0,'gB:56:sad','Bạn Nam lỡ làm hỏng đồ chơi của Hero. Hero rất giận. Hero làm gì?',
+ [['Hít thở sâu rồi nói: "Mình đang buồn"','gB','hold','cheer',1,'Nam xin lỗi và hai bạn cùng sửa đồ chơi.'],['La hét và đẩy bạn','<','no','sad',0,'Đẩy bạn làm bạn đau và buồn.',1],['Giận và không chơi với ai nữa','','sad','sad',0,'Hãy nói cảm xúc của mình để được chia sẻ.']],'Khi giận: hít thở sâu, nói ra cảm xúc, không đánh bạn.','giận|tức|cảm xúc|bình tĩnh'],
+['tien','tc','Heo đất tiết kiệm','🐷',0,'dad:46','Hero có 20.000đ tiền mừng tuổi. Hero làm gì?',
+ [['Bỏ một phần vào heo đất để dành','dad','give','cheer',1,'Bố khen Hero biết tiết kiệm!'],['Tiêu hết ngay vào đồ chơi','>','idle','sad',0,'Tiêu hết ngay thì sau này không còn tiền khi cần.',1],['Cho bạn lạ mượn mà không hỏi ai','','idle','sad',0,'Cần hỏi bố mẹ trước khi cho ai mượn tiền.']],'Biết để dành một phần tiền và hỏi bố mẹ khi dùng tiền.','tiền|tiết kiệm|heo đất'],
+['rac','mt','Bỏ rác đúng chỗ','♻️',0,'teacher:46','Hero ăn xong cái bánh và đang cầm vỏ bánh trong sân trường. Hero làm gì?',
+ [['Bỏ vỏ bánh vào thùng rác','teacher','give','cheer',1,'Cô giáo khen Hero giữ sân trường sạch đẹp!'],['Vứt xuống sân','','no','sad',0,'Vứt rác bừa bãi làm bẩn môi trường.'],['Nhét vào hộc bàn của bạn','>','idle','sad',0,'Làm vậy không tốt. Hãy bỏ rác vào thùng.',1]],'Rác phải bỏ đúng thùng để bảo vệ môi trường.','rác|môi trường|sạch'],
+['mang','cn','Người lạ nhắn tin','📱',0,'dad:46','Khi dùng máy tính bảng, có người lạ nhắn: "Cho mình biết địa chỉ nhà bạn nhé". Hero làm gì?',
+ [['Không trả lời và báo ngay cho bố','dad','wave','cheer',1,'Bố chặn người lạ và khen Hero thông minh!'],['Gửi địa chỉ nhà','>','idle','sad',0,'Không được cho người lạ biết thông tin cá nhân.',1],['Trả lời rồi giấu bố mẹ','','idle','sad',0,'Hãy luôn nói với bố mẹ khi có người lạ nhắn tin.']],'Không chia sẻ thông tin cá nhân với người lạ và báo ngay cho người lớn.','mạng|tin nhắn|điện thoại|internet']
+].map(a=>({id:a[0],c:a[1],t:a[2],e:a[3],p:a[4],cast:a[5],q:a[6],o:a[7],l:a[8],k:a[9]})));
+
+/* ----- Truyện 5 cảnh: [lời, nhân vật, nền, đạo cụ, lựa chọn] ----- */
+const ST={
+duong:[
+['Sáng nay Hero đi học cùng mẹ. Đến ngã tư, đèn đang đỏ. Hero làm gì?','mom:42',0,0,[['Nắm tay mẹ, đợi đèn xanh','mom','hold','hold',1,'Hero nắm tay mẹ và chờ đèn xanh.'],['Chạy vụt qua đường','>','idle','no',0,'Xe máy lao tới! Chạy qua đường rất nguy hiểm.',1],['Tự đi trước, mẹ đuổi theo sau','>','idle','no',0,'Mẹ rất lo vì Hero đi một mình giữa đường.']]],
+['Đèn xanh sáng rồi! Trước khi bước đi, Hero cần làm gì?','mom:42','#FFE9C9',0,[['Nhìn hai bên rồi cùng mẹ bước đi','mom','walk','cheer',1,'Hero nhìn kỹ hai bên rồi cùng mẹ qua vạch kẻ đường.'],['Vừa đi vừa chơi đồ chơi','>','idle','no',0,'Mải chơi sẽ không thấy xe đang tới.'],['Chạy trước mẹ cho nhanh','>','idle','no',0,'Chạy trước rất dễ ngã và gặp nguy hiểm.',1]]],
+['Giữa đường, dây giày của Hero bị tuột. Hero làm gì?','mom:42','#E8F4D9',0,[['Nói với mẹ, qua hết đường rồi mới buộc dây','mom','hold','wave',1,'Hai mẹ con sang vỉa hè rồi mới buộc dây giày.'],['Ngồi xuống buộc dây ngay giữa đường','','idle','no',0,'Ngồi giữa đường rất nguy hiểm vì xe không thấy bé.'],['Kệ dây giày, kéo mẹ chạy thật nhanh','>','idle','sad',0,'Dây giày tuột làm Hero dễ vấp ngã.',1]]],
+['Đến cổng trường, bác bảo vệ vẫy tay chỉ chỗ đi an toàn. Hero làm gì?','staff:60','#DDEBFF',0,[['Chào bác và đi theo hướng bác chỉ','staff','bow','wave',1,'Bác bảo vệ mỉm cười: "Hero ngoan quá!"'],['Lờ bác đi và chạy vào sân','>','idle','no',0,'Không nghe hướng dẫn của người lớn có thể gặp nguy hiểm.',1],['Cãi lại bác bảo vệ','','no','sad',0,'Hãy lễ phép nghe lời bác bảo vệ.']]],
+['Mẹ chào tạm biệt ở cổng trường. Hero làm gì?','mom:42,teacher:74','#FFE3EC',0,[['Ôm mẹ và nói "Con chào mẹ ạ!"','mom','hug','hug',1,'Mẹ ôm Hero thật chặt rồi dặn học ngoan. Hero vào lớp thật vui!'],['Quay đi không chào mẹ','','idle','sad',0,'Mẹ buồn vì Hero không chào.'],['Khóc đòi mẹ ở lại','','sad','sad',0,'Hero là bé dũng cảm, hãy mỉm cười vẫy tay chào mẹ.']]]],
+lac:[
+['Hero bị lạc mẹ trong siêu thị. Gần đó có cô nhân viên và một chú lạ mặt. Hero chọn gì?','staff:46,stranger:72',0,0,[['Đến nhờ cô nhân viên gọi mẹ','staff','wave','wave',1,'Cô nhân viên nhẹ nhàng hỏi thăm Hero.'],['Đi theo chú lạ ra ngoài','stranger','walk','idle',0,'Đi theo người lạ rất nguy hiểm!'],['Chạy khắp nơi tìm mẹ','>','idle','sad',0,'Chạy xa dần sẽ càng lạc hơn.',1]]],
+['Cô hỏi: "Con tên gì? Mẹ con trông thế nào?" Hero trả lời sao?','staff:46','#FFF1D6',0,[['Nói rõ tên mình, tên mẹ và mô tả mẹ','staff','wave','cheer',1,'Cô ghi lại thông tin để gọi loa tìm mẹ.'],['Im lặng, cúi đầu','','sad','sad',0,'Hero cần nói rõ để cô giúp tìm mẹ nhanh.'],['Nói bừa một cái tên','','no','sad',0,'Hãy nói thật để cô tìm đúng mẹ.']]],
+['Cô bảo: "Con ngồi đây đợi, cô gọi loa nhé." Hero làm gì?','staff:46,stranger:78','#E9F2FF',0,[['Ngồi yên chờ cạnh cô nhân viên','staff','hold','wave',1,'Hero ngồi yên cạnh cô và chờ mẹ.'],['Tự đi xem đồ chơi','>','walk','idle',0,'Đi lung tung mẹ sẽ khó tìm thấy Hero.'],['Đi theo chú lạ gần đó','stranger','walk','idle',0,'Tuyệt đối không đi theo người lạ.']]],
+['Mẹ chạy tới, mắt đỏ hoe. Hero làm gì?','mom:70,staff:40','#FFE3EC',0,[['Chạy đến ôm mẹ','mom','hug','hug',1,'Mẹ ôm Hero thật chặt: "Mẹ nhớ con lắm!"',1],['Giận dỗi quay đi','','no','sad',0,'Mẹ đã rất lo cho Hero.'],['Chạy trốn mẹ','>','idle','sad',0,'Đừng chạy trốn, hãy ôm mẹ.',1]]],
+['Hero nên làm gì để cảm ơn cô nhân viên?','mom:44,staff:70','#E3F7E8',0,[['Cảm ơn cô và hứa luôn nắm tay mẹ','staff','bow','cheer',1,'Cô cười: "Hero ngoan lắm!"'],['Không nói gì rồi đi','','idle','sad',0,'Hãy nói lời cảm ơn khi được giúp.'],['Đòi mẹ mua đồ chơi mới','mom','no','sad',0,'Hôm nay là ngày cảm ơn, không phải đòi quà.']]]],
+nga:[
+['Giờ ra chơi, bạn Na chạy nhanh quá nên bị ngã, sách vở văng ra. Hero làm gì?','gA:56:sad',0,['📒',68],[['Chạy lại đỡ bạn dậy','gA','hold','cheer',1,'Hero nhẹ nhàng đỡ Na đứng dậy.',1],['Đứng cười bạn','','idle','sad',0,'Cười khi bạn ngã làm bạn buồn.'],['Bỏ đi chơi tiếp','<','idle','sad',0,'Bạn đang cần giúp, hãy ở lại hỏi thăm.',1]]],
+['Quyển vở của Na rơi dưới đất. Hero làm gì?','gA:50','#FFF3D6',['📒',68],[['Nhặt vở lên và đưa lại cho Na','gA','pick','give',1,'Na nhận lại vở và cười: "Cảm ơn Hero!"'],['Giẫm lên vở đi qua','','no','sad',0,'Đồ của bạn cần được giữ gìn.'],['Đá quyển vở sang chỗ khác','>','no','sad',0,'Làm vậy bạn sẽ buồn và vở bị hỏng.']]],
+['Đầu gối Na chảy máu và Na đang khóc. Hero làm gì?','gA:54:sad,teacher:82','#FFE9E9',0,[['Dìu Na đến gặp cô giáo','teacher','hold','cheer',1,'Cô giáo băng vết thương cho Na.'],['Tự bôi nước bọt vào vết thương','','no','sad',0,'Vết thương cần người lớn chăm sóc đúng cách.'],['Đứng nhìn không làm gì','','idle','sad',0,'Hãy gọi cô giáo giúp bạn.']]],
+['Cô băng xong. Na nói: "Cảm ơn Hero!" Hero đáp sao?','gA:52,teacher:78','#E3F7E8',0,[['Không có gì đâu, mình là bạn mà!','gA','hug','cheer',1,'Hai bạn nhìn nhau cười thật tươi.'],['Lần sau đừng ngã nữa nhé','','no','sad',0,'Câu này làm bạn buồn, hãy nói lời dịu dàng.'],['Im lặng bỏ đi','<','idle','sad',0,'Hãy đáp lại lời cảm ơn của bạn.',1]]],
+['Na rủ Hero chơi nhảy dây. Hero làm gì?','gA:56,gB:80','#FFF0C9',0,[['Vui vẻ chơi cùng và nhường bạn nhảy trước','gA','give','cheer',1,'Cả nhóm cười vang, Hero có thêm bạn mới!'],['Giành dây để nhảy một mình','','no','sad',0,'Chơi cùng nhau mới vui, hãy biết nhường bạn.'],['Từ chối và đi một mình','<','sad','sad',0,'Hãy cùng chơi để có thêm niềm vui.',1]]]]};
+LESSONS.forEach(l=>{if(ST[l.id])l.sc=ST[l.id].map(s=>({q:s[0],cast:s[1],bg:s[2],prop:s[3],o:s[4]}))});
+
+/* ----- Theo dõi: điểm, thời gian online, hứng thú ----- */
+const H=()=>S.hist[td()]||(S.hist[td()]={xp:0,sec:0,plays:0,quiz:0,post:0,cat:{}});
+const trk=(k,v,c)=>{const h=H();h[k]=(h[k]||0)+v;if(c){h.cat=h.cat||{};h.cat[c]=(h.cat[c]||0)+1}};
+const mins=()=>Math.floor(H().sec/60),allMin=()=>Math.floor(Object.values(S.hist).reduce((a,h)=>a+(h.sec||0),0)/60);
+if(!S.seeded){for(let i=1;i<=6;i++){const d=dk(new Date(Date.now()-i*864e5)),r=(i*37)%40;S.hist[d]={xp:20+r,sec:(10+r)*60,plays:2+i%3,quiz:i%2,post:0,cat:{sv:2+i%2,xl:1+i%3,bv:i%2,ks:i%3,lp:1}}}S.seeded=1}
+let lim=0;setInterval(()=>{if(document.visibilityState!=='visible')return;trk('sec',10);const t=$('#tm');if(t)t.textContent='⏱ '+mins()+'p';
+ if(S.limit&&mins()>=S.limit&&!lim){lim=1;const m=modal(`<h2>⏰ Đến giờ nghỉ ngơi rồi!</h2><p>Bé đã học ${mins()} phút hôm nay. Hãy nghỉ mắt và vận động nhé.</p><button class="btn" id="ext">Phụ huynh gia hạn thêm 15 phút</button>`);m.onclick=null;
+  m.querySelector('#ext').onclick=()=>gate(()=>{S.limit=mins()+15;save();lim=0;m.remove()})}save()},10000);
+
+/* ----- Điều hướng: breadcrumb, menu, footer ----- */
+const TT={home:'Trang chủ',learn:'Bài học',comic:'Truyện',cards:'Bộ thẻ',chat:'Hỏi Hero',parent:'Phụ huynh',profile:'Hồ sơ',quests:'Nhiệm vụ',quiz:'Bài kiểm tra',duel:'Thi đấu',region:'Đấu trường khu vực',nation:'Đấu trường toàn quốc',wall:'Tường thành tích',forum:'Diễn đàn',reviews:'Đánh giá',pay:'Thanh toán'};
+function crumb(a){$('#crumb').innerHTML=a.map(([t,v],i)=>i<a.length-1?`<button data-cv="${v}">${t}</button><span> › </span>`:`<span><b>${t}</b></span>`).join('');$$('#crumb button').forEach(b=>b.onclick=()=>go(b.dataset.cv))}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-nv]');if(a)go(a.dataset.nv)});
+const _pv=parentV;parentV=function(){_pv();app.insertAdjacentHTML('afterbegin',dashHTML());const s=$('#lim');if(s)s.onchange=e=>{S.limit=+e.target.value;lim=0;save();toast('Đã đặt giới hạn thời gian')}};
+
+/* ----- Biểu đồ SVG ----- */
+const BAR=(v,lb,c)=>{const m=Math.max(1,...v);return `<svg viewBox="0 0 300 130" style="width:100%">${v.map((x,i)=>{const h=x/m*85;return `<rect x="${12+i*41}" y="${100-h}" width="28" height="${h}" rx="7" fill="${c}"/><text x="${26+i*41}" y="${94-h}" font-size="11" text-anchor="middle" fill="#26325B">${x}</text><text x="${26+i*41}" y="118" font-size="11" text-anchor="middle" fill="#26325B" opacity=".7">${lb[i]}</text>`}).join('')}</svg>`};
+const LINE=(v,c)=>{const m=Math.max(1,...v),P=v.map((x,i)=>`${20+i*43},${105-x/m*85}`);return `<svg viewBox="0 0 300 130" style="width:100%"><polyline points="${P.join(' ')}" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${P.map((p,i)=>`<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="5" fill="${c}"/><text x="${p.split(',')[0]}" y="${+p.split(',')[1]-10}" font-size="11" text-anchor="middle" fill="#26325B">${v[i]}</text>`).join('')}</svg>`};
+const DON=P=>{const t=P.reduce((a,p)=>a+p.v,0)||1;let o=0;return `<svg viewBox="0 0 100 100" style="width:140px;flex:none"><circle cx="50" cy="50" r="40" fill="none" stroke="#EAF6FF" stroke-width="16"/>${P.filter(p=>p.v).map(p=>{const d=p.v/t*251.3,s=`<circle cx="50" cy="50" r="40" fill="none" stroke="${p.c}" stroke-width="16" stroke-dasharray="${d} 251.3" stroke-dashoffset="${-o}" transform="rotate(-90 50 50)"/>`;o+=d;return s}).join('')}</svg>`};
+function dashHTML(){const D7=[...Array(7)].map((_,i)=>{const d=new Date(Date.now()-(6-i)*864e5);return{k:dk(d),l:['CN','T2','T3','T4','T5','T6','T7'][d.getDay()]}}),hs=D7.map(d=>S.hist[d.k]||{}),
+ mn=hs.map(h=>Math.round((h.sec||0)/60)),xp=hs.map(h=>h.xp||0),cc={};hs.forEach(h=>{for(const k in h.cat||{})cc[k]=(cc[k]||0)+h.cat[k]});
+ const parts=CATS.map(c=>({v:cc[c.id]||0,c:c.c,n:c.n,e:c.e})),top=[...parts].sort((a,b)=>b.v-a.v)[0],low=CATS.filter(c=>!LESSONS.some(l=>l.c===c.id&&okd(l))).map(c=>c.n),qh=S.quizH.slice(-7).map(q=>q.s*20);
+ return `<h2>Bảng theo dõi của bé</h2><div class="stats"><div class="st"><small>⏱ Hôm nay</small><b>${mn[6]} phút</b></div><div class="st"><small>📅 7 ngày qua</small><b>${mn.reduce((a,b)=>a+b,0)} phút</b></div><div class="st"><small>⭐ Điểm 7 ngày</small><b>${xp.reduce((a,b)=>a+b,0)}</b></div><div class="st"><small>🏅 Thành tích</small><b>${badges().filter(b=>b[3]).length}/${badges().length}</b></div></div>
+ <div class="ch2"><div class="panel"><h3>⏱ Thời gian online (phút/ngày)</h3>${BAR(mn,D7.map(d=>d.l),'#4F8DF7')}<div class="row"><span>Giới hạn mỗi ngày</span><select id="lim" style="width:auto">${[0,15,30,45,60,90].map(x=>`<option value="${x}" ${S.limit===x?'selected':''}>${x?x+' phút':'Không giới hạn'}</option>`).join('')}</select></div></div>
+ <div class="panel"><h3>⭐ Điểm kiếm được mỗi ngày</h3>${LINE(xp,'#2EC4A6')}</div>
+ <div class="panel"><h3>❤️ Bé hứng thú kỹ năng nào</h3><div class="row" style="border:0">${DON(parts)}<div style="font-size:15px">${parts.map(p=>`<div><span style="color:${p.c}">●</span> ${p.e} ${p.n}: ${p.v}</div>`).join('')}</div></div><p class="note">Hứng thú nhất: <b>${top&&top.v?top.e+' '+top.n:'chưa có dữ liệu'}</b>. ${low.length?'Chưa hoàn thành bài nào: '+low.join(', ')+'.':'Bé đã học đủ mọi chủ đề!'}</p></div>
+ <div class="panel"><h3>🧠 Điểm kiểm tra gần đây (%)</h3>${qh.length?LINE(qh,'#7B5CFF'):'<p class="note">Bé chưa làm bài kiểm tra nào.</p>'}</div></div>
+ <div class="panel"><h3>Gói &amp; hóa đơn</h3><p>Gói hiện tại: <b>${S.plan==='premium'?'👑 Premium (còn '+fmtLeft(S.exp-Date.now())+')':'Miễn phí'}</b></p>${S.pays.map(p=>`<div class="row"><span>${p.code} · ${new Date(p.t).toLocaleDateString('vi-VN')}</span><b>${vnd(p.a)}</b></div>`).join('')||'<p class="note">Chưa có giao dịch.</p>'}${S.seeded===1?'<p class="note">* Biểu đồ có dữ liệu mẫu 6 ngày trước để minh họa.</p>':''}</div>`}
+
+/* ----- Thanh toán Premium (mô phỏng) ----- */
+function confirmUp(){const m=modal(`<h2>Xác nhận nâng cấp 👑</h2><p>Gói <b>Premium 12 giờ</b>: <b>${vnd(BANK.price)}</b>. Bạn sẽ chuyển sang trang thanh toán.</p><button class="btn sun" id="y">Xác nhận &amp; thanh toán</button> <button class="btn ghost" id="n">Để sau</button>`);m.querySelector('#y').onclick=()=>{m.remove();go('pay')};m.querySelector('#n').onclick=()=>m.remove()}
+function pay(){if(S.plan==='premium'&&!S.justPaid){app.innerHTML=`<div class="panel end"><div class="big">👑</div><h2>Bạn đang dùng Premium</h2><p>Thời gian còn lại: <b>${fmtLeft(S.exp-Date.now())}</b></p><p class="note">Khi hết hạn, hãy đăng ký lại ở mục Premium để tiếp tục.</p><button class="btn" data-nv="learn">Vào học</button></div>`;return}
+ const oc='LH'+(S.ord||(S.ord=Math.random().toString(36).slice(2,8).toUpperCase()));save();crumb([['Trang chủ','home'],['Gói Premium','pay'],['Thanh toán']]);
+ const url=`https://img.vietqr.io/image/${BANK.bin}-${BANK.acc}-compact2.png?amount=${BANK.price}&addInfo=${oc}&accountName=${encodeURIComponent(BANK.holder)}`,cp=(l,v)=>`<div class="row"><span>${l}</span><b>${v}</b><button class="btn ghost" data-cp="${v}">Chép</button></div>`;
+ app.innerHTML=`<h2>Thanh toán gói Premium</h2><div class="pay"><div class="panel end"><img src="${url}" alt="Mã QR thanh toán" width="260" height="260" style="border-radius:16px;border:4px solid var(--sky)" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'qrf',textContent:'Không tải được mã QR (cần Internet). Hãy dùng thông tin chuyển khoản bên cạnh.'}))"><p class="note">Quét bằng app ngân hàng bất kỳ</p></div>
+ <div class="panel"><div class="row"><span>Số tiền</span><b style="font-size:26px">${vnd(BANK.price)}</b></div>${cp('Nội dung chuyển khoản',oc)}<div class="row"><span>Tên tài khoản</span><b>${BANK.holder}</b></div><div class="row"><span>Ngân hàng</span><b>${BANK.bank}</b></div>${cp('Số tài khoản',BANK.acc)}
+ <p class="note">Bản demo: chưa kết nối cổng thanh toán. Nhấn nút dưới để mô phỏng thanh toán thành công và mở khóa Premium. Thông tin ngân hàng là dữ liệu mẫu, hãy thay bằng tài khoản thật trong BANK.</p><button class="btn sun" id="paid">✅ Xác nhận đã thanh toán (demo)</button> <button class="btn ghost" data-nv="home">Hủy</button></div></div>`;
+ $$('[data-cp]').forEach(b=>b.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(b.dataset.cp);toast('Đã chép '+b.dataset.cp)});
+ $('#paid').onclick=()=>{S.plan='premium';S.exp=Date.now()+BANK.dur;S.pays.push({code:oc,a:BANK.price,t:Date.now()});S.ord=null;save();shell();boom();
+  app.innerHTML=`<div class="panel end"><div class="big">🎉</div><h2>Thanh toán thành công!</h2><p>Mã giao dịch <b>${oc}</b> · ${vnd(BANK.price)}<br>Premium có hiệu lực 12 giờ, đến ${new Date(S.exp).toLocaleString('vi-VN')}</p><button class="btn sun" data-nv="learn">Bắt đầu học các bài 👑</button></div>`;toast('Đã mở khóa Premium!')}}
+
+/* ----- Nhiệm vụ ----- */
+function quests(){const h=H(),Q=[['q1','🎮','Chơi 3 lượt học',h.plays||0,3,20],['q2','⏱️','Học đủ 10 phút',mins(),10,20],['q3','⭐','Kiếm 40 điểm hôm nay',h.xp||0,40,25],['q4','🧠','Làm 1 bài kiểm tra',h.quiz||0,1,30],['q5','💬','Chia sẻ lên diễn đàn',h.post||0,1,15]];
+ app.innerHTML=`<h2>Nhiệm vụ hôm nay</h2><div class="panel">${Q.map(q=>{const k=td()+q[0],ok=q[3]>=q[4],got=S.qc[k];return `<div class="row"><span>${q[1]} ${q[2]}<div class="bar"><i style="width:${Math.min(100,q[3]/q[4]*100)}%"></i></div><small class="note">${Math.min(q[3],q[4])}/${q[4]}</small></span><button class="btn ${got?'ghost':'sun'}" data-q="${q[0]}" ${ok&&!got?'':'disabled'}>${got?'Đã nhận':'+'+q[5]+' ⭐'}</button></div>`}).join('')}</div>`;
+ $$('[data-q]').forEach(b=>b.onclick=()=>{const q=Q.find(x=>x[0]===b.dataset.q);S.qc[td()+q[0]]=1;S.xp+=q[5];trk('xp',q[5]);save();shell();boom();quests()})}
+
+/* ----- Tường thành tích ----- */
+function badges(){const dn=LESSONS.filter(okd).length;return [['🌱','Bước đầu tiên','Hoàn thành 1 bài',dn>=1],['🔥','Chăm chỉ','Hoàn thành 5 bài',dn>=5],['🎖️','Cấp 3','Đạt Lv 3',lv()>=3],['🧠','Thông thái','Làm 3 bài kiểm tra',S.quizH.length>=3],['🏆','Nhà vô địch','Đạt 100 RP',Math.max(0,...Object.values(S.rp))>=100],['⏱️','Siêu tập trung','Học tổng 60 phút',allMin()>=60],['💬','Bạn cộng đồng','Đăng 1 bài diễn đàn',S.forum.some(p=>p.mine)],['⭐','Góp ý','Gửi 1 đánh giá',S.rev.some(r=>r.mine)],['👑','Gia đình Premium','Nâng cấp Premium',S.plan==='premium']]}
+function wall(){const b=badges();app.innerHTML=`<h2>Tường thành tích 🏅</h2><p class="note">Đã mở ${b.filter(x=>x[3]).length}/${b.length} huy hiệu</p><div class="bdg">${b.map(x=>`<div class="bd2 ${x[3]?'':'off'}"><i>${x[0]}</i><b>${x[1]}</b><div class="note">${x[2]}</div></div>`).join('')}</div>`}
+
+/* ----- Diễn đàn (lọc thông tin cá nhân) ----- */
+const BADW=/(\d[\s.]?){8,}|@|https?:|www\.|\.com|\.vn/i;
+function forum(){const F=S.forum;app.innerHTML=`<h2>Diễn đàn Little Hero 💬</h2><p class="note">Nơi bé và phụ huynh chia sẻ. Không đăng số điện thoại, địa chỉ, email hay liên kết; bài viết được lọc tự động.</p>
+ <div class="panel"><select id="fr"><option value="child">🧒 Bé chia sẻ</option><option value="parent">👪 Phụ huynh chia sẻ</option></select><input type="text" id="ft" placeholder="Tiêu đề"><textarea id="fb" rows="2" placeholder="Bạn muốn chia sẻ điều gì?"></textarea><button class="btn sun" id="fp">Đăng bài</button></div>
+ <div class="panel">${F.map((p,i)=>`<div class="post"><span class="tg">${p.r==='parent'?'👪':'🧒'} ${esc(p.a)}</span><h3>${esc(p.t)}</h3><p style="margin:4px 0">${esc(p.b)}</p><button class="btn ghost" data-l="${i}">${p.liked?'💛':'🤍'} ${p.l}</button>${p.c.map(c=>`<div class="cm"><b>${esc(c[0])}</b>: ${esc(c[1])}</div>`).join('')}<div class="inp"><input type="text" data-ci="${i}" placeholder="Viết bình luận…"><button class="btn ghost" data-c="${i}">Gửi</button></div></div>`).join('')}</div>`;
+ const nm=()=>S.user?S.user.name:'Bạn nhỏ';
+ $('#fp').onclick=()=>{const t=$('#ft').value.trim(),b=$('#fb').value.trim();if(!t||!b)return toast('Hãy nhập tiêu đề và nội dung');if(BADW.test(t+' '+b))return toast('Bài có thông tin cá nhân hoặc liên kết, hãy bỏ đi nhé');F.unshift({a:nm(),r:$('#fr').value,t,b,l:0,c:[],mine:1});trk('post',1);save();toast('Đã đăng bài!');forum()};
+ $$('[data-l]').forEach(b=>b.onclick=()=>{const p=F[+b.dataset.l];p.liked=!p.liked;p.l+=p.liked?1:-1;save();forum()});
+ $$('[data-c]').forEach(b=>b.onclick=()=>{const i=+b.dataset.c,v=$(`[data-ci="${i}"]`).value.trim();if(!v)return;if(BADW.test(v))return toast('Bình luận có thông tin cá nhân hoặc liên kết');F[i].c.push([nm(),v]);save();forum()})}
+
+/* ----- Đánh giá ----- */
+function reviews(){const R=S.rev,avg=R.length?(R.reduce((a,r)=>a+r.s,0)/R.length).toFixed(1):'–';let st=5;
+ app.innerHTML=`<h2>Đánh giá Little Hero ⭐</h2><div class="stats"><div class="st"><small>Điểm trung bình</small><b>${avg} / 5</b></div><div class="st"><small>Số đánh giá</small><b>${R.length}</b></div></div>
+ <div class="panel"><h3>Gửi đánh giá của bạn</h3><div class="stars" id="sr">${[1,2,3,4,5].map(n=>`<button data-s="${n}" class="on">⭐</button>`).join('')}</div><textarea id="rt" rows="2" placeholder="Bạn thấy ứng dụng thế nào? Cần thêm gì?"></textarea><button class="btn sun" id="rs">Gửi đánh giá</button></div>
+ <div class="panel">${R.map(r=>`<div class="post"><b>${esc(r.n)}</b> ${'⭐'.repeat(r.s)}<p style="margin:4px 0">${esc(r.t)}</p></div>`).join('')}</div>`;
+ $$('#sr button').forEach(b=>b.onclick=()=>{st=+b.dataset.s;$$('#sr button').forEach(x=>x.classList.toggle('on',+x.dataset.s<=st))});
+ $('#rs').onclick=()=>{const t=$('#rt').value.trim();if(!t||BADW.test(t))return toast('Hãy viết nhận xét (không kèm thông tin cá nhân)');R.unshift({n:S.user?S.user.name:'Bạn nhỏ',s:st,t,mine:1});save();toast('Cảm ơn bạn đã đánh giá!');reviews()}}
+const X={quests,quiz,duel,region:()=>arena('region'),nation:()=>arena('nation'),wall,forum,reviews,pay,plans:()=>plans()};
+
+/* ================= v4 ================= */
+const fmtLeft=(ms,s)=>{const m=Math.max(0,Math.floor(ms/6e4)),d=Math.floor(m/1440),h=Math.floor(m%1440/60),mi=m%60;return s?(d?d+'n ':'')+h+'g '+mi+'p':d+' ngày '+h+' giờ '+mi+' phút'};
+function navTo(v){go(v)}
+let DAY=td();
+function tick(){const t=td();
+ if(t!==DAY){DAY=t;lim=0;shell();toast('🌅 Ngày mới! Giờ online, điểm và nhiệm vụ hôm nay đã được làm mới');if(['home','quests','parent'].includes(view))go(view)}
+ if(S.plan==='premium'){if(!S.exp||Date.now()>=S.exp){S.plan='free';S.exp=0;save();shell();toast('⏳ Premium đã hết hạn. Hãy đăng ký lại để tiếp tục.');if(['learn','comic','cards','home'].includes(view))go(view)}
+  else{const e=$('#pl');if(e)e.textContent='👑 '+fmtLeft(S.exp-Date.now(),1)}}}
+setInterval(tick,1000);
+const _pl=plans;plans=function(){_pl();const m=[...document.querySelectorAll('.modal')].pop(),b=m&&m.querySelector('.plan.pro b');if(b&&S.plan==='premium')b.insertAdjacentHTML('afterend',`<p class="note">⏳ Còn lại: <b>${fmtLeft(S.exp-Date.now())}</b>. Hết hạn thì đăng ký lại để dùng tiếp.</p>`)};
+
+/* ----- Trợ lý: điều hướng tới chức năng ----- */
+const NAVK=[[/thi đấu|đấu 1|đối thủ/,'duel'],[/khu vực/,'region'],[/toàn quốc/,'nation'],[/nhiệm vụ/,'quests'],[/kiểm tra/,'quiz'],[/thành tích|huy hiệu/,'wall'],[/diễn đàn/,'forum'],[/đánh giá/,'reviews'],[/premium|nâng cấp|thanh toán/,'pay'],[/bộ thẻ|thẻ bài|thẻ/,'cards'],[/truyện tranh|truyện/,'comic'],[/bài học/,'learn'],[/phụ huynh|theo dõi|biểu đồ/,'parent'],[/hồ sơ|thông tin cá nhân/,'profile']];
+const NAVD={duel:'đấu 5 câu với bạn khác để leo bảng xếp hạng.',region:'thi đấu và xem top 100 bé cùng khu vực.',nation:'thi đấu và xem top 100 bé toàn quốc.',quests:'nhiệm vụ mỗi ngày để nhận thêm điểm.',quiz:'5 câu hỏi kiểm tra kiến thức.',wall:'các huy hiệu bé đã đạt được.',forum:'nơi bé và phụ huynh chia sẻ.',reviews:'gửi ý kiến cho Little Hero.',pay:'mở khóa Premium.',cards:'thẻ kỹ năng có mã QR.',comic:'truyện tranh về kỹ năng sống.',learn:'tất cả bài học theo chủ đề.',parent:'theo dõi tiến độ và thời gian của bé.',profile:'thông tin cá nhân.'};
+
+/* ----- Menu tài khoản (☰) ----- */
+function menu(){const u=S.user,m=modal(`<div class="acc"><div class="av2">${u?esc(u.name[0]).toUpperCase():'👤'}</div><div><b style="font-size:20px">${u?esc(u.name):'Khách'}</b><div class="note">${u?esc(u.email)+' · Lv '+lv()+' · '+(S.plan==='premium'?'👑 '+fmtLeft(S.exp-Date.now(),1):'Miễn phí'):'Bạn chưa đăng nhập'}</div></div></div>
+ ${u?'<div class="menu"><button data-nv="profile"><b>🧒</b>Thông tin cá nhân</button></div>':'<div class="row2"><button class="btn" id="mi">Đăng nhập</button><button class="btn sun" id="mu">Đăng ký</button></div>'}
+ <div class="menu">${[['quests','🎯','Nhiệm vụ hằng ngày'],['quiz','🧠','Bài kiểm tra'],['duel','⚔️','Thi đấu 1 đối 1'],['region','🏙️','Đấu trường khu vực'],['nation','🇻🇳','Đấu trường toàn quốc'],['wall','🏅','Tường thành tích'],['forum','💬','Diễn đàn'],['reviews','⭐','Đánh giá ứng dụng'],['parent','👪','Góc phụ huynh & theo dõi'],['pay','💎','Gói Premium']].map(x=>`<button data-nv="${x[0]}"><b>${x[1]}</b>${x[2]}</button>`).join('')}${u?'<button id="mo"><b>🚪</b>Đăng xuất</button>':''}</div>`);
+ m.addEventListener('click',e=>{if(e.target.closest('[data-nv]'))m.remove()});const q=s=>m.querySelector(s);
+ if(q('#mi'))q('#mi').onclick=()=>{m.remove();auth('in')};if(q('#mu'))q('#mu').onclick=()=>{m.remove();auth('up')};if(q('#mo'))q('#mo').onclick=()=>{S.user=null;save();m.remove();go('home')}}
+
+/* ----- Trang chủ: banner quảng cáo, giới thiệu, điểm xếp hạng, admin ----- */
+const rpCards=()=>`<div class="st"><small>🏙️ Xếp hạng khu vực (${S.region})</small><b>${S.rp.region||0} RP</b></div><div class="st"><small>🇻🇳 Xếp hạng toàn quốc</small><b>${S.rp.nation||0} RP</b></div>`;
+const PB=[['linear-gradient(120deg,#FF9F43,#FF6B6B)','👑','Premium: mở khóa toàn bộ bài học','Truyện nhiều cảnh, thẻ bài, AI không giới hạn','pay','Xem gói'],['linear-gradient(120deg,#4F8DF7,#7B5CFF)','⚔️','Đấu trường Little Hero','Thi đấu, leo bảng xếp hạng khu vực và toàn quốc','duel','Thi đấu ngay'],['linear-gradient(120deg,#2EC4A6,#4F8DF7)','🃏','Bộ thẻ kỹ năng có mã QR','In thẻ, quét QR để vào đúng bài học cùng bố mẹ','cards','Xem bộ thẻ']];
+const promoHTML=()=>`<div class="pbs">${PB.map((b,i)=>`<div class="pb ${i?'':'on'}" style="background:${b[0]}"><b class="pe2">${b[1]}</b><div><h3>${b[2]}</h3><p>${b[3]}</p><button class="btn sun" data-nv="${b[4]}">${b[5]}</button></div></div>`).join('')}<div class="dots">${PB.map((_,i)=>`<i class="${i?'on':''}"></i>`).join('')}</div></div>`;
+let pbI=0;setInterval(()=>{const s=$$('.pb');if(!s.length)return;pbI=(pbI+1)%s.length;s.forEach((x,i)=>x.classList.toggle('on',i===pbI));$$('.dots i').forEach((x,i)=>x.classList.toggle('on',i===pbI))},5000);
+const aboutHTML=()=>`<section class="about"><h2>Little Hero là gì?</h2><p>Ứng dụng giúp bé 3–10 tuổi học kỹ năng sống qua truyện tương tác: bé chọn cách xử lý, nhân vật làm đúng như vậy và bé thấy ngay kết quả.</p><div class="ab">${[['🎭','Truyện tương tác','Mỗi lựa chọn dẫn tới một diễn biến khác nhau'],['🛡️','Tình huống thực tế','Đuối nước, đi lạc, người lạ, sơ cứu, thiên tai…'],['📊','Phụ huynh theo dõi','Biểu đồ học tập, giờ online, giới hạn mỗi ngày'],['🏆','Học mà chơi','Điểm, cấp độ, nhiệm vụ, thi đấu, huy hiệu']].map(x=>`<div class="st"><b>${x[0]}</b><h3>${x[1]}</h3><small>${x[2]}</small></div>`).join('')}</div><h2>Bắt đầu thế nào?</h2><div class="ab">${['Chọn một bài học','Chọn cách xử lý của Hero','Nhận điểm, lên cấp, thi đấu'].map((x,i)=>`<div class="st"><b>${i+1}</b><small>${x}</small></div>`).join('')}</div><div class="adm"><button class="btn ghost" id="rs">🛠️ Admin: reset dữ liệu tài khoản</button></div></section>`;
+function adminReset(){const m=modal(`<h2>⚠️ Reset dữ liệu?</h2><p>Mọi điểm, tiến độ, giờ online, nhiệm vụ, xếp hạng, Premium và lịch sử trò chuyện sẽ về như lúc mới đăng ký. Tài khoản đăng nhập vẫn được giữ.</p><button class="btn" id="y" style="background:var(--coral)">Reset ngay</button> <button class="btn ghost" id="n">Hủy</button>`);
+ m.querySelector('#n').onclick=()=>m.remove();m.querySelector('#y').onclick=()=>{Object.assign(S,JSON.parse(JSON.stringify(DEF)),{plan:'free',exp:0,xp:0,prog:{},notes:[],chats:{child:[],parent:[]},used:{d:'',n:0},catSel:'all',seeded:2,ord:null});save();m.remove();shell();go('home');toast('Đã reset dữ liệu về lúc mới đăng ký')}}
+const _h=home;home=function(){_h();const q=Object.keys(S.qc).filter(k=>k.startsWith(td())).length,b=$('.banner');
+ b.insertAdjacentHTML('beforebegin',promoHTML());
+ b.insertAdjacentHTML('afterend',`<div class="stats"><div class="st"><small>⏱ Online hôm nay</small><b>${mins()} phút</b></div><div class="st"><small>⭐ Điểm hôm nay</small><b>${H().xp}</b></div><div class="st"><small>🎯 Nhiệm vụ đã nhận</small><b>${q}/5</b></div>${rpCards()}</div><div class="ql">${[['quests','🎯','Nhiệm vụ'],['duel','⚔️','Thi đấu'],['wall','🏅','Thành tích'],['forum','💬','Diễn đàn']].map(x=>`<button data-nv="${x[0]}"><b>${x[1]}</b>${x[2]}</button>`).join('')}</div>`);
+ app.insertAdjacentHTML('beforeend',aboutHTML());const r=$('#rs');if(r)r.onclick=()=>gate(adminReset)};
+
+/* ----- Thi đấu, đấu trường, bảng xếp hạng top 100 ----- */
+const NAMES=['Bảo An','Minh Khang','Gia Hân','Anh Thư','Đức Anh','Khánh Linh','Quang Huy','Bảo Ngọc'],POOL=()=>LESSONS.filter(l=>!locked(l)).map(l=>l.sc?l.sc[0]:l);
+const PROV=['Hà Nội','TP.HCM','Đà Nẵng','Cần Thơ','Hải Phòng'],TOTAL=2000,HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Vũ','Đặng','Bùi','Phan','Đỗ'],DM=['Gia','Minh','Bảo','Khánh','Anh','Hà','Ngọc','Thảo','Tuấn','Quỳnh'],TN=['An','Khang','Hân','Thư','Huy','Linh','Nam','Mai','Phúc','Vy','Quân','Chi','Long','Lam'];
+const rng=s=>{let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return()=>{h=Math.imul(h^h>>>15,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;return(h>>>0)/4294967296}};
+const T100={};
+function top100(key){if(T100[key])return T100[key];const r=rng(key),k0=key.split(':')[0],L=[];let rp={nation:1800,duel:1100}[k0]||800;
+ for(let i=0;i<100;i++){rp-=Math.round(({nation:1800,duel:1100}[k0]||800)/115*(.5+r()));L.push({n:HO[Math.floor(r()*10)]+' '+DM[Math.floor(r()*10)]+' '+TN[Math.floor(r()*14)],rp:Math.max(0,rp),r:k0==='region'?key.split(':')[1]:PROV[Math.floor(r()*5)]})}return T100[key]=L}
+function rankOf(key,rp){const L=top100(key),i=L.findIndex(p=>rp>=p.rp);if(i>=0)return i+1;const last=Math.max(1,L[99].rp);return 101+Math.round((last-rp)/last*(TOTAL-101))}
+function board(scope,label){const key=scope==='region'?'region:'+S.region:scope,rp=S.rp[scope]||0,rk=rankOf(key,rp),nm=S.user?S.user.name:'Bé (bạn)';let rows=top100(key).map(p=>({...p}));
+ if(rk<=100){rows.splice(rk-1,0,{n:nm,rp,r:'Bạn',me:1});rows=rows.slice(0,100)}rows.forEach((p,i)=>p.i=i+1);
+ return `<div class="panel"><h3>🏆 ${label}</h3><div class="lb">${rows.map(p=>`<div class="row" ${p.me?'style="background:#FFF3C4;border-radius:12px;padding:10px"':''}><span>${['🥇','🥈','🥉'][p.i-1]||p.i+'.'} ${esc(p.n)} <small class="note">${p.r}</small></span><b>${p.rp} RP</b></div>`).join('')}</div>
+ <div class="row" style="background:#FFF3C4;border-radius:12px;padding:10px"><span><b>🧒 ${esc(nm)}</b> · hạng của bé</span><b>#${rk.toLocaleString('vi-VN')} / ${TOTAL.toLocaleString('vi-VN')}</b></div><p class="note">Bé có ${rp} RP. Xếp hạng đang là dữ liệu mô phỏng, cần máy chủ để xếp hạng thật.</p></div>`}
+let MM=0,FOE='';
+function matchmake(ret,start){const id=++MM;let t=0;
+ app.innerHTML=`<div class="panel end"><div class="spin"></div><h2>Đang tìm đối thủ…</h2><p class="out" id="mt">⏱ 0 giây</p><p class="note">Bản demo sẽ ghép được đối thủ sau 5 giây.</p><button class="btn ghost" id="cx">Hủy</button></div>`;
+ $('#cx').onclick=()=>{MM++;go(ret)};
+ const iv=setInterval(()=>{if(id!==MM||!$('#cx')){clearInterval(iv);return}t++;if(t<5){$('#mt').textContent='⏱ '+t+' giây';return}clearInterval(iv);
+  FOE=NAMES[Math.floor(Math.random()*8)]+' ('+PROV[Math.floor(Math.random()*5)]+')';
+  app.innerHTML=`<div class="panel end"><div class="big">🤝</div><h2>Đã tìm thấy đối thủ!</h2><p class="out">${FOE}</p><p class="note">Ghép sau ${t} giây. Trận đấu sắp bắt đầu…</p></div>`;setTimeout(()=>{if(id===MM)start()},1500)},1000)}
+function qa(mode,scope){scope=scope||mode;const qs=POOL().sort(()=>Math.random()-.5).slice(0,5),rv=mode!=='quiz',foe=FOE||NAMES[Math.floor(Math.random()*8)];let i=0,me=0,bt=0;
+ const step=()=>{if(i>=qs.length)return fin();const q=qs[i],ord=[0,1,2].sort(()=>Math.random()-.5);
+  app.innerHTML=`<button class="back" id="bk">← Thoát</button><div class="panel"><div class="row"><b>Câu ${i+1}/5</b><span>${rv?`🧒 ${me} – ${bt} ${foe}`:`Đúng: ${me}`}</span></div><div class="bar"><i style="width:${i/5*100}%"></i></div><h3 style="margin:12px 0">${q.q}</h3><div class="choices">${ord.map((k,n)=>`<button class="choice c${n}" data-k="${k}">${'ABC'[n]}. ${q.o[k][0]}</button>`).join('')}</div></div>`;
+  $('#bk').onclick=()=>{FOE='';go(mode==='quiz'?'quiz':scope)};
+  $$('.choice').forEach(b=>b.onclick=()=>{const ok=q.o[b.dataset.k][4];me+=ok;if(rv&&Math.random()<.55)bt++;$$('.choice').forEach(x=>{x.disabled=true;if(q.o[x.dataset.k][4])x.textContent='✅ '+x.textContent;else if(x===b)x.textContent='❌ '+x.textContent});setTimeout(()=>{i++;step()},1200)})};
+ const fin=()=>{FOE='';const d=!rv?0:me>bt?25:me<bt?-10:5,xg=me*8+(rv&&me>bt?15:0);S.rp[scope]=Math.max(0,(S.rp[scope]||0)+d);S.xp+=xg;trk('xp',xg);trk('quiz',1);S.quizH.push({t:Date.now(),s:me});S.quizH=S.quizH.slice(-20);save();shell();if(me>=4)boom();
+  app.innerHTML=`<div class="panel end"><div class="big">${me>=4?'🏆':'💪'}</div><h2>${rv?(me>bt?'Bé thắng '+foe+'!':me<bt?'Bé thua '+foe+', cố lên!':'Hòa với '+foe):'Bé đúng '+me+'/5 câu'}</h2><div class="reward"><span>+${xg} ⭐</span>${rv?`<span class="${d<0?'neg':''}">${d>0?'+':''}${d} RP</span>`:''}</div><button class="btn" id="ag">Chơi lại</button> <button class="btn ghost" id="mn">Về menu</button></div>`;
+  $('#ag').onclick=()=>rv?matchmake(scope,()=>qa(mode,scope)):qa(mode,scope);$('#mn').onclick=()=>go(mode==='quiz'?'quiz':scope)};step()}
+function quiz(){app.innerHTML=`<h2>Bài kiểm tra</h2><div class="panel end"><div class="big">🧠</div><p>5 câu hỏi tình huống ngẫu nhiên từ các bài đã học. Làm xong nhận điểm và ghi vào biểu đồ của bé.</p><button class="btn sun" id="s">Bắt đầu kiểm tra</button></div>`;$('#s').onclick=()=>qa('quiz')}
+function duel(){app.innerHTML=`<h2>Thi đấu 1 đối 1 ⚔️</h2><div class="stats"><div class="st"><small>⚔️ Điểm thi đấu</small><b>${S.rp.duel||0} RP</b></div>${rpCards()}</div><div class="panel end"><p>Đấu 5 câu với một bạn cùng trình độ. Thắng +25 RP, thua -10 RP, hòa +5 RP.</p><button class="btn sun" id="s">Tìm đối thủ</button></div>${board('duel','Top 100 thi đấu 1 đối 1')}`;$('#s').onclick=()=>matchmake('duel',()=>qa('duel','duel'))}
+function arena(scope){const nat=scope==='nation';app.innerHTML=`<h2>${nat?'Đấu trường toàn quốc 🇻🇳':'Đấu trường khu vực 🏙️'}</h2><div class="stats">${rpCards()}</div>${nat?'':`<div class="panel"><label>Khu vực của bé<select id="rg">${PROV.map(x=>`<option ${x===S.region?'selected':''}>${x}</option>`).join('')}</select></label></div>`}${board(scope,nat?'Top 100 toàn quốc':'Top 100 khu vực '+S.region)}<button class="btn sun" id="s">⚔️ Tìm đối thủ</button>`;
+ $('#s').onclick=()=>matchmake(scope,()=>qa(scope,scope));const r=$('#rg');if(r)r.onchange=e=>{S.region=e.target.value;save();arena(scope)}}
+
+/* ----- Bối cảnh theo tình huống ----- */
+const E=(x,s)=>`<span class="sc" style="${x};font-size:${s}px">`;
+const TH={class:`<div class="th"><div class="board">📚 Lớp học</div>${E('right:8%;top:8%',46)}🪟</span>${E('left:50%;top:6%',40)}🕒</span><div class="flr" style="background:#D9A86C"></div><div class="desk" style="left:18%"></div><div class="desk" style="left:60%"></div></div>`,
+ pool:`<div class="th">${E('left:6%;top:8%',46)}☀️</span>${E('left:24%;bottom:60px',40)}🏊</span><div class="flr" style="background:#E9D7B0;right:60%"></div><div class="flr" style="background:#BFE3F7;left:40%"></div></div><div class="water"></div>`,
+ road:`<div class="th">${E('left:4%;top:12%',50)}🏢</span>${E('left:62%;top:8%',56)}🏬</span>${E('right:6%;top:34%',44)}🚦</span><div class="flr" style="background:#B7E4A0;height:78px"></div><div class="road"></div><span class="car">🚗</span></div>`,
+ mart:`<div class="th"><div style="position:absolute;inset:0 0 62px;display:flex;flex-direction:column;justify-content:space-around;padding:6px;font-size:30px;background:#FFE8C2;white-space:nowrap"><div>🥫🧃🍎🥖🥛🍌🥫🧃🍎🥖🥛🍌🥫🧃</div><div>🍪🍫🥕🍅🧀🍞🍪🍫🥕🍅🧀🍞🍪🍫</div></div><div class="flr" style="background:repeating-linear-gradient(90deg,#EBD2B0 0 60px,#DDBF94 60px 120px)"></div>${E('right:4%;bottom:40px',46)}🛒</span></div>`,
+ home:`<div class="th">${E('left:8%;top:10%',50)}🖼️</span>${E('right:8%;top:8%',50)}🪟</span>${E('right:20%;bottom:48px',54)}🛋️</span>${E('left:36%;bottom:48px',40)}🪴</span><div class="flr" style="background:#E5C29A"></div></div>`,
+ kitchen:`<div class="th"><div style="position:absolute;inset:0;background:repeating-linear-gradient(90deg,#FFF 0 38px,#EAF3FA 38px 40px)"></div>${E('left:10%;top:12%',46)}🍳</span>${E('right:10%;top:14%',46)}🧊</span>${E('left:30%;bottom:46px',44)}🥣</span><div class="flr" style="background:#D8B48A"></div></div>`,
+ storm:`<div class="th">${E('left:10%;top:4%',70)}⛈️</span>${E('right:10%;top:6%',60)}🌩️</span>${E('left:30%;bottom:46px',90)}🌳</span>${E('right:6%;bottom:46px',80)}🏠</span><div class="flr" style="background:#4E7A5A"></div><div class="rain"></div></div>`};
+const THBG={class:'#FFF1D6',pool:'linear-gradient(#BEE9FF,#E6F7FF)',road:'linear-gradient(#BFE6FF,#F1FAFF)',mart:'#FFF3E0',home:'#FFEFE0',kitchen:'#FFF6E0',storm:'linear-gradient(#59647D,#8C97B0)'};
+const THC={xl:'class',lp:'class',cx:'class',ks:'home',vl:'home',sk:'home',tc:'home',nh:'home',cn:'home',duong:'road',lac:'mart',chay:'home'};
+const themeOf=l=>TH[THC[l.id]]?THC[l.id]:TH[THC[l.c]]?THC[l.c]:'park';
+CAST.coach={hair:'#2B2B3A',st:'short',top:'#FF6B6B',bot:'#26325B',h:1.3};
+
+/* ----- Chủ đề & bài học thực tế mới ----- */
+CATS.push({id:'nc',n:'An toàn nước',e:'🌊',c:'#1E88E5',bg:'linear-gradient(#BEE9FF,#E6F7FF)'},{id:'yt',n:'Sơ cứu',e:'🩹',c:'#D6336C',bg:'linear-gradient(#FFD6E5,#FFF0F6)'},{id:'nh',n:'An toàn nhà cửa',e:'🔌',c:'#F08C00',bg:'linear-gradient(#FFE8B3,#FFF7E0)'},{id:'dv',n:'Động vật',e:'🐶',c:'#8D6E63',bg:'linear-gradient(#EBDCD3,#F8F1EC)'},{id:'tn',n:'Thiên tai',e:'⛈️',c:'#5C6BC0',bg:'linear-gradient(#CFD4F5,#EEF0FC)'});
+const mk=(id,c,t,e,p,l,k,sc)=>{const L={id,c,t,e,p,l,k,sc:sc.map(s=>({q:s[0],cast:s[1],prop:s[2],o:s[3],th:s[4]}))};L.q=L.sc[0].q;L.cast=L.sc[0].cast;L.o=L.sc[0].o;L.th=L.sc[0].th;L.prop=L.sc[0].prop;if(L.sc.length===1)delete L.sc;return L};
+LESSONS.push(
+mk('nuoc','nc','Có bạn đuối nước','🛟',0,'Trẻ em không nhảy xuống cứu bạn. Hãy hét to gọi người lớn và đưa phao hoặc vật nổi cho bạn.','đuối nước|hồ bơi|bơi|chìm',[
+ ['Hero và Nam chơi gần hồ bơi. Nam trượt chân rơi xuống nước và đang vùng vẫy kêu cứu. Hero làm gì?','gB:62:scared',['🛟',38],[['Hét to gọi người lớn và ném phao cho bạn','','wave','idle',1,'Tiếng hét của Hero làm chú cứu hộ chạy đến ngay, Nam bám được vào phao.'],['Nhảy xuống nước để cứu bạn','gB','run','sad',0,'Hero chưa bơi giỏi nên cũng bị chìm. Trẻ em không được nhảy xuống cứu người đuối nước.',1],['Đứng nhìn vì quá sợ','','sad','idle',0,'Nam cần giúp ngay! Hãy hét thật to gọi người lớn.']],'pool'],
+ ['Chú cứu hộ chạy tới hỏi: "Chuyện gì thế cháu?" Hero nói gì?','coach:54,gB:74:scared',['🛟',66],[['Chỉ tay: "Bạn Nam bị rơi xuống nước ở kia ạ!"','coach','point','wave',1,'Chú cứu hộ lao xuống đưa Nam lên bờ an toàn.'],['Không nói gì và bỏ chạy','>','run','sad',0,'Chú không biết Nam ở đâu. Hãy nói rõ để chú cứu kịp.',1],['Nói nhỏ "Cháu không biết"','','idle','sad',0,'Hãy nói to và rõ để chú kịp cứu bạn.']],'pool'],
+ ['Nam được đưa lên bờ, ho sặc sụa và run lẩy bẩy. Hero làm gì?','gB:56:sad,coach:80',0,[['Nhờ chú lấy khăn ủ ấm và ở bên cạnh bạn','gB','hug','cheer',1,'Nam được ủ ấm, dần hết run và cảm ơn Hero.'],['Rủ bạn xuống bơi tiếp ngay','','no','sad',0,'Bạn cần nghỉ ngơi và kiểm tra sức khỏe trước đã.'],['Cười chọc bạn vì bị rơi','','no','sad',0,'Bạn vừa gặp nguy hiểm, hãy quan tâm bạn.']],'pool']]),
+mk('sach','xl','Nhặt sách giúp bạn','📕',0,'Giúp bạn việc nhỏ cũng là một việc tốt, và hãy đáp lại lời cảm ơn bằng nụ cười.','sách|giúp bạn|nhặt|lớp học',[
+ ['Trong lớp học, quyển sách của bạn Na rơi xuống gầm bàn. Na đang bận chép bài. Hero làm gì?','gA:50',['📕',34],[['Cúi xuống nhặt sách và đưa cho Na','gA','pick','give',1,'Na ngạc nhiên và mỉm cười: "Cảm ơn Hero nhé!"'],['Kệ sách, không phải việc của mình','','idle','sad',0,'Giúp bạn chỉ mất vài giây thôi, hãy giúp bạn nhé.'],['Đá quyển sách đi chỗ khác','>','no','sad',0,'Làm vậy sách sẽ hỏng và bạn sẽ buồn.']],'class'],
+ ['Na nói: "Cảm ơn Hero!" Hero đáp lại thế nào?','gA:50,teacher:80',0,[['Mỉm cười: "Không có gì đâu bạn!"','gA','wave','cheer',1,'Cô giáo nhìn thấy và khen cả hai bạn.'],['Im lặng quay đi','','idle','sad',0,'Hãy đáp lại lời cảm ơn bằng một nụ cười.'],['Đòi Na trả công','','no','sad',0,'Giúp bạn xuất phát từ tấm lòng, không đòi trả công.']],'class']]),
+mk('bong','yt','Bị bỏng nước nóng','🩹',0,'Bị bỏng: xả nước mát thật lâu và báo ngay cho người lớn, không bôi mẹo lạ.','bỏng|nước nóng|sơ cứu',[['Hero vô tình chạm vào ấm nước nóng, tay đỏ và rát. Hero làm gì?','mom:50',0,[['Xả tay dưới vòi nước mát và gọi mẹ','mom','wave','hold',1,'Mẹ giúp Hero xả nước mát thật lâu, rồi đưa đi khám nếu cần.'],['Bôi kem đánh răng lên tay','','idle','sad',0,'Không tự bôi kem hay mẹo lạ lên vết bỏng. Hãy xả nước mát.'],['Giấu mẹ vì sợ bị mắng','<','sad','sad',0,'Bị bỏng phải báo ngay cho người lớn.',1]],'kitchen']]),
+mk('dien','nh','Ổ điện nguy hiểm','🔌',0,'Không bao giờ chạm hay cắm vật vào ổ điện. Hãy báo người lớn.','điện|ổ điện|giật điện',[['Hero thấy ổ điện có lỗ nhỏ và muốn thử cắm cái kẹp tóc vào. Hero làm gì?','mom:52',0,[['Không chạm vào, nói với mẹ','mom','wave','cheer',1,'Mẹ khen Hero và lắp nắp che ổ điện.'],['Cắm thử kẹp tóc vào ổ điện','>','idle','sad',0,'Điện giật rất nguy hiểm! Không bao giờ chạm vào ổ điện.',1],['Rủ em nhỏ cùng chơi ổ điện','','no','sad',0,'Hãy giữ em tránh xa ổ điện và báo người lớn.']],'home']]),
+mk('cho','dv','Chú chó lạ','🐶',0,'Gặp chó lạ: đứng yên, không chạy, không chạm vào, từ từ lùi lại gần người lớn.','chó|động vật|cắn',[['Một chú chó lạ chạy lại gần và sủa to. Bố đứng phía sau. Hero làm gì?','dad:76',['🐕',46],[['Đứng yên, từ từ lùi lại gần bố','dad','walk','hold',1,'Chú chó mất hứng thú rồi bỏ đi. Hero an toàn bên bố.'],['Chạy thật nhanh','>','run','sad',0,'Chạy sẽ làm chó đuổi theo. Hãy đứng yên.',1],['Lại gần vuốt ve chó lạ','','give','sad',0,'Không chạm vào chó lạ vì chúng có thể cắn.']],'park']]),
+mk('bao','tn','Trời giông bão','⛈️',0,'Khi có sấm sét: vào nhà ngay, không trú dưới gốc cây cao.','sấm|sét|bão|mưa giông',[['Trời nổi giông, sấm chớp ầm ầm khi Hero đang chơi ngoài sân cạnh gốc cây to. Hero làm gì?','mom:60:scared',0,[['Chạy vào nhà ngay cùng mẹ','mom','run','hold',1,'Hai mẹ con vào nhà an toàn khi sấm chớp nổ ra.',1],['Trú dưới gốc cây to','','idle','sad',0,'Cây cao dễ bị sét đánh. Hãy vào nhà.'],['Đứng ngoài trời xem sấm chớp','','idle','sad',0,'Sấm chớp rất nguy hiểm, hãy vào nhà ngay.']],'storm']]));
+
+/* ----- Bộ thẻ: ảnh theo bài, logo trên trái, QR dưới phải ----- */
+const qrU=l=>'https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=2&data='+encodeURIComponent(location.href.split('#')[0]+'#hero='+code(l));
+const cardArt=l=>{const th=l.th||themeOf(l),g=(l.sc?l.sc[0]:l).o.find(o=>o[4]);return `<div class="art" style="background:${th==='park'?cat(l.c).bg:THBG[th]}"><span class="ae">${l.e}</span><div class="ach">${char('me',g[2],'happy')}</div></div>`};
+function fc(l){const c=cat(l.c);
+ if(locked(l))return `<div class="fc" data-lock="1"><div class="fi"><div class="ff fr" style="background:#B8C0D6;align-items:center;text-align:center;justify-content:center"><div class="e">🔒</div><h3 style="margin:0">${l.t}</h3><small style="margin:0">Thẻ Premium</small></div></div></div>`;
+ const q=`<img class="qr" src="${qrU(l)}" alt="QR ${code(l)}" onerror="this.style.visibility='hidden'">`;
+ return `<div class="fc"><div class="fi"><div class="ff fr" style="background:${c.c}"><div class="lg2">★ Little Hero</div>${cardArt(l)}<h3>${l.t}</h3><small>${c.n}</small>${q}</div><div class="ff bk"><div class="lg2 dk">★ Little Hero</div><b>✅ NÊN LÀM</b><p>${good(l)}</p><b>❌ KHÔNG NÊN</b><p>${bad(l)}</p><small>${code(l)}</small>${q}</div></div></div>`}
+const pcard=l=>`<div class="pc"><b>★ Little Hero</b><div class="pe">${l.e}</div><h3>${l.t}</h3><small>${cat(l.c).n}</small><img src="${qrU(l)}" width="70" height="70" alt=""><p>✅ ${good(l)}</p><p>❌ ${bad(l)}</p><b>${code(l)}</b></div>`;
+function deep(){const m=location.hash.match(/hero=([A-Za-z0-9-]+)/);if(m){const l=LESSONS.find(x=>code(x)===m[1].toUpperCase());if(l)locked(l)?plans():play(l)}}
+
+if('speechSynthesis' in window)speechSynthesis.onvoiceschanged=()=>{};
+go('home');deep();
+</script>
+</body>
+</html>
