@@ -1,18 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>Little Hero</title>
-    <meta name="description" content="Little Hero - Cùng bé học kỹ năng sống qua những câu chuyện tương tác thú vị.">
-
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Little Hero">
-    <meta property="og:description" content="Cùng bé học kỹ năng sống qua những câu chuyện tương tác thú vị.">
-    <meta property="og:url" content="https://minhductruongvan.github.io/Little-Hero/">
-
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--sky:#EAF6FF;--ink:#26325B;--sun:#FFC93C;--mint:#2EC4A6;--coral:#FF6B6B;--vio:#7B5CFF;--blue:#4F8DF7;--w:#fff;--r:24px}
 *{box-sizing:border-box}
@@ -143,13 +135,108 @@ footer{background:var(--w);border-top:4px solid var(--sun);margin-top:30px;opaci
 .a-flail{animation:fb .5s ease-in-out infinite alternate}.a-flail .aL{animation:fa1 .3s ease-in-out infinite alternate}.a-flail .aR{animation:fa2 .3s ease-in-out infinite alternate}
 @keyframes fb{to{transform:translateY(-8px)}}@keyframes fa1{from{transform:rotate(130deg)}to{transform:rotate(170deg)}}@keyframes fa2{from{transform:rotate(-170deg)}to{transform:rotate(-130deg)}}
 .a-point .aR{transform:rotate(-105deg)}.a-point .aL{transform:rotate(8deg)}
-/* bộ thẻ */
-.fc{height:300px}.ff.fr{align-items:flex-start;text-align:left;justify-content:flex-end;position:relative;color:#fff}
-.lg2{position:absolute;top:10px;left:12px;font-weight:800;font-size:13px;background:#fff;color:#26325B;border-radius:99px;padding:0 10px}.lg2.dk{background:#EAF6FF}
-.fr .art{position:absolute;top:38px;left:10px;right:10px;height:122px;border-radius:14px;overflow:hidden}.ae{position:absolute;left:8px;top:4px;font-size:44px}.ach{position:absolute;right:8px;bottom:-6px;width:74px}
-.fr h3{margin:0 66px 0 0;font-size:19px}.fr small{margin-right:66px}
-.qr{position:absolute;right:10px;bottom:10px;width:58px;height:58px;background:#fff;border-radius:8px;padding:2px}.ff.bk{padding-top:36px;position:relative}
-.pc img{float:right}
+/* ===== bộ thẻ (đã sửa lệch khung, QR + logo nằm trong thẻ, mặt sau là bầu trời) ===== */
+.fcs{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}.fc{height:300px}
+.ff{padding:0;display:block;overflow:hidden;text-align:left;font-family:'Baloo 2','Trebuchet MS',sans-serif;line-height:1.25}
+.ff.fr{color:#fff}.ff.fr .e{font-size:64px}
+.lg2{position:absolute;top:9px;left:9px;display:flex;align-items:center;gap:4px;font-weight:800;font-size:12px;background:#fff;color:#26325B;border-radius:99px;padding:2px 10px 2px 4px;max-width:calc(100% - 18px);white-space:nowrap;z-index:2}
+.lg2 i{font-style:normal;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#7B5CFF,#FF7AC6);display:grid;place-items:center;font-size:12px}
+.fr .art{position:absolute;top:38px;left:9px;right:9px;height:130px;border-radius:14px;overflow:hidden}
+.fr .ae{position:absolute;left:8px;top:4px;font-size:40px;line-height:1}.fr .ach{position:absolute;right:6px;bottom:-4px;width:78px}.fr .ach svg{width:100%;height:auto}
+.fr .tx{position:absolute;left:12px;right:82px;bottom:12px}.fr .tx h3{margin:0;font-size:18px;line-height:1.1;overflow-wrap:anywhere}.fr .tx small{display:block;opacity:.9;font-size:13px;margin-top:2px}
+.qr{position:absolute;right:9px;bottom:9px;width:64px;height:64px;background:#fff;border-radius:9px;padding:3px;box-shadow:0 2px 0 #0002}
+.ff.bk{background:linear-gradient(#6EC3FF 0,#BFE6FF 55%,#F2FAFF 100%);color:#26325B}
+.ff.bk:before{content:"☁️";position:absolute;right:12px;top:34px;font-size:34px;opacity:.9;animation:drift 8s ease-in-out infinite alternate}
+.ff.bk:after{content:"☁️";position:absolute;left:10px;bottom:84px;font-size:26px;opacity:.7;animation:drift 10s ease-in-out infinite alternate-reverse}
+.bk .tx2{position:absolute;top:40px;left:12px;right:12px;bottom:80px;overflow:hidden;font-size:14px}.bk .tx2 b{display:block;font-size:12px;opacity:.75;margin-top:4px}.bk .tx2 p{margin:0 0 4px}
+.bk .cd{position:absolute;left:12px;bottom:12px;right:84px;font-size:12px;font-weight:700;opacity:.8}
+@keyframes drift{to{transform:translateX(18px)}}
+.pc{position:relative}.pc img{float:right}
+/* ===== trang riêng + hero ===== */
+.phero{position:relative;overflow:hidden;border-radius:28px;color:#fff;padding:20px 26px;margin-bottom:14px;display:flex;align-items:center;gap:16px}
+.phero .pe3{font-size:58px;animation:bn 2.2s ease-in-out infinite}.phero h1{margin:0;font-size:30px;line-height:1.1}.phero p{margin:2px 0 0;opacity:.92}
+.phero .fl{position:absolute;font-size:30px;opacity:.45;animation:flt 6s ease-in-out infinite}.phero .fl:nth-of-type(1){left:44%;top:10%}.phero .fl:nth-of-type(2){right:8%;top:50%;animation-delay:-2s}.phero .fl:nth-of-type(3){left:62%;bottom:6%;animation-delay:-4s}
+.phero+h2{display:none}
+@keyframes bn{50%{transform:translateY(-8px) rotate(-6deg)}}@keyframes flt{50%{transform:translateY(-14px) rotate(12deg)}}
+#nav button b{display:inline-block;transition:transform .2s}#nav button:hover b{transform:scale(1.3) rotate(-8deg)}
+#nav button[data-v=home].on{background:#FFC93C}#nav button[data-v=learn].on{background:#4F8DF7;color:#fff}#nav button[data-v=comic].on{background:#FF9F43;color:#fff}#nav button[data-v=cards].on{background:#2EC4A6;color:#fff}#nav button[data-v=chat].on{background:#7B5CFF;color:#fff}#nav button[data-v=parent].on{background:#26325B;color:#fff}
+/* ===== banner sinh động ===== */
+.banner{background:linear-gradient(120deg,#7B5CFF,#A58BFF,#FF9FD0,#FFC93C,#7B5CFF);background-size:300% 300%;animation:bgm 10s ease infinite}
+@keyframes bgm{50%{background-position:100% 50%}}
+.banner h1{text-shadow:0 3px 0 #0003;animation:pulse2 3s ease-in-out infinite}@keyframes pulse2{50%{transform:scale(1.03)}}
+.bn-fx{position:absolute;inset:0;pointer-events:none}.bn-fx span{position:absolute;font-size:28px;animation:flt 5s ease-in-out infinite;opacity:.8}
+.bn-fx span:nth-child(1){left:6%;top:12%}.bn-fx span:nth-child(2){left:38%;top:70%;animation-delay:-1s}.bn-fx span:nth-child(3){right:30%;top:10%;animation-delay:-2s}.bn-fx span:nth-child(4){right:6%;bottom:10%;animation-delay:-3s}.bn-fx span:nth-child(5){left:60%;top:60%;animation-delay:-4s}
+.banner .bh{animation:bn 2.4s ease-in-out infinite}
+/* ===== kiến thức + thử thách ===== */
+.kc{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 18px}.kn{background:#fff;border-radius:20px;padding:12px 16px;box-shadow:0 5px 0 #26325B22}.kn h4{margin:0 0 6px}.kn ul{margin:0;padding-left:20px}.kn.ch{background:linear-gradient(120deg,#FFF3C4,#FFE0A8)}
+/* ===== video giới thiệu (v6): khung 960x540, phóng theo chiều rộng ===== */
+.vwrap{position:relative;aspect-ratio:16/9;width:100%;border-radius:28px;overflow:hidden;background:#26325B;box-shadow:0 8px 0 #26325B33;margin:6px 0 18px}
+.vin{position:absolute;left:0;top:0;width:960px;height:540px;transform-origin:0 0;font-family:'Baloo 2',system-ui,sans-serif;color:#fff}
+.vbg{position:absolute;inset:0;transition:background .5s}
+.vwrap.dk .vin{color:#26325B}.vwrap.dk .vbrand{text-shadow:none}
+.vsc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:70px 60px 148px}
+.vbrand{position:absolute;left:28px;top:14px;font-size:26px;font-weight:800;z-index:8;text-shadow:0 3px 0 #0003}
+.vsub{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);max-width:880px;width:max-content;background:#000a;color:#fff;border-radius:18px;padding:6px 26px;font-size:24px;font-weight:700;text-align:center;line-height:1.3;z-index:8;animation:vsubin .5s both}
+.vseg{position:absolute;left:30px;right:30px;bottom:12px;display:flex;gap:6px;z-index:9}
+.vseg i{flex:1;height:7px;border-radius:9px;background:#fff5;overflow:hidden;position:relative;cursor:pointer}.vseg i b{position:absolute;inset:0;width:0;background:#FFC93C}
+.vseg i.on b{animation:vfill var(--dur) linear forwards}.vseg i.dn b{width:100%}.vwrap.pz .vseg i.on b{animation-play-state:paused}
+.vwrap.pz .vin *{animation-play-state:paused!important}
+.va{opacity:0;animation:vin .7s cubic-bezier(.2,.9,.3,1.15) forwards;animation-delay:var(--d,0s)}
+.vh{font-size:50px;font-weight:800;line-height:1.1;text-shadow:0 4px 0 #0003;margin:0 0 8px}.vwrap.dk .vh{text-shadow:none}
+.vtx{font-size:28px;font-weight:600;line-height:1.35}.vlogo{font-size:68px;font-weight:800;line-height:1;white-space:nowrap;text-shadow:0 5px 0 #0003}
+.vrow{display:flex;align-items:center;justify-content:center;gap:60px}.vrow3{display:flex;gap:16px;justify-content:center;margin:6px 0}
+.vchip{display:inline-block;background:#fff;color:#26325B;border-radius:99px;padding:5px 24px;font-size:24px;font-weight:800}.vchip.vgn{background:#D9F7EC}.vchip.vrd{background:#FFE2E2}
+.vcard{background:#fff;color:#26325B;border-radius:22px;padding:16px 18px;width:260px;font-size:23px;font-weight:700;line-height:1.25;box-shadow:0 6px 0 #0002}.vcard b{display:block;font-size:50px;line-height:1.1}
+.vemo{font-size:46px;letter-spacing:6px;margin-top:20px;line-height:1.3}.vfl{position:absolute;inset:0;font-size:46px;opacity:.5;letter-spacing:70px;line-height:1.7;overflow:hidden;animation:fl 3s ease-in-out infinite;pointer-events:none}
+.vdemo{display:grid;grid-template-columns:400px 470px;gap:26px;align-items:center}.vl{position:relative;text-align:left}
+.vq{background:#fff;color:#26325B;border-radius:20px;padding:12px 18px;font-size:23px;font-weight:700;margin-bottom:12px;line-height:1.25}
+.vo{background:#26325B;color:#fff;border-radius:16px;padding:10px 18px;margin-bottom:10px;font-size:23px;font-weight:700;text-align:left}
+.vo.vok{animation:vin .7s cubic-bezier(.2,.9,.3,1.15) var(--d) forwards,vgood .4s 2.9s forwards}
+.vcur{position:absolute;left:300px;top:196px;font-size:44px;opacity:0;animation:vcur 1s 2.2s forwards}
+.vst{position:relative;height:300px;background:linear-gradient(#BFE9FF,#E8F7FF);border-radius:24px;overflow:hidden}.vgr{position:absolute;bottom:0;left:0;right:0;height:48px;background:linear-gradient(#A6E884,#6FCB5A)}
+.vac{position:absolute;bottom:18px;opacity:0}.vxp{font-size:34px;font-weight:800;color:#E5A800}
+.vscn{background:#fff;color:#26325B;border-radius:20px;padding:14px 10px;width:164px;font-size:21px;font-weight:700;line-height:1.2}.vscn b{display:block;font-size:46px}.vscn small{display:block;opacity:.6;font-size:16px}.v5{flex-wrap:nowrap;gap:10px}
+.vvoice{display:flex;align-items:center;gap:26px;margin:8px 0}.vmic{width:108px;height:108px;border-radius:50%;background:#fff;color:#E8559A;font-size:50px;display:grid;place-items:center;position:relative;box-shadow:0 0 0 14px #fff4}
+.vwv{position:absolute;bottom:-24px;display:flex;gap:4px;align-items:flex-end;height:28px}.vwv i{width:7px;border-radius:5px;background:#fff;animation:vwave .5s ease-in-out infinite alternate}
+.vwv i:nth-child(odd){animation-delay:.12s}.vwv i:nth-child(3n){animation-delay:.25s}
+.vbub{background:#fff;color:#26325B;border-radius:26px;padding:14px 24px;font-size:26px;font-weight:700;text-align:left}.vrev{display:inline-block;white-space:nowrap;clip-path:inset(0 100% 0 0);animation:vrev 2.2s steps(28) .9s forwards}
+.vtoks{display:flex;gap:10px;justify-content:center;margin:24px 0 8px}.vres{font-size:32px;font-weight:800;background:#fff;color:#1FA98E;border-radius:99px;padding:2px 28px}.vwarn{margin-top:12px;font-size:22px;font-weight:700}
+.veq{display:flex;gap:8px;align-items:flex-end;height:120px;margin:6px 0}.veq i{width:18px;border-radius:9px;background:#fff;height:30px;animation:veq .6s ease-in-out infinite alternate}.vnotes{font-size:40px;animation:fl 2s ease-in-out infinite}
+.vslid{display:flex;gap:12px;align-items:center;font-size:34px;margin:8px 0 14px}.vtrk{position:relative;width:420px;height:14px;border-radius:9px;background:#fff5}.vtrk i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;background:#FFC93C;animation:vvol 2.4s 1.2s ease-in-out forwards;width:20%}.vtrk b{position:absolute;top:-9px;left:20%;color:#FFC93C;font-size:30px;line-height:1;animation:vkn 2.4s 1.2s ease-in-out forwards;margin-left:-14px}
+.vlv{display:flex;gap:20px;align-items:center;justify-content:center;margin:6px 0 14px}.vxb{width:420px;height:30px;border-radius:99px;background:#fff6;overflow:hidden}.vxb i{display:block;height:100%;background:#2EC4A6;width:0;animation:vxp 2s .6s ease-out forwards}.vlvb{background:#fff;color:#E5A800;border-radius:99px;padding:2px 22px;font-size:34px;font-weight:800}
+.vq2{background:#fff;color:#26325B;border-radius:18px;padding:10px 18px;font-size:22px;font-weight:700}
+.vcyc{position:relative;width:210px;height:262px}.vtagc{display:flex;flex-direction:column;gap:14px;width:230px}.vhh{position:absolute;inset:0;opacity:0;animation:vcyc 4.8s infinite}.vtags{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:760px;margin-top:6px}
+.vdemo2{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:center;width:820px}.vduel{display:flex;gap:18px;align-items:flex-end;justify-content:center}.vs{font-size:46px;font-weight:800;text-shadow:0 4px 0 #0003;margin-bottom:50px}
+.vrank{display:flex;flex-direction:column;gap:10px}.vrk{background:#fff;color:#26325B;border-radius:16px;padding:8px 18px;display:flex;gap:14px;align-items:center;font-size:25px;font-weight:700;text-align:left}.vrk b{flex:1}.vrk span{font-size:30px}.vrk.me{background:#FFC93C;animation:vin .7s cubic-bezier(.2,.9,.3,1.15) 2.6s forwards,vpulse 1s 3.4s infinite}
+.vchart{display:flex;align-items:flex-end;gap:12px;height:250px;background:#fff3;border-radius:22px;padding:16px}.vchart i{flex:1;height:var(--h);background:#FFC93C;border-radius:10px 10px 0 0;transform:scaleY(0);transform-origin:bottom;animation:vgrow .8s ease-out forwards}.vkp{display:flex;flex-direction:column;gap:10px}.vkp .vcard{width:100%;display:flex;gap:14px;align-items:center;padding:10px 18px}.vkp .vcard b{font-size:40px}
+.vbtn{margin-top:14px;background:#FFC93C;color:#26325B;border-radius:99px;padding:8px 44px;font-size:34px;font-weight:800;animation:vin .7s cubic-bezier(.2,.9,.3,1.15) 1.7s forwards,vpulse 1s 2.6s infinite;box-shadow:0 6px 0 #0003}
+.vplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:12;background:#FFC93C;color:#26325B;border-radius:99px;padding:14px 36px;font-size:26px;font-weight:800;box-shadow:0 8px 0 #0004;animation:vpulse 1.2s infinite}
+.vctl{position:absolute;right:12px;top:12px;z-index:11;display:flex;gap:8px}.vctl button{width:42px;height:42px;border-radius:50%;background:#fff;color:#26325B;font-size:18px;box-shadow:0 3px 0 #0003}
+@keyframes vsubin{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%)}}@keyframes vin{from{opacity:0;transform:translateY(26px) scale(.92)}to{opacity:1;transform:none}}@keyframes vfill{to{width:100%}}
+@keyframes vshow{to{opacity:1}}@keyframes vhide{to{opacity:0}}@keyframes vmv{to{transform:translateX(140px)}}@keyframes vgood{to{background:#1FA98E}}
+@keyframes vcur{0%{opacity:0;transform:translate(70px,110px)}50%{opacity:1;transform:translate(0,0)}70%{transform:translate(0,0) scale(.85)}100%{opacity:1;transform:translate(0,0)}}
+@keyframes vrev{to{clip-path:inset(0 0 0 0)}}@keyframes vwave{from{height:5px}to{height:26px}}@keyframes veq{to{height:110px}}
+@keyframes vvol{to{width:90%}}@keyframes vkn{to{left:90%}}@keyframes vxp{to{width:100%}}@keyframes vgrow{to{transform:scaleY(1)}}
+@keyframes vcyc{0%{opacity:0;transform:scale(.85)}8%,30%{opacity:1;transform:none}38%,100%{opacity:0;transform:scale(.85)}}@keyframes vpulse{50%{transform:scale(1.07)}}
+.vplay{--k:1}.vplay{animation-name:vplp}@keyframes vplp{50%{transform:translate(-50%,-50%) scale(1.07)}}
+/* ===== âm lượng, nghe giọng nói, Hero Lab ===== */
+.vrow{align-items:center}.box .vrow{display:flex;gap:10px;margin:10px 0}.box .vrow input{flex:1}.box .vrow b{width:48px;text-align:right}
+.hear{background:#FFF8E1;border-radius:var(--r);padding:10px 16px;margin-top:10px;font-weight:700}
+.labx{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}.labp,.labc{background:#fff;border-radius:var(--r);padding:16px;box-shadow:0 5px 0 #26325B14}
+.labv{width:230px;margin:0 auto 10px;background:linear-gradient(#BFE9FF,#E8F7FF);border-radius:24px;padding:14px 20px 4px}
+.labc h4{margin:14px 0 6px}.sws{display:flex;flex-wrap:wrap;gap:8px}.sw{width:38px;height:38px;border-radius:50%;box-shadow:inset 0 0 0 3px #fff,0 0 0 2px #26325B33}.sw.on{box-shadow:inset 0 0 0 3px #fff,0 0 0 4px #7B5CFF}
+.labp .chips,.labc .chips{flex-wrap:wrap}
+@media(max-width:760px){.labx{grid-template-columns:1fr}.vsub{font-size:24px}}
+
+.labp .row2 .btn{padding:8px 14px;font-size:16px;white-space:nowrap}.labp .row2{flex-wrap:wrap;gap:8px;justify-content:center}
+
+/* ===== giải đấu trường lớp ===== */
+.lv{display:grid;grid-template-columns:1fr 70px 1fr;gap:10px;align-items:start}.pn{background:#fff;border-radius:20px;padding:12px;box-shadow:0 5px 0 #26325B22}.pn h3{margin:0 0 6px;font-size:18px}.qt{font-weight:700;font-size:16px;margin:4px 0}
+.op{border:3px solid #E3ECFA;border-radius:12px;padding:5px 9px;margin:4px 0;font-size:15px}.op.p{border-color:#4F8DF7;background:#EAF2FF}.op.g{border-color:#2EC4A6;background:#DDF8F0}.op.r{border-color:#FF6B6B;background:#FFE7E7}
+.vs{text-align:center;font-weight:800;font-size:26px;color:#FF6B6B;padding-top:40px}.vs small{font-size:13px;color:#26325B}
+.br{display:flex;gap:12px;overflow:auto;padding-bottom:6px}.br>div{min-width:200px}.mt{background:#fff;border-radius:14px;padding:6px 10px;margin:6px 0;font-size:15px;box-shadow:0 3px 0 #26325B22}.mt .w{font-weight:800;color:#0E9F6E}
+details.fq{background:#fff;border-radius:18px;padding:10px 16px;margin:8px 0;box-shadow:0 4px 0 #26325B22}details.fq summary{cursor:pointer;font-weight:800}details.fq p{margin:6px 0 0}
+@media(max-width:760px){.lv{grid-template-columns:1fr}.vs{padding:0}.phero{flex-wrap:wrap}.vs4{font-size:26px;gap:6px}.vstep{padding:8px 10px}}
 </style>
 </head>
 <body>
@@ -157,7 +244,7 @@ footer{background:var(--w);border-top:4px solid var(--sun);margin-top:30px;opaci
 <div id="crumb"></div>
 <main id="app"></main>
 <footer><div class="fg"><div><b>🦸 Little Hero</b><p>Học kỹ năng sống qua những câu chuyện tương tác cùng Hero và bạn bè.</p></div>
-<div><b>Khám phá</b><button class="lk" data-nv="learn">Bài học</button><button class="lk" data-nv="quiz">Bài kiểm tra</button><button class="lk" data-nv="forum">Diễn đàn</button></div>
+<div><b>Khám phá</b><button class="lk" data-nv="learn">Bài học</button><button class="lk" data-nv="quiz">Bài kiểm tra</button><button class="lk" data-nv="forum">Diễn đàn</button><button class="lk" data-nv="school">Giải đấu trường lớp</button><button class="lk" data-nv="faq">FAQs</button></div>
 <div><b>Phụ huynh</b><button class="lk" data-nv="parent">Theo dõi tiến độ</button><button class="lk" data-nv="pay">Gói Premium</button><button class="lk" data-nv="reviews">Đánh giá</button></div>
 <div><b>Liên hệ</b><p>hello@littlehero.vn<br>Hotline: 1900 0000</p></div></div><small>© 2026 Little Hero – bản demo. Dữ liệu lưu trên trình duyệt này.</small></footer>
 <div id="sheet"></div>
@@ -305,26 +392,65 @@ const CAST={
  gB:{hair:'#3A2A1A',st:'short',top:'#FF6B6B',bot:'#2B6CB0',h:.95},
  stranger:{hair:'#333',st:'hat',cap:'#555',top:'#444',bot:'#2D2D3A',acc:'shades',h:1.32},
  staff:{hair:'#4A2C1A',st:'bun',top:'#FF8A3D',bot:'#26325B',skirt:1,h:1.25}};
-function char(k,pose='idle',mood='happy'){
- const o=Object.assign({skin:'#FFD7B5'},CAST[k==='me'?S.hero:k]),sk=o.skin,hc=o.hair,top=o.top,bot=o.bot,shoe=o.cape?'#FF6B6B':'#4A4A68';
- const mo={happy:'M82 76 Q100 96 118 76',worry:'M87 86 Q100 78 113 86',sad:'M84 90 Q100 72 116 90',scared:'M86 94 Q100 68 114 94'}[mood]||'M82 76 Q100 96 118 76';
- const bw=mood==='happy'?'':'<path d="M68 51 L88 42 M132 51 L112 42" stroke="#26325B" stroke-width="5" stroke-linecap="round"/>';
+/* ===== Nhân vật: hỗ trợ tùy chỉnh Hero (S.look) và nhiều biểu cảm ===== */
+const shade=(c,a)=>'#'+c.replace('#','').match(/../g).map(h=>Math.max(0,Math.min(255,parseInt(h,16)+a)).toString(16).padStart(2,'0')).join('');
+function char(k,pose='idle',mood='happy',lk){
+ const base=Object.assign({skin:'#FFD7B5'},CAST[k==='me'?S.hero:k]),L0=k==='me'?(lk||S.look||{}):{},o=Object.assign({},base);
+ if(L0.st)o.st=L0.st;if(L0.hc)o.hair=L0.hc;if(L0.skin)o.skin=L0.skin;if(L0.top)o.top=L0.top;if(L0.bot)o.bot=L0.bot;
+ if(L0.bt){o.skirt=L0.bt==='skirt'?1:0;o.shorts=L0.bt==='shorts'?1:0}
+ if(L0.acc!==undefined)o.acc=L0.acc==='none'?'':L0.acc;if(L0.cape!==undefined)o.cape=L0.cape?1:0;
+ const sk=o.skin,hc=o.hair,top=o.top,bot=o.bot,shoe=L0.shoe||(o.cape?'#FF6B6B':'#4A4A68'),capeC=L0.capeC||'#7B5CFF',accC=L0.accC||'#FF6B6B',lg=o.skirt||o.shorts?sk:bot;
+ const emb=L0.emb!==undefined?L0.emb:(o.star?'star':'none'),eyeS=L0.eye||'round',smS=L0.sm||'smile',brS=L0.brow||'none',blush=L0.bl!==0,ts=L0.ts||'tee';
  const hf=`<path d="M54 56 Q52 8 100 10 Q148 8 146 56 Q128 32 100 32 Q72 32 54 56Z" fill="${hc}"/>`;
- const hair={short:hf,long:hf,pig:hf+`<circle cx="46" cy="64" r="15" fill="${hc}"/><circle cx="154" cy="64" r="15" fill="${hc}"/><circle cx="58" cy="44" r="5" fill="#FF6B6B"/><circle cx="142" cy="44" r="5" fill="#FF6B6B"/>`,
-  bun:hf+`<circle cx="100" cy="6" r="17" fill="${hc}"/>`,hat:`<path d="M52 54 Q54 6 100 6 Q146 6 148 54Z" fill="${o.cap}"/><rect x="88" y="42" width="70" height="11" rx="5" fill="${o.cap}"/>`}[o.st];
- const acc=o.acc==='glasses'?'<g fill="none" stroke="#26325B" stroke-width="3"><circle cx="80" cy="58" r="14"/><circle cx="120" cy="58" r="14"/><path d="M94 58h12"/></g>':o.acc==='shades'?'<rect x="64" y="48" width="32" height="18" rx="8" fill="#222"/><rect x="104" y="48" width="32" height="18" rx="8" fill="#222"/>':'';
- const eyes=o.acc==='shades'?'':`<ellipse class="eye" cx="80" cy="58" rx="7" ry="9" fill="#26325B"/><ellipse class="eye" cx="120" cy="58" rx="7" ry="9" fill="#26325B"/><circle cx="78" cy="55" r="2.5" fill="#fff"/><circle cx="118" cy="55" r="2.5" fill="#fff"/>`;
- const lg=o.skirt?sk:bot;
+ const hair={short:hf,long:hf,bob:hf,pony:hf+`<circle cx="142" cy="48" r="6" fill="${accC}"/>`,
+  spiky:`<path d="M54 56 L48 22 L68 34 L76 6 L94 30 L108 4 L120 30 L140 8 L144 34 L152 24 L146 56 Q128 34 100 34 Q72 34 54 56Z" fill="${hc}"/>`,
+  curly:hf+[[58,36],[74,22],[100,16],[126,22],[142,36],[52,56],[148,56]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="13" fill="${hc}"/>`).join(''),
+  pig:hf+`<circle cx="46" cy="64" r="15" fill="${hc}"/><circle cx="154" cy="64" r="15" fill="${hc}"/><circle cx="58" cy="44" r="5" fill="#FF6B6B"/><circle cx="142" cy="44" r="5" fill="#FF6B6B"/>`,
+  bun:hf+`<circle cx="100" cy="6" r="17" fill="${hc}"/>`,hat:`<path d="M52 54 Q54 6 100 6 Q146 6 148 54Z" fill="${o.cap}"/><rect x="88" y="42" width="70" height="11" rx="5" fill="${o.cap}"/>`}[o.st]||hf;
+ const back=o.st==='long'?`<rect x="50" y="22" width="100" height="125" rx="46" fill="${hc}"/>`:o.st==='bob'?`<rect x="46" y="18" width="108" height="86" rx="36" fill="${hc}"/>`:o.st==='pony'?`<path d="M138 44 Q182 52 170 112 Q156 84 140 70Z" fill="${hc}"/>`:'';
+ const A=o.acc||'';
+ const acc=A==='glasses'?'<g fill="none" stroke="#26325B" stroke-width="3"><circle cx="80" cy="58" r="14"/><circle cx="120" cy="58" r="14"/><path d="M94 58h12"/></g>':A==='shades'?'<rect x="64" y="48" width="32" height="18" rx="8" fill="#222"/><rect x="104" y="48" width="32" height="18" rx="8" fill="#222"/>':
+  A==='cap'?`<path d="M50 54 Q54 4 100 4 Q146 4 150 54Z" fill="${accC}"/><rect x="92" y="40" width="64" height="10" rx="5" fill="${shade(accC,-30)}"/>`:
+  A==='bow'?`<path d="M52 24 L74 34 L52 46Z M84 24 L62 34 L84 46Z" fill="${accC}"/><circle cx="68" cy="35" r="6" fill="${shade(accC,-40)}"/>`:
+  A==='band'?`<path d="M52 46 Q100 22 148 46" fill="none" stroke="${accC}" stroke-width="9" stroke-linecap="round"/>`:
+  A==='crown'?'<path d="M68 22 L76 0 L90 16 L100 -4 L110 16 L124 0 L132 22Z" fill="#FFC93C" stroke="#E5A800" stroke-width="3"/>':'';
+ const mask=A==='mask'?`<path d="M58 50 Q80 40 100 50 Q120 40 142 50 L140 68 Q120 72 108 62 Q100 58 92 62 Q80 72 60 68Z" fill="${accC}"/>`:'';
+ const hide=A==='shades';
+ const E=(x,s)=>{if(hide)return'';
+  if(s==='arc')return `<path d="M${x-8} 60 Q${x} 48 ${x+8} 60" fill="none" stroke="#26325B" stroke-width="5" stroke-linecap="round"/>`;
+  if(s==='dot')return `<circle class="eye" cx="${x}" cy="58" r="5" fill="#26325B"/>`;
+  const rx=s==='big'?9:7,ry=s==='big'?12:9;return `<ellipse class="eye" cx="${x}" cy="58" rx="${rx}" ry="${ry}" fill="#26325B"/><circle cx="${x-2}" cy="${55}" r="${s==='big'?3.5:2.5}" fill="#fff"/>${s==='lash'?`<path d="M${x-9} 50 L${x-13} 46 M${x+9} 50 L${x+13} 46" stroke="#26325B" stroke-width="3" stroke-linecap="round"/>`:''}`};
+ const heart=x=>`<path d="M${x} 66 C${x-14} 54 ${x-6} 46 ${x} 54 C${x+6} 46 ${x+14} 54 ${x} 66Z" fill="#FF4D7E"/>`;
+ const closed=x=>`<path d="M${x-8} 56 Q${x} 64 ${x+8} 56" fill="none" stroke="#26325B" stroke-width="5" stroke-linecap="round"/>`;
+ let eyes=E(80,eyeS)+E(120,eyeS),mouth='',brow='';
+ const MS={smile:'M82 76 Q100 96 118 76',grin:'M80 74 Q100 104 120 74Z',cat:'M80 78 Q90 90 100 78 Q110 90 120 78',smirk:'M84 80 Q104 92 118 74'};
+ const M=d=>`<path d="${d}" fill="none" stroke="#26325B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+ const BR={none:'',thin:'<path d="M68 44 Q80 38 92 44 M108 44 Q120 38 132 44" fill="none" stroke="#26325B" stroke-width="3" stroke-linecap="round"/>',bold:'<path d="M66 44 L92 42 M108 42 L134 44" stroke="#26325B" stroke-width="7" stroke-linecap="round"/>'};
+ const sad='<path d="M68 51 L88 42 M132 51 L112 42" stroke="#26325B" stroke-width="5" stroke-linecap="round"/>';
+ switch(mood){
+  case'worry':mouth=M('M87 86 Q100 78 113 86');brow=sad;break;
+  case'sad':mouth=M('M84 90 Q100 72 116 90');brow=sad;break;
+  case'scared':mouth=M('M86 94 Q100 68 114 94');brow=sad;break;
+  case'wow':mouth='<ellipse cx="100" cy="86" rx="8" ry="10" fill="#26325B"/>';brow='<path d="M68 40 Q80 32 92 40 M108 40 Q120 32 132 40" fill="none" stroke="#26325B" stroke-width="4" stroke-linecap="round"/>';break;
+  case'love':eyes=hide?'':heart(80)+heart(120);mouth=M(MS.smile);break;
+  case'shy':mouth=M('M88 80 Q100 90 112 80');brow=BR.thin;break;
+  case'sleepy':eyes=hide?'':closed(80)+closed(120);mouth='<ellipse cx="100" cy="84" rx="5" ry="4" fill="#26325B"/><text x="140" y="30" font-size="22" font-weight="800" fill="#7B5CFF">z</text>';break;
+  case'angry':mouth=M('M86 92 Q100 82 114 92');brow='<path d="M66 42 L90 52 M134 42 L110 52" stroke="#26325B" stroke-width="6" stroke-linecap="round"/>';break;
+  case'laugh':eyes=hide?'':E(80,'arc')+E(120,'arc');mouth='<path d="M80 72 Q100 110 120 72Z" fill="#fff" stroke="#26325B" stroke-width="4" stroke-linejoin="round"/>';break;
+  default:mouth=smS==='grin'?'<path d="M80 74 Q100 104 120 74Z" fill="#fff" stroke="#26325B" stroke-width="4" stroke-linejoin="round"/>':M(MS[smS]||MS.smile);brow=BR[brS]||'';}
+ const bl=blush?`<circle cx="66" cy="76" r="${mood==='shy'?11:8}" fill="#FF8FA3" opacity="${mood==='shy'?.9:.6}"/><circle cx="134" cy="76" r="${mood==='shy'?11:8}" fill="#FF8FA3" opacity="${mood==='shy'?.9:.6}"/>`:'';
+ const sh=o.shorts?`<rect x="76" y="172" width="18" height="24" rx="9" fill="${bot}"/>`:'',sh2=o.shorts?`<rect x="106" y="172" width="18" height="24" rx="9" fill="${bot}"/>`:'';
+ const EM={star:'<polygon points="100,116 106,130 121,130 109,139 113,154 100,145 87,154 91,139 79,130 94,130" fill="#7B5CFF"/>',heart:'<path d="M100 150 C78 134 86 118 100 128 C114 118 122 134 100 150Z" fill="#FF4D7E"/>',bolt:'<path d="M104 114 L88 140 L100 140 L96 160 L114 130 L102 130Z" fill="#7B5CFF"/>',none:''};
+ const body=ts==='hoodie'?`<ellipse cx="100" cy="106" rx="30" ry="11" fill="${shade(top,-35)}"/><rect x="82" y="150" width="36" height="18" rx="8" fill="${shade(top,-22)}"/>`:ts==='stripe'?[116,132,148,164].map(y=>`<rect x="66" y="${y}" width="68" height="7" fill="${shade(top,-45)}" opacity=".55"/>`).join(''):'';
  return `<svg viewBox="0 -14 200 250" class="ch a-${pose}" role="img" aria-label="nhân vật">
- ${o.cape?'<g class="cp"><path d="M70 110 Q100 98 130 110 L148 205 Q100 224 52 205Z" fill="#7B5CFF"/></g>':''}
- ${o.st==='long'?`<rect x="50" y="22" width="100" height="125" rx="46" fill="${hc}"/>`:''}
- <g class="lL"><rect x="76" y="172" width="18" height="52" rx="9" fill="${lg}"/><ellipse cx="80" cy="228" rx="15" ry="8" fill="${shoe}"/></g>
- <g class="lR"><rect x="106" y="172" width="18" height="52" rx="9" fill="${lg}"/><ellipse cx="120" cy="228" rx="15" ry="8" fill="${shoe}"/></g>
- <g class="bd"><rect x="66" y="102" width="68" height="76" rx="24" fill="${top}"/>${o.skirt?`<path d="M62 150 L138 150 L152 194 L48 194Z" fill="${bot}"/>`:''}
- ${o.star?'<polygon points="100,116 106,130 121,130 109,139 113,154 100,145 87,154 91,139 79,130 94,130" fill="#7B5CFF"/>':''}</g>
+ ${o.cape?`<g class="cp"><path d="M70 110 Q100 98 130 110 L148 205 Q100 224 52 205Z" fill="${capeC}"/></g>`:''}${back}
+ <g class="lL"><rect x="76" y="172" width="18" height="52" rx="9" fill="${lg}"/>${sh}<ellipse cx="80" cy="228" rx="15" ry="8" fill="${shoe}"/></g>
+ <g class="lR"><rect x="106" y="172" width="18" height="52" rx="9" fill="${lg}"/>${sh2}<ellipse cx="120" cy="228" rx="15" ry="8" fill="${shoe}"/></g>
+ <g class="bd"><rect x="66" y="102" width="68" height="76" rx="24" fill="${top}"/>${body}${o.skirt?`<path d="M62 150 L138 150 L152 194 L48 194Z" fill="${bot}"/>`:''}${EM[emb]||''}</g>
  <g class="aL"><rect x="44" y="112" width="17" height="54" rx="8" fill="${top}"/><circle cx="52" cy="170" r="11" fill="${sk}"/></g>
  <g class="aR"><rect x="139" y="112" width="17" height="54" rx="8" fill="${top}"/><circle cx="148" cy="170" r="11" fill="${sk}"/></g>
- <g class="hd"><circle cx="100" cy="58" r="46" fill="${sk}"/>${hair}${eyes}${acc}<circle cx="66" cy="76" r="8" fill="#FF8FA3" opacity=".6"/><circle cx="134" cy="76" r="8" fill="#FF8FA3" opacity=".6"/>${bw}<path d="${mo}" fill="none" stroke="#26325B" stroke-width="5" stroke-linecap="round"/></g></svg>`}
+ <g class="hd"><circle cx="100" cy="58" r="46" fill="${sk}"/>${hair}${mask}${eyes}${acc}${bl}${brow}${mouth}</g></svg>`}
+
 
 /* ============ TRẠNG THÁI ============ */
 const KEY='littleHeroV2';
@@ -342,7 +468,7 @@ function modal(html){const m=document.createElement('div');m.className='modal';m
 const Voice={on:true,chatMode:false,tok:0,cb:null,
  speak(t,done){const k=++this.tok,fin=()=>{if(k===this.tok&&done)done()};
   if(!this.on||!('speechSynthesis' in window)){setTimeout(fin,800);return}
-  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='vi-VN';u.rate=S.set.rate;u.pitch=S.set.pitch;
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='vi-VN';u.rate=S.set.rate;u.pitch=S.set.pitch;u.volume=S.vol?Math.max(.05,Math.min(1,S.vol.voice*S.vol.master)):1;
   const v=speechSynthesis.getVoices().find(x=>x.lang.toLowerCase().startsWith('vi'));if(v)u.voice=v;
   u.onstart=()=>this.cb&&this.cb(1);u.onend=u.onerror=()=>{this.cb&&this.cb(0);fin()};speechSynthesis.speak(u)},
  listen(onText,btn){const R=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -359,8 +485,9 @@ function shell(){const cur=view==='play'?'learn':view;
  $$('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
  $('#right').innerHTML=`<span class="chip" id="tm">⏱ ${mins()}p</span><span class="chip">⭐ ${S.xp} · Lv ${lv()} <span class="xp"><i style="width:${S.xp%100}%"></i></span></span>
  <button class="btn sun" id="bPlan"><span id="pl">${S.plan==='premium'?'👑 '+fmtLeft(S.exp-Date.now(),1):'✨ Nâng cấp'}</span></button>
+ <button class="btn ghost" id="bVol" aria-label="Âm lượng">${typeof volIcon==='function'?volIcon():'🔊'}</button>
  <button class="btn ghost" id="bMenu" aria-label="Menu">☰ <span class="un">${S.user?esc(S.user.name):'Tài khoản'}</span></button>`;
- $('#bPlan').onclick=plans;$('#bMenu').onclick=menu}
+ $('#bPlan').onclick=plans;$('#bVol').onclick=volPanel;$('#bMenu').onclick=menu}
 $('#goHome').onclick=()=>go('home');
 function go(v){if(v==='parent'&&!gated)return gate(()=>go('parent'));view=v;Voice.stop();shell();crumb(v==='home'?[['Trang chủ','home']]:[['Trang chủ','home'],[TT[v]||v]]);({home,learn,comic,cards:cardsV,chat,parent:parentV,profile,...X})[v]();scrollTo(0,0)}
 function gate(cb){if(gated)return cb();const a=3+Math.floor(Math.random()*6),b=4+Math.floor(Math.random()*5);
@@ -371,13 +498,13 @@ function gate(cb){if(gated)return cb();const a=3+Math.floor(Math.random()*6),b=4
 function home(){const next=LESSONS.find(l=>!locked(l)&&!okd(l));
  app.innerHTML=`<section class="banner"><div><h1>Chào ${S.user?esc(S.user.name):'bạn nhỏ'}! 👋</h1><p>Cùng ${S.hero==='girl'?'Mia':'Bin'} học kỹ năng sống nhé.</p>
  <div class="seg">Chọn Hero: <button data-h="boy" class="${S.hero==='boy'?'on':''}">👦 Bin</button><button data-h="girl" class="${S.hero==='girl'?'on':''}">👧 Mia</button></div>
- <button class="btn sun" id="go">▶ ${next?'Học tiếp: '+next.t:'Chơi lại các bài'}</button> <button class="btn ghost" id="ask">🎙️ Nói với Hero</button></div><div class="bh">${char('me','wave')}</div></section>
+ <button class="btn sun" id="go">▶ ${next?'Học tiếp: '+next.t:'Chơi lại các bài'}</button> <button class="btn ghost" id="ask">🎙️ Nói với Hero</button> <button class="btn ghost" id="lab">🎨 Tùy chỉnh Hero</button></div><div class="bh">${char('me','wave')}</div></section>
  <h2>Chủ đề học</h2><div class="cats">${CATS.map(c=>{const ls=LESSONS.filter(l=>l.c===c.id),n=ls.filter(okd).length;
   return `<button class="cat" data-c="${c.id}" style="background:${c.c}"><b>${c.e}</b><span>${c.n}</span><div class="bar"><i style="width:${n/ls.length*100}%"></i></div><small>${n}/${ls.length} bài</small></button>`}).join('')}</div>
  <div class="two"><button class="promo" data-g="comic">📖 Truyện tranh<small>Đọc chuyện Hero và bạn bè</small></button><button class="promo" data-g="cards">🃏 Bộ thẻ kỹ năng<small>Xem, lật thẻ và in ra giấy</small></button></div>`;
- $$('.seg button').forEach(b=>b.onclick=()=>{S.hero=b.dataset.h;save();home()});
+ $$('.seg button').forEach(b=>b.onclick=()=>{S.hero=b.dataset.h;S.look={};save();home()});
  $$('.cat').forEach(b=>b.onclick=()=>{S.catSel=b.dataset.c;go('learn')});$$('.promo').forEach(b=>b.onclick=()=>go(b.dataset.g));
- $('#go').onclick=()=>next?play(next):go('learn');$('#ask').onclick=()=>{S.role='child';go('chat')}}
+ $('#go').onclick=()=>next?play(next):go('learn');$('#ask').onclick=()=>{S.role='child';go('chat')};$('#lab').onclick=()=>go('lab')}
 function lcard(l){const c=cat(l.c),d=S.prog[l.id],lk=locked(l);
  return `<button class="card ${lk?'lock':''}" data-id="${l.id}"><div class="thumb" style="background:${c.bg}"><b style="background:${c.c};color:#fff">${c.n}</b>${l.p?`<i class="pm">${lk?'🔒':'👑'}</i>`:''}<span>${l.e}</span><s>${okd(l)?'⭐':''}</s></div>
  <div class="t"><h3>${l.t}</h3><p>${lk?'Cần gói Premium':d?'Đã chơi '+d.plays+' lần':'Chơi ngay'}</p></div></button>`}
@@ -410,10 +537,7 @@ function play(l,si=0,ex=[]){view='play';Voice.stop();shell();const c=cat(l.c),sc
    (o[1]&&o[1].length>1?[o[1]]:cs.map(x=>x.k)).forEach(k=>pose(k,o[3],o[4]?'happy':'sad'));
    setTimeout(()=>{if($('#stg'))showRes(l,o,si,i,ex)},1800)},moved||150)};
  $$('.choice').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
- $('#mic').onclick=e=>{Voice.stop();Voice.listen(said=>{said=said.toLowerCase();const w=said.split(/\s+/);let best=-1,s0=0;
-  ord.forEach((i,n)=>{let s=sc.o[i][0].toLowerCase().split(/\s+/).filter(x=>x.length>2&&said.includes(x)).length;
-   if(w.some(x=>[['a','một','1'],['b','hai','2'],['c','ba','3']][n].includes(x)))s+=3;if(s>s0){s0=s;best=i}});
-  best>=0?choose(best):Voice.speak('Hero chưa nghe rõ, bé nói lại nhé')},e.currentTarget)}}
+ $('#mic').onclick=e=>{Voice.stop();Voice.listen(said=>voiceAnswer(said,l,si),e.currentTarget)}}
 function showRes(l,o,si,idx,ex){const ok=o[4],N=l.sc?l.sc.length:1;ex=ex||[];
  if(ok&&si<N-1){const g=ex.length?2:5;S.xp+=g;trk('xp',g);save();shell();
   $('#res').innerHTML=`<div class="panel end"><div class="big">🌟</div><h2>Đúng rồi!</h2><p class="out">${o[5]}</p><div class="reward"><span>+${g} điểm</span></div><button class="btn sun" id="nx">Tiếp tục câu chuyện ▶</button></div>`;
@@ -457,7 +581,7 @@ function cardsV(){app.innerHTML=`<h2>Bộ thẻ kỹ năng sống</h2><p class="
 /* ============ AI TRÒ CHUYỆN: 2 cuộc trò chuyện riêng cho bé và phụ huynh ============ */
 const catalog=()=>LESSONS.map(l=>`${l.id}=${l.t}`).join('; ');
 function sysPrompt(r){const base=`Ứng dụng Little Hero dạy kỹ năng sống cho trẻ 3-10 tuổi. Danh sách bài học (id=tên): ${catalog()}. Các mục của app (id=tên): quests=Nhiệm vụ hằng ngày; quiz=Bài kiểm tra; duel=Thi đấu 1 đối 1; region=Đấu trường khu vực; nation=Đấu trường toàn quốc; wall=Tường thành tích; forum=Diễn đàn; reviews=Đánh giá; pay=Gói Premium; cards=Bộ thẻ; comic=Truyện tranh; learn=Bài học; parent=Góc phụ huynh; profile=Hồ sơ. Bạn trả lời được MỌI câu hỏi như một trợ lý thông minh. Khi người dùng hỏi về hoặc cần một chức năng của app, hãy giới thiệu ngắn gọn và đặt go là id mục đó (auto=true nếu họ muốn mở ngay). `;
- if(r==='child')return base+`Bạn là Hero, người bạn thân thiện của bé ${S.set.age} tuổi${S.user?' tên '+S.user.name:''}. Trả lời MỌI câu hỏi của bé bằng tiếng Việt đơn giản, tối đa 3 câu ngắn, vui vẻ, đúng sự thật và an toàn. Nếu nội dung không phù hợp với trẻ em hoặc nguy hiểm, từ chối nhẹ nhàng và khuyên bé hỏi bố mẹ. Nếu bé buồn, sợ hoặc bị đe dọa, hãy an ủi và khuyên bé nói ngay với người lớn tin cậy. Nếu bé muốn học hoặc chơi một chủ đề khớp với bài học, đặt "lesson" là id bài đó. Phụ huynh dặn: ${S.notes.slice(-5).join('; ')||'không có'}. Chỉ trả về JSON: {"reply":"...","lesson":"id hoặc null","go":"id mục app hoặc null","auto":false}`;
+ if(r==='child')return base+`Bạn là Hero, người bạn thân thiện của bé ${S.set.age} tuổi${S.user?' tên '+S.user.name:''}. Trả lời MỌI câu hỏi của bé bằng tiếng Việt đơn giản, tối đa 5 câu ngắn, vui vẻ, đúng sự thật và an toàn. Nếu nội dung không phù hợp với trẻ em hoặc nguy hiểm, từ chối nhẹ nhàng và khuyên bé hỏi bố mẹ. Nếu bé buồn, sợ hoặc bị đe dọa, hãy an ủi và khuyên bé nói ngay với người lớn tin cậy. Nếu bé muốn học hoặc chơi một chủ đề khớp với bài học, đặt "lesson" là id bài đó. Phụ huynh dặn: ${S.notes.slice(-5).join('; ')||'không có'}. Chỉ trả về JSON: {"reply":"...","lesson":"id hoặc null","go":"id mục app hoặc null","auto":false}`;
  return base+`Bạn là trợ lý dành cho phụ huynh. Trả lời mọi câu hỏi (nuôi dạy con, giáo dục, đời sống...) bằng tiếng Việt rõ ràng, thực tế, không thay thế bác sĩ hay chuyên gia. Phụ huynh có thể nhờ chỉnh giọng của Hero ("settings": rate 0.5-1.3, pitch 0.6-2, age 3-12) hoặc dặn điều cần chú ý khi nói chuyện với bé ("note"). Chỉ trả về JSON: {"reply":"...","settings":null,"note":null,"lesson":null,"go":null,"auto":false}`}
 function toMsgs(list){const out=[];list.slice(-12).forEach(m=>{const role=m.who==='me'?'user':'assistant',last=out[out.length-1];if(last&&last.role===role)last.content+='\n'+m.t;else out.push({role,content:m.t})});
  while(out.length&&out[0].role!=='user')out.shift();return out}
@@ -476,13 +600,13 @@ async function askAI(r,list){const msgs=toMsgs(list),system=sysPrompt(r);
  try{let txt;
   if(S.api){const x=await fetch(S.api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system,messages:msgs,model:CONFIG.model})});txt=(await x.json()).text}
   else if(S.key){const x=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':S.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:CONFIG.model,max_tokens:500,system,messages:msgs})});
-   const d=await x.json();if(!x.ok)throw new Error((d.error&&d.error.message)||'lỗi '+x.status);txt=d.content[0].text}
+   const d=await x.json();if(!x.ok)throw new Error((d.error&&d.error.message)||'lỗi '+x.status);txt=d.content[0].text}else if(S.gem){txt=await gemAI(system,msgs)}else{txt=await freeAI(system,msgs)}
   if(txt){let o;try{o=JSON.parse(txt.match(/\{[\s\S]*\}/)[0])}catch(e){o={reply:txt}}if(typeof o.reply!=='string')o.reply=String(txt);return o}
  }catch(e){toast('Chưa kết nối được AI ('+e.message+'). Đang dùng chế độ cơ bản.')}
  return localAI(r,list[list.length-1].t)}
 function chat(){const r=S.role,L=S.chats[r];
  if(!L.length)L.push({who:'ai',t:r==='child'?'Chào bạn! Mình là Hero. Bạn hỏi mình bất cứ điều gì nhé, hoặc nói "mình muốn học về bị lạc" để vào bài học ngay!':'Xin chào ba mẹ! Ba mẹ có thể hỏi mình về cách dạy bé, nhờ mình chỉnh giọng nói của Hero, hoặc dặn mình điều cần chú ý khi trò chuyện với bé.'});
- const mode=S.api||S.key?'AI đã kết nối':'Chế độ cơ bản (chưa kết nối AI) · <button class="lk" style="display:inline;color:var(--vio);font-weight:700" data-nv="parent">Kết nối AI để hỏi mọi thứ</button>';
+ const mode=(S.api||S.key?'Claude':S.gem?'Gemini (miễn phí)':'AI miễn phí')+' đang bật · <button class="lk" style="display:inline;color:var(--vio);font-weight:700" data-nv="parent">Đổi nhà cung cấp AI</button>';
  app.innerHTML=`<h2>Hỏi Hero</h2><div class="panel"><div class="chead"><div class="av" id="av">${char('me','idle')}</div><div class="seg" id="seg"><button data-r="child" class="${r==='child'?'on':''}">🧒 Bé nói</button><button data-r="parent" class="${r==='parent'?'on':''}">👪 Phụ huynh nói</button></div></div>
  <p class="note">${r==='child'?'Cuộc trò chuyện của bé':'Cuộc trò chuyện riêng của phụ huynh'} · ${mode}</p>
  <div class="chat"><div class="msgs" id="msgs"></div><div class="inp"><input id="in" placeholder="${r==='child'?'Hỏi Hero điều bạn muốn biết…':'Hỏi hoặc dặn Hero…'}" aria-label="Tin nhắn"><button class="btn" id="send">Gửi</button><button class="btn sun" id="mic" aria-label="Nói">🎤</button></div>
@@ -513,16 +637,16 @@ function parentV(){const total=Object.values(S.prog).reduce((a,s)=>a+s.plays,0);
  <label><input type="checkbox" id="vo" ${Voice.on?'checked':''}> Bật giọng đọc</label><p class="note">Yêu cầu đã dặn Hero: ${S.notes.length?esc(S.notes.slice(-3).join(' · ')):'chưa có'}</p></div>
  <div class="panel"><h3>Kết nối AI (để Hero trả lời mọi câu hỏi)</h3><p class="note">Trạng thái: <b>${S.api?'dùng máy chủ riêng':S.key?'dùng API key':'chưa kết nối'}</b></p>
  <label>Địa chỉ máy chủ (khuyên dùng, xem file server.js)<input type="url" id="ap" placeholder="http://localhost:3000/api/chat" value="${esc(S.api)}"></label>
- <label>Hoặc API key Anthropic (chỉ để thử trên máy của bạn)<input type="password" id="ak" placeholder="sk-ant-..." value="${esc(S.key)}"></label>
+ <label>Hoặc API key Anthropic (chỉ để thử trên máy của bạn)<input type="password" id="ak" placeholder="sk-ant-..." value="${esc(S.key)}"></label><label>Hoặc API key Gemini miễn phí (lấy tại aistudio.google.com/apikey)<input type="password" id="gk" placeholder="AIza..." value="${esc(S.gem||'')}"></label><p class="note">Không nhập gì thì Hero dùng AI miễn phí không cần key (Pollinations). Dịch vụ miễn phí có thể chậm hoặc giới hạn lượt dùng.</p>
  <p class="note">⚠️ API key lưu trong trình duyệt, chỉ dùng thử. Khi đưa app lên mạng, hãy dùng máy chủ riêng để giữ key an toàn.</p><button class="btn" id="sv">Lưu kết nối</button></div>`;
  $('#rt').oninput=e=>{S.set.rate=+e.target.value;save()};$('#pt').oninput=e=>{S.set.pitch=+e.target.value;save()};$('#vo').onchange=e=>Voice.on=e.target.checked;
- $('#sv').onclick=()=>{S.api=$('#ap').value.trim();S.key=$('#ak').value.trim();save();toast('Đã lưu kết nối AI');parentV()}}
+ $('#sv').onclick=()=>{S.api=$('#ap').value.trim();S.key=$('#ak').value.trim();S.gem=$('#gk').value.trim();save();toast('Đã lưu kết nối AI');parentV()}}
 function profile(){if(!S.user)return go('home');const done=LESSONS.filter(okd);
  app.innerHTML=`<h2>Hồ sơ của ${esc(S.user.name)}</h2><div class="panel end"><div style="width:150px;margin:auto">${char('me','wave')}</div><h3>${title()} · Lv ${lv()}</h3>
  <p>Bé ${S.user.age} tuổi · Gói ${S.plan==='premium'?'👑 Premium':'Miễn phí'}<br>Phụ huynh: ${esc(S.user.email)} · ${esc(S.user.phone||'')}</p>
  <div class="seg">Hero của bé: <button data-h="boy" class="${S.hero==='boy'?'on':''}">👦 Bin</button><button data-h="girl" class="${S.hero==='girl'?'on':''}">👧 Mia</button></div></div>
  <div class="panel"><h3>Huy hiệu (${done.length})</h3><p style="font-size:40px;margin:0">${done.length?done.map(l=>l.e).join(' '):'<span class="note">Chọn đúng một bài để nhận huy hiệu</span>'}</p></div><button class="btn" id="out">Đăng xuất</button>`;
- $$('.seg button').forEach(b=>b.onclick=()=>{S.hero=b.dataset.h;save();profile()});$('#out').onclick=()=>{S.user=null;save();go('home')}}
+ $$('.seg button').forEach(b=>b.onclick=()=>{S.hero=b.dataset.h;S.look={};save();profile()});$('#out').onclick=()=>{S.user=null;save();go('home')}}
 
 /* ============ ĐĂNG NHẬP / ĐĂNG KÝ / FREEMIUM (demo, chưa có máy chủ) ============ */
 function auth(mode){const up=mode==='up',m=modal(`<h2>${up?'Tạo tài khoản cho bé':'Đăng nhập'}</h2>
@@ -763,17 +887,391 @@ mk('dien','nh','Ổ điện nguy hiểm','🔌',0,'Không bao giờ chạm hay c
 mk('cho','dv','Chú chó lạ','🐶',0,'Gặp chó lạ: đứng yên, không chạy, không chạm vào, từ từ lùi lại gần người lớn.','chó|động vật|cắn',[['Một chú chó lạ chạy lại gần và sủa to. Bố đứng phía sau. Hero làm gì?','dad:76',['🐕',46],[['Đứng yên, từ từ lùi lại gần bố','dad','walk','hold',1,'Chú chó mất hứng thú rồi bỏ đi. Hero an toàn bên bố.'],['Chạy thật nhanh','>','run','sad',0,'Chạy sẽ làm chó đuổi theo. Hãy đứng yên.',1],['Lại gần vuốt ve chó lạ','','give','sad',0,'Không chạm vào chó lạ vì chúng có thể cắn.']],'park']]),
 mk('bao','tn','Trời giông bão','⛈️',0,'Khi có sấm sét: vào nhà ngay, không trú dưới gốc cây cao.','sấm|sét|bão|mưa giông',[['Trời nổi giông, sấm chớp ầm ầm khi Hero đang chơi ngoài sân cạnh gốc cây to. Hero làm gì?','mom:60:scared',0,[['Chạy vào nhà ngay cùng mẹ','mom','run','hold',1,'Hai mẹ con vào nhà an toàn khi sấm chớp nổ ra.',1],['Trú dưới gốc cây to','','idle','sad',0,'Cây cao dễ bị sét đánh. Hãy vào nhà.'],['Đứng ngoài trời xem sấm chớp','','idle','sad',0,'Sấm chớp rất nguy hiểm, hãy vào nhà ngay.']],'storm']]));
 
-/* ----- Bộ thẻ: ảnh theo bài, logo trên trái, QR dưới phải ----- */
-const qrU=l=>'https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=2&data='+encodeURIComponent(location.href.split('#')[0]+'#hero='+code(l));
-const cardArt=l=>{const th=l.th||themeOf(l),g=(l.sc?l.sc[0]:l).o.find(o=>o[4]);return `<div class="art" style="background:${th==='park'?cat(l.c).bg:THBG[th]}"><span class="ae">${l.e}</span><div class="ach">${char('me',g[2],'happy')}</div></div>`};
-function fc(l){const c=cat(l.c);
- if(locked(l))return `<div class="fc" data-lock="1"><div class="fi"><div class="ff fr" style="background:#B8C0D6;align-items:center;text-align:center;justify-content:center"><div class="e">🔒</div><h3 style="margin:0">${l.t}</h3><small style="margin:0">Thẻ Premium</small></div></div></div>`;
- const q=`<img class="qr" src="${qrU(l)}" alt="QR ${code(l)}" onerror="this.style.visibility='hidden'">`;
- return `<div class="fc"><div class="fi"><div class="ff fr" style="background:${c.c}"><div class="lg2">★ Little Hero</div>${cardArt(l)}<h3>${l.t}</h3><small>${c.n}</small>${q}</div><div class="ff bk"><div class="lg2 dk">★ Little Hero</div><b>✅ NÊN LÀM</b><p>${good(l)}</p><b>❌ KHÔNG NÊN</b><p>${bad(l)}</p><small>${code(l)}</small>${q}</div></div></div>`}
-const pcard=l=>`<div class="pc"><b>★ Little Hero</b><div class="pe">${l.e}</div><h3>${l.t}</h3><small>${cat(l.c).n}</small><img src="${qrU(l)}" width="70" height="70" alt=""><p>✅ ${good(l)}</p><p>❌ ${bad(l)}</p><b>${code(l)}</b></div>`;
 function deep(){const m=location.hash.match(/hero=([A-Za-z0-9-]+)/);if(m){const l=LESSONS.find(x=>code(x)===m[1].toUpperCase());if(l)locked(l)?plans():play(l)}}
 
+/* ================= v5 (phần 1) ================= */
+DEF.chd={};DEF.tour=null;if(S.chd==null)S.chd={};if(S.tour===undefined)S.tour=null;if(!S.lang)S.lang='vi';
+
+/* ----- AI miễn phí: Gemini (key miễn phí) hoặc Pollinations (không cần key) ----- */
+const stripAd=t=>String(t).replace(/\n*-{3,}[\s\S]*pollinations[\s\S]*$/i,'').replace(/\n*\*?\*?support pollinations[\s\S]*$/i,'');
+async function freeAI(system,msgs){const x=await fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',private:true,messages:[{role:'system',content:system},...msgs]})});
+ if(!x.ok)throw new Error('lỗi '+x.status);const d=await x.json();return stripAd(d.choices[0].message.content)}
+async function gemAI(system,msgs){const x=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(S.gem),{method:'POST',headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents:msgs.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.content}]}))})});
+ const d=await x.json();if(!x.ok)throw new Error((d.error&&d.error.message)||'lỗi '+x.status);return d.candidates[0].content.parts[0].text}
+const _sp=sysPrompt;sysPrompt=function(r){return _sp(r)+(S.lang==='en'?' Always reply in English and keep the same JSON format.':'')};
+
+/* ----- Âm thanh: hiệu ứng + giai điệu theo bối cảnh ----- */
+const MEL={class:{t:300,d:.3,w:'triangle',n:[523,587,659,784,659,587,523,0,659,784,880,784,659,587,523,0]},pool:{t:420,d:.5,w:'sine',n:[392,494,587,784,587,494,392,0,440,523,659,880,659,523,440,0]},road:{t:260,d:.2,w:'square',n:[392,0,392,523,0,523,392,0,330,0,330,440,0,440,330,0]},mart:{t:280,d:.25,w:'triangle',n:[523,659,784,659,587,740,880,740,523,659,784,659,494,622,740,0]},home:{t:480,d:.6,w:'sine',n:[392,440,494,440,392,330,294,0,330,392,440,392,330,294,262,0]},kitchen:{t:240,d:.18,w:'triangle',n:[659,784,659,523,659,784,659,0,587,698,587,494,587,698,587,0]},storm:{t:520,d:.7,w:'sawtooth',n:[196,0,233,0,196,0,175,0,196,0,262,0,233,0,175,0]},park:{t:320,d:.28,w:'triangle',n:[523,659,784,1047,784,659,523,0,587,698,880,698,587,0,523,0]}};
+const Snd={c:null,on:S.snd!==false,mt:null,
+ init(){if(!this.c){try{this.c=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(this.c&&this.c.state==='suspended')this.c.resume();return this.c},
+ tone(f,d=.18,ty='sine',v=.12,at=0){const c=this.init();if(!c||!this.on)return;const t=c.currentTime+at,o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.05)},
+ noise(d=.3,v=.15,fq=1200,at=0,ty='lowpass'){const c=this.init();if(!c||!this.on)return;const n=Math.floor(c.sampleRate*d),b=c.createBuffer(1,n,c.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=(Math.random()*2-1)*(1-i/n);const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(),t=c.currentTime+at;s.buffer=b;f.type=ty;f.frequency.value=fq;g.gain.value=v;s.connect(f);f.connect(g);g.connect(c.destination);s.start(t)},
+ sfx(n){const T=(f,d,ty,v,at)=>this.tone(f,d,ty,v,at),m={click:()=>T(660,.06,'triangle',.07),ok:()=>[523,659,784,1047].forEach((f,i)=>T(f,.2,'triangle',.13,i*.09)),bad:()=>{T(180,.35,'sawtooth',.1);T(140,.4,'sawtooth',.09,.15)},
+  run:()=>{for(let i=0;i<8;i++)this.noise(.05,.12,900,i*.11,'bandpass')},walk:()=>{for(let i=0;i<4;i++)this.noise(.06,.1,700,i*.3,'bandpass')},hug:()=>[392,494,587].forEach((f,i)=>T(f,.7,'sine',.09,i*.05)),
+  pop:()=>{T(700,.08,'sine',.12);T(1000,.1,'sine',.1,.07)},splash:()=>this.noise(.7,.2,1800),thunder:()=>this.noise(1.4,.3,200),nope:()=>{T(260,.12,'square',.07);T(200,.15,'square',.07,.12)},wave:()=>[880,988].forEach((f,i)=>T(f,.12,'sine',.08,i*.1)),fan:()=>[523,659,784,1047,1319].forEach((f,i)=>T(f,.25,'triangle',.12,i*.08))};if(m[n])m[n]()},
+ pose(p,mood){const map={run:'run',walk:'walk',hug:'hug',pick:'pop',flail:'splash',no:'nope',wave:'wave',give:'pop',point:'pop'};if(map[p])this.sfx(map[p]);if(mood==='happy')setTimeout(()=>this.sfx('ok'),250);else if(mood==='sad')setTimeout(()=>this.sfx('bad'),250)},
+ music(th){clearInterval(this.mt);this.mt=null;if(!th||!this.on)return;if(!this.init())return;const M=MEL[th]||MEL.park;let i=0;this.mt=setInterval(()=>{const n=M.n[i++%M.n.length];if(n)this.tone(n,M.d*.9,M.w,.045);if(th==='storm'&&i%16===0)this.sfx('thunder');if(th==='pool'&&i%8===0)this.noise(.4,.04,1500)},M.t)},
+ toggle(){this.on=!this.on;S.snd=this.on;save();if(!this.on)this.music(null)}};
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button'))Snd.sfx('click')},true);
+const _pose=pose;pose=function(k,p,m){if(k==='me')Snd.pose(p,m);_pose(k,p,m)};
+const _boom=boom;boom=function(){Snd.sfx('fan');_boom()};
+const _play=play;play=function(l,si,ex){_play(l,si,ex);document.body.style.background='';const sc=l.sc?l.sc[si||0]:l;Snd.music('L:'+l.id+':'+l.c)};
+
+/* ----- Mạch truyện 3 cảnh cho mọi bài học ----- */
+const SC2={a:{q:'Mọi việc đã ổn. Người lớn hỏi: "Có chuyện gì xảy ra thế, con kể lại nhé?" Hero làm gì?',cast:'mom:46',th:'home',o:[['Kể lại thật thà cho mẹ nghe','mom','wave','hold',1,'Mẹ ôm Hero và cùng nhắc lại cách làm an toàn. Hero thấy yên tâm hơn nhiều!'],['Nói "không có gì đâu ạ"','','idle','sad',0,'Hero giấu chuyện nên mẹ không biết để giúp Hero lần sau.'],['Bịa chuyện cho vui','','no','sad',0,'Nói không thật làm mọi người hiểu sai, lần sau Hero khó được bảo vệ.']]},
+ b:{q:'Cô giáo hỏi: "Con thấy mình nên cư xử thế nào để mọi người cùng vui?" Hero trả lời sao?',cast:'teacher:56',th:'class',o:[['Nói lời lễ phép, biết nhường nhịn bạn','teacher','bow','cheer',1,'Cô khen Hero và cả lớp cùng vỗ tay.'],['Nói "tại bạn đó chứ"','','no','sad',0,'Đổ lỗi cho bạn làm mọi người buồn hơn.'],['Im lặng cúi đầu','','sad','sad',0,'Hãy nói ra suy nghĩ để mọi người hiểu Hero.']]},
+ c:{q:'Hôm sau, một bạn rủ Hero bỏ qua việc tốt vừa học vì "lười lắm". Hero làm gì?',cast:'gA:56',th:'home',o:[['Rủ bạn cùng làm, vì làm xong thấy vui hơn','gA','give','cheer',1,'Hai bạn cùng làm và cười thật vui. Thói quen tốt lây sang bạn!'],['Làm theo bạn, bỏ qua luôn','','idle','sad',0,'Bỏ qua thói quen tốt một lần sẽ dễ có lần sau.'],['Chê bạn lười rồi bỏ đi','<','no','sad',0,'Chê bạn làm bạn buồn. Hãy rủ bạn thật nhẹ nhàng.',1]]}};
+const CL={sv:'a',bv:'a',nc:'a',yt:'a',nh:'a',dv:'a',tn:'a',cn:'a',lp:'b',vl:'b',xl:'b',cx:'b',ks:'c',sk:'c',tc:'c',mt:'c'};
+LESSONS.filter(l=>!l.sc).forEach(l=>{const s2=SC2[CL[l.c]||'a'];
+ l.sc=[{q:l.q,cast:l.cast,prop:l.prop,th:l.th,o:l.o},{q:s2.q,cast:s2.cast,th:s2.th,o:s2.o},
+  {q:'Vài hôm sau, Hero gặp một tình huống tương tự ở nơi khác. Hero làm gì?',cast:l.cast,th:l.th,o:l.o.map(o=>o[4]?[o[0],o[1],o[2],o[3],1,o[5]+' Hero đã nhớ đúng bài học: '+l.l]:[o[0],o[1],o[2],o[3],0,'Hero quên mất bài học rồi! '+o[5]].concat(o[6]?[1]:[]))}]});
+LESSONS.filter(l=>l.sc&&l.sc.length<3).forEach(l=>{const s=l.sc[0];l.sc.push({q:'Vài hôm sau, Hero gặp một tình huống tương tự ở nơi khác. Hero làm gì?',cast:s.cast,th:s.th||l.th,prop:s.prop,o:s.o.map(o=>o[4]?[o[0],o[1],o[2],o[3],1,o[5]+' Hero đã nhớ đúng bài học: '+l.l]:[o[0],o[1],o[2],o[3],0,'Hero quên mất bài học rồi! '+o[5]].concat(o[6]?[1]:[]))})});
+
+/* ----- Kiến thức bé cần nhớ + Thử thách ngoài đời theo chủ đề ----- */
+const KN={sv:{k:['Khi bị lạc, đứng yên và nhờ người mặc đồng phục.','Nhớ tên và số điện thoại của bố mẹ.','Qua đường phải nắm tay người lớn và đợi đèn xanh.'],c:'Cùng bố mẹ tập đọc số điện thoại và địa chỉ nhà trong 1 phút.'},
+bv:{k:['Không đi theo hay nhận quà từ người lạ.','Cơ thể là của mình, không ai được chạm vào chỗ riêng tư.','Nói "không" thật to rồi chạy đến người lớn tin cậy.'],c:'Chọn 3 người lớn con tin tưởng và nói tên họ cho bố mẹ nghe.'},
+ks:{k:['Rửa tay bằng xà phòng trước khi ăn.','Tự gấp quần áo và dọn đồ chơi.','Uống đủ nước, ngủ đủ giấc.'],c:'Tự dọn đồ chơi và gấp quần áo của mình trong hôm nay.'},
+lp:{k:['Chào hỏi khi gặp người lớn.','Nói "xin phép", "cảm ơn", "xin lỗi".','Không ngắt lời khi người khác đang nói.'],c:'Chào một cô chú hàng xóm hoặc bác bảo vệ bằng lời lễ phép.'},
+vl:{k:['Nghe lời dặn an toàn của bố mẹ và thầy cô.','Làm việc ngay khi được nhờ.','Có thắc mắc thì hỏi nhẹ nhàng, không cãi.'],c:'Làm một việc bố mẹ nhờ ngay từ lần nhắc đầu tiên.'},
+xl:{k:['Nói xin lỗi khi làm bạn buồn.','Chia sẻ đồ chơi, thay phiên nhau.','Giúp bạn khi bạn gặp khó khăn.'],c:'Giúp một bạn một việc nhỏ ở trường rồi kể cho bố mẹ nghe.'},
+sk:{k:['Đánh răng 2 lần mỗi ngày.','Ăn nhiều rau, hạn chế kẹo ngọt.','Đi khám sức khỏe định kỳ.'],c:'Đánh răng đủ 2 phút sáng và tối trong cả tuần này.'},
+cx:{k:['Ai cũng có lúc giận, buồn, sợ.','Hít thở sâu giúp mình bình tĩnh.','Nói ra cảm xúc với người mình tin tưởng.'],c:'Khi giận, hít thở sâu 5 lần rồi nói với bố mẹ: "Con đang giận vì…".'},
+tc:{k:['Tiền kiếm được bằng sức lao động.','Dành một phần để tiết kiệm.','Hỏi bố mẹ trước khi mua đồ đắt.'],c:'Bỏ tiền vào heo đất mỗi tuần và đếm cùng bố mẹ cuối tuần.'},
+mt:{k:['Bỏ rác vào đúng thùng.','Tắt đèn, tắt nước khi không dùng.','Trồng cây giúp không khí trong lành.'],c:'Nhặt 5 mẩu rác bỏ vào thùng cùng bố mẹ.'},
+cn:{k:['Không cho người lạ biết địa chỉ, số điện thoại.','Báo ngay người lớn khi có tin nhắn lạ.','Không bấm vào đường link lạ.'],c:'Cùng bố mẹ đặt luật dùng thiết bị: giờ nào, bao lâu, xem gì.'},
+nc:{k:['Chỉ bơi khi có người lớn bên cạnh.','Không nhảy xuống cứu bạn: hãy hét to gọi người lớn và đưa phao.','Mặc áo phao khi đi thuyền.'],c:'Cùng bố mẹ tìm xem gần nhà có áo phao hoặc phao cứu sinh ở đâu.'},
+yt:{k:['Bị bỏng: xả nước mát và báo người lớn.','Chảy máu: dùng khăn sạch ấn nhẹ.','Cần cấp cứu thì nhờ người lớn gọi 115.'],c:'Học thuộc số 115 (cấp cứu), 114 (cứu hỏa), 113 (công an) và đọc lại cho bố mẹ.'},
+nh:{k:['Không chạm ổ điện, bàn là, bếp.','Thuốc và hóa chất phải để xa tầm tay trẻ.','Không chơi gần cửa sổ, ban công.'],c:'Cùng bố mẹ đi một vòng quanh nhà tìm 3 nơi có thể nguy hiểm.'},
+dv:{k:['Không chạm vào chó mèo lạ.','Gặp chó dữ: đứng yên, không chạy.','Rửa tay sau khi chơi với thú cưng.'],c:'Quan sát một con vật từ xa và kể cho bố mẹ cách đối xử an toàn.'},
+tn:{k:['Giông bão: vào nhà, tránh cây cao.','Động đất: chui xuống gầm bàn, che đầu.','Nghe theo hướng dẫn của người lớn khi sơ tán.'],c:'Cùng gia đình chọn một "điểm tập hợp" an toàn khi có thiên tai.'}};
+const kcHTML=c=>{const k=KN[c.id]||{k:[],c:''},dn=S.chd[c.id];return `<div class="kc"><div class="kn"><h4>📘 Kiến thức bé cần nhớ</h4><ul>${k.k.map(x=>`<li>${x}</li>`).join('')}</ul></div><div class="kn ch"><h4>🌍 Thử thách ngoài đời</h4><p>${k.c}</p><button class="btn ${dn?'ghost':'sun'}" data-ch="${c.id}" ${dn?'disabled':''}>${dn?'✅ Đã hoàn thành':'Con đã làm! +15 ⭐'}</button></div></div>`};
+const _learn=learn;learn=function(){_learn();const sel=S.catSel||'all',cs=CATS.filter(c=>sel==='all'||sel===c.id);
+ $$('#app .chd').forEach((h,i)=>{const g=h.nextElementSibling;if(g&&cs[i])g.insertAdjacentHTML('afterend',kcHTML(cs[i]))});
+ $$('[data-ch]').forEach(b=>b.onclick=()=>{S.chd[b.dataset.ch]=1;S.xp+=15;trk('xp',15);save();shell();boom();learn()})};
+
+/* ----- Bộ thẻ chia theo chủ đề ----- */
+const qrU=l=>'https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=1&data='+encodeURIComponent(location.href.split('#')[0]+'#hero='+code(l));
+const cardArt=l=>{const th=l.th||themeOf(l),g=(l.sc?l.sc[0]:l).o.find(o=>o[4]);return `<div class="art" style="background:${th==='park'?cat(l.c).bg:THBG[th]}"><span class="ae">${l.e}</span><div class="ach">${char('me',g[2],'happy')}</div></div>`};
+const logo2='<div class="lg2"><i>🦸</i>Little Hero</div>';
+function fc(l){const c=cat(l.c);
+ if(locked(l))return `<div class="fc" data-lock="1"><div class="fi"><div class="ff fr" style="background:#B8C0D6"><div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center"><div><div class="e">🔒</div><h3 style="margin:0">${l.t}</h3><small>Thẻ Premium</small></div></div></div></div></div>`;
+ const q=`<img class="qr" src="${qrU(l)}" alt="QR ${code(l)}" onerror="this.style.visibility='hidden'">`;
+ return `<div class="fc"><div class="fi"><div class="ff fr" style="background:${c.c}">${logo2}${cardArt(l)}<div class="tx"><h3>${l.t}</h3><small>${c.e} ${c.n}</small></div>${q}</div><div class="ff bk">${logo2}<div class="tx2"><b>✅ NÊN LÀM</b><p>${good(l)}</p><b>❌ KHÔNG NÊN</b><p>${bad(l)}</p></div><div class="cd">MÃ: ${code(l)}</div>${q}</div></div></div>`}
+const pcard=l=>`<div class="pc"><b>★ Little Hero</b><div class="pe">${l.e}</div><h3>${l.t}</h3><small>${cat(l.c).n}</small><img src="${qrU(l)}" width="70" height="70" alt=""><p>✅ ${good(l)}</p><p>❌ ${bad(l)}</p><b>${code(l)}</b></div>`;
+function cardsV(){app.innerHTML=`<h2>Bộ thẻ kỹ năng sống</h2><p class="note">Chạm vào thẻ để lật. Quét mã QR trên thẻ để vào đúng bài học, hoặc in bộ thẻ ra giấy để học cùng bố mẹ.</p>
+ <div class="panel"><div class="inp"><input id="cd" placeholder="Nhập mã trên thẻ, ví dụ HERO-DUONG"><button class="btn" id="cg">Mở bài</button><button class="btn sun" id="pr">🖨️ In bộ thẻ</button></div><p id="ce" class="note"></p></div>
+ ${CATS.map(c=>{const ls=LESSONS.filter(l=>l.c===c.id);return `<h3 class="chd" style="border-color:${c.c}">${c.e} ${c.n} <small>${ls.length} thẻ</small></h3><div class="grid fcs">${ls.map(fc).join('')}</div>`}).join('')}`;
+ $$('.fc').forEach(f=>f.onclick=()=>f.dataset.lock?plans():f.classList.toggle('on'));
+ $('#cg').onclick=()=>{const v=$('#cd').value.trim().toUpperCase(),l=LESSONS.find(x=>code(x)===v);if(!l)$('#ce').textContent='Không tìm thấy mã này. Hãy kiểm tra lại mã trên thẻ.';else locked(l)?plans():play(l)};
+ $('#pr').onclick=()=>{$('#sheet').innerHTML=LESSONS.filter(l=>!locked(l)).map(pcard).join('');window.print()}}
+
+/* ----- FAQs ----- */
+const FAQ=[['Little Hero là gì?','Ứng dụng giúp bé 3–10 tuổi học kỹ năng sống qua truyện tương tác. Bé chọn cách xử lý, nhân vật làm đúng như vậy và bé thấy ngay kết quả.'],
+['Ứng dụng dành cho bé bao nhiêu tuổi?','Phù hợp bé từ 3 đến 10 tuổi. Bé nhỏ nên học cùng bố mẹ, bé lớn có thể tự học và thi đấu.'],
+['Gói miễn phí và Premium khác nhau thế nào?','Gói miễn phí có các bài cơ bản. Premium mở khóa toàn bộ bài học và thẻ bài. Trong bản demo, mỗi lần đăng ký Premium có hiệu lực 12 giờ, hết giờ phải đăng ký và thanh toán lại.'],
+['Làm sao nâng cấp hoặc gia hạn Premium?','Bấm nút Nâng cấp (hoặc mục Gói Premium trong menu), phụ huynh xác nhận, rồi thanh toán bằng mã QR hoặc chuyển khoản. Bản demo chỉ cần bấm "Xác nhận đã thanh toán".'],
+['Làm sao quản lý thời gian bé dùng app?','Vào Góc phụ huynh để xem số phút online mỗi ngày và đặt giới hạn. Hết giờ, app sẽ nhắc bé nghỉ ngơi và chỉ phụ huynh mới gia hạn được.'],
+['Mỗi ngày dữ liệu có làm mới không?','Có. Giờ online, điểm hôm nay và nhiệm vụ sẽ tự làm mới lúc 00:00 mỗi ngày.'],
+['Hỏi Hero có trả lời được mọi câu hỏi không?','Có. Hero dùng AI miễn phí để trả lời nhiều chủ đề, luôn theo hướng an toàn cho trẻ. Phụ huynh có thể nối Gemini hoặc Claude để trả lời tốt hơn.'],
+['Thẻ kỹ năng dùng thế nào?','Chạm để lật thẻ. Quét mã QR ở góc dưới để mở đúng bài học, hoặc nhập mã trên thẻ. Có thể in cả bộ thẻ.'],
+['Giải đấu trong trường hoặc lớp hoạt động ra sao?','Giáo viên tạo giải, thêm thí sinh, hệ thống ghép cặp loại trực tiếp. Người tạo xem trực tiếp màn hình hai thí sinh đang thi đấu. Bản demo mô phỏng ngay trên một thiết bị.'],
+['Bảng xếp hạng được tính thế nào?','Thắng +25 điểm, hòa +5, thua -10. Bảng xếp hạng hiện là dữ liệu mô phỏng cho đến khi có máy chủ.'],
+['Diễn đàn có an toàn cho bé không?','Bài đăng được lọc số điện thoại, email, địa chỉ và liên kết. Phụ huynh nên đi cùng bé khi dùng diễn đàn.'],
+['Đổi ngôn ngữ ở đâu?','Bấm nút ☰ ở góc phải, chọn Ngôn ngữ. Hiện có Tiếng Việt và English cho giao diện; nội dung câu chuyện vẫn bằng tiếng Việt.'],
+['Dữ liệu của bé được lưu ở đâu?','Bản demo lưu trong trình duyệt trên thiết bị này. Quản trị viên có thể reset dữ liệu ở cuối Trang chủ.']];
+function faq(){app.innerHTML=`<h2>Câu hỏi thường gặp</h2><div class="panel"><input type="text" id="fq" placeholder="Tìm câu hỏi…" aria-label="Tìm câu hỏi"></div><div id="fl">${FAQ.map(f=>`<details class="fq"><summary>${f[0]}</summary><p>${f[1]}</p></details>`).join('')}</div><p class="note">Chưa thấy câu trả lời? Hãy <button class="lk" style="display:inline;color:var(--vio);font-weight:700" data-nv="chat">hỏi Hero</button>.</p>`;
+ $('#fq').oninput=e=>{const v=e.target.value.toLowerCase();$$('details.fq').forEach(d=>d.style.display=d.textContent.toLowerCase().includes(v)?'':'none')}}
+
+/* ================= v5 (phần 2) ================= */
+TT.school='Giải đấu trường lớp';TT.faq='Câu hỏi thường gặp';
+NAVK.unshift([/giải đấu|trường lớp|tổ chức thi/,'school'],[/faq|câu hỏi thường gặp|hỏi đáp/,'faq']);
+Object.assign(NAVD,{school:'tạo giải đấu 1v1 cho trường hoặc lớp.',faq:'các câu hỏi thường gặp và cách trả lời.'});
+Object.assign(X,{school:()=>school(),faq:()=>faq()});
+
+/* ----- Mỗi trang một diện mạo riêng ----- */
+const G=(a,b)=>`linear-gradient(120deg,${a},${b})`;
+const PH={learn:['📚','Bài học','Chọn chủ đề và cùng Hero học nhé',G('#4F8DF7','#7B5CFF'),'#EEF4FF','🧩📝🔤'],comic:['📖','Truyện tranh','Đọc chuyện Hero và bạn bè',G('#FF9F43','#FF6B6B'),'#FFF3E6','🎈🌈📚'],cards:['🃏','Bộ thẻ kỹ năng','Lật thẻ, quét QR, in ra học cùng bố mẹ',G('#2EC4A6','#4F8DF7'),'#E8FBF5','⭐✨🃏'],
+ chat:['🎙️','Hỏi Hero','Hỏi gì Hero cũng trả lời',G('#7B5CFF','#FF7AC6'),'#F5EEFF','💬🤖✨'],parent:['👪','Góc phụ huynh','Theo dõi tiến độ và thời gian của bé',G('#26325B','#4F8DF7'),'#EAF0FA','📊📈🔒'],profile:['🧒','Hồ sơ','Thông tin của bé',G('#E8559A','#FF9F43'),'#FFF0F6','🌟🎀🌸'],
+ quests:['🎯','Nhiệm vụ','Hoàn thành để nhận thưởng',G('#FFB300','#FF6B6B'),'#FFF8E1','🎁⭐🔥'],quiz:['🧠','Bài kiểm tra','5 câu hỏi thử tài',G('#00B8D9','#7B5CFF'),'#E6F9FD','❓💡📝'],duel:['⚔️','Thi đấu 1 đối 1','Đối đầu và leo bảng xếp hạng',G('#FF5252','#FF9F43'),'#FFECEC','🔥🏆⚡'],
+ region:['🏙️','Đấu trường khu vực','Top 100 bé cùng khu vực',G('#1E88E5','#26C6DA'),'#E7F3FE','🏢🌆🏅'],nation:['🇻🇳','Đấu trường toàn quốc','Top 100 bé cả nước',G('#D32F2F','#FFC107'),'#FFF1F1','⭐🏆🥇'],wall:['🏅','Tường thành tích','Các huy hiệu của bé',G('#8E24AA','#FFC107'),'#F8EEFB','🥇🏆✨'],
+ forum:['💬','Diễn đàn','Nơi chia sẻ của bé và phụ huynh',G('#43A047','#26C6DA'),'#EAF8EB','💭🌳💚'],reviews:['⭐','Đánh giá','Ý kiến của bạn giúp app tốt hơn',G('#FFB300','#EC407A'),'#FFF6E0','⭐🌟💛'],pay:['💎','Gói Premium','Mở khóa toàn bộ bài học',G('#7B5CFF','#00BFA5'),'#F1EDFF','💎👑✨'],
+ faq:['❓','Câu hỏi thường gặp','Câu trả lời soạn sẵn cho bạn',G('#546E7A','#26A69A'),'#EEF3F4','💡📘🔎'],school:['🏫','Giải đấu trường lớp','Tạo giải 1v1 cho trường và lớp',G('#3949AB','#00ACC1'),'#ECEFFB','🏆📣🎓']};
+function afterGo(v){document.body.dataset.v=v;const p=PH[v];document.body.style.background=p?p[4]:'';
+ if(p){const i=Object.keys(PH).indexOf(v);app.insertAdjacentHTML('afterbegin',`<div class="phero" style="background:${p[3]};flex-direction:${i%2?'row-reverse':'row'};text-align:${i%2?'right':'left'}"><span class="pe3">${p[0]}</span><div><h1>${p[1]}</h1><p>${p[2]}</p></div>${[...p[5]].map(x=>`<span class="fl">${x}</span>`).join('')}</div>`)}}
+const _go=go;go=function(v){Snd.music(null);_go(v);if(view===v){afterGo(v);applyLang()}};
+
+/* ----- Ngôn ngữ ----- */
+const EN={'Trang chủ':'Home','Bài học':'Lessons','Truyện tranh':'Comics','Truyện':'Stories','Bộ thẻ kỹ năng sống':'Life-skill cards','Bộ thẻ kỹ năng':'Skill cards','Bộ thẻ':'Cards','Hỏi Hero':'Ask Hero','Phụ huynh nói':'Parent','Bé nói':'Kid','Góc phụ huynh & theo dõi':'Parent corner','Góc phụ huynh':'Parent corner','Phụ huynh':'Parents','Nâng cấp':'Upgrade','Tài khoản':'Account','Đăng nhập':'Log in','Đăng ký':'Sign up','Đăng xuất':'Log out','Khách':'Guest','Thông tin cá nhân':'My profile','Nhiệm vụ hằng ngày':'Daily quests','Nhiệm vụ đã nhận':'Quests claimed','Nhiệm vụ':'Quests','Bài kiểm tra':'Quiz','Thi đấu 1 đối 1':'1v1 Duel','Thi đấu ngay':'Play now','Thi đấu':'Duel','Đấu trường khu vực':'Regional arena','Đấu trường toàn quốc':'National arena','Tường thành tích':'Achievements','Thành tích':'Achievements','Diễn đàn':'Forum','Đánh giá ứng dụng':'Rate the app','Đánh giá':'Reviews','Gói Premium':'Premium plan','Giải đấu trường lớp':'School tournament','Câu hỏi thường gặp':'FAQs','Ngôn ngữ':'Language','Âm thanh':'Sound','Bật':'On','Tắt':'Off','Chủ đề học':'Topics','Chọn Hero:':'Choose Hero:','Học tiếp:':'Continue:','Nói với Hero':'Talk to Hero','Gửi đánh giá':'Submit review','Gửi':'Send','Về nhà':'Home','Thoát':'Exit','Hủy':'Cancel','Đóng':'Close','Điểm hôm nay':'Points today','Online hôm nay':'Online today','Xếp hạng khu vực':'Regional rank','Xếp hạng toàn quốc':'National rank','Little Hero là gì?':'What is Little Hero?','Bắt đầu thế nào?':'How to start?','Xem gói':'View plans','Xem bộ thẻ':'View cards','Tìm đối thủ':'Find opponent','Đang tìm đối thủ…':'Finding an opponent…','Đã tìm thấy đối thủ!':'Opponent found!','Kiến thức bé cần nhớ':'What kids should remember','Thử thách ngoài đời':'Real-life challenge','Đã hoàn thành':'Completed','Con đã làm!':'I did it!','Tiếp tục câu chuyện':'Continue the story','Thử cách khác':'Try another way','Chơi lại từ đầu':'Play again','Về bài học':'Back to lessons','Bài tiếp theo':'Next lesson','Đúng rồi!':'Correct!','Chuyện gì xảy ra?':'What happens?','Hoàn thành câu chuyện!':'Story complete!','Nghe lại':'Listen again','Hỏi Hero điều bạn muốn biết…':'Ask Hero anything…','Xem video giới thiệu':'Watch intro video','Xem lại video':'Watch again','Tất cả':'All','Miễn phí':'Free','Hồ sơ':'Profile','Cảnh':'Scene','Khu vực của bé':"Kid's region",'Bảng theo dõi của bé':"Kid's dashboard",'Đăng bài':'Post','Chép':'Copy','Số tiền':'Amount','Nội dung chuyển khoản':'Transfer note','Tên tài khoản':'Account name','Số tài khoản':'Account number','Ngân hàng':'Bank','Thanh toán thành công!':'Payment successful!','Thanh toán gói Premium':'Pay for Premium','Tạo giải đấu':'Create tournament','Bắt đầu trận kế tiếp':'Start next match','Thí sinh':'Contestant','Tên giải đấu':'Tournament name','Tìm câu hỏi…':'Search FAQs…','Giới thiệu':'About','Liên hệ':'Contact','Khám phá':'Explore'};
+const ENK=Object.keys(EN).sort((a,b)=>b.length-a.length),SKIP='.say,.choice,.out,.lesson,.msgs,.kn li,.post,.tx,.tx2,.qt,.op,.lcard,.vcap,.vscr,.bub,.cnt';
+let LB=0;
+function applyLang(){if(LB||S.lang!=='en')return;LB=1;try{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(n.parentElement&&n.parentElement.closest(SKIP))continue;let t=n.nodeValue;if(!/[À-ỹ]/.test(t))continue;let r=t;for(const k of ENK)if(r.includes(k))r=r.split(k).join(EN[k]);if(r!==t)n.nodeValue=r}
+ document.querySelectorAll('[placeholder]').forEach(e=>{let p=e.getAttribute('placeholder');ENK.forEach(k=>{if(p.includes(k))p=p.split(k).join(EN[k])});e.setAttribute('placeholder',p)})}finally{LB=0}}
+let LT=0;new MutationObserver(()=>{if(S.lang!=='en'||LT)return;LT=setTimeout(()=>{LT=0;applyLang()},60)}).observe(document.body,{childList:true,subtree:true});
+function setLang(l){S.lang=l;save();document.documentElement.lang=l;shell();go(view==='play'?'learn':view)}
+
+/* ----- Menu ☰ ----- */
+function menu(){const u=S.user,m=modal(`<div class="acc"><div class="av2">${u?esc(u.name[0]).toUpperCase():'👤'}</div><div><b style="font-size:20px">${u?esc(u.name):'Khách'}</b><div class="note">${u?esc(u.email)+' · Lv '+lv()+' · '+(S.plan==='premium'?'👑 '+fmtLeft(S.exp-Date.now(),1):'Miễn phí'):'Bạn chưa đăng nhập'}</div></div></div>
+ ${u?'<div class="menu"><button data-nv="profile"><b>🧒</b>Thông tin cá nhân</button></div>':'<div class="row2"><button class="btn" id="mi">Đăng nhập</button><button class="btn sun" id="mu">Đăng ký</button></div>'}
+ <div class="menu">${[['quests','🎯','Nhiệm vụ hằng ngày'],['quiz','🧠','Bài kiểm tra'],['duel','⚔️','Thi đấu 1 đối 1'],['school','🏫','Giải đấu trường lớp'],['region','🏙️','Đấu trường khu vực'],['nation','🇻🇳','Đấu trường toàn quốc'],['wall','🏅','Tường thành tích'],['forum','💬','Diễn đàn'],['reviews','⭐','Đánh giá ứng dụng'],['faq','❓','Câu hỏi thường gặp'],['parent','👪','Góc phụ huynh & theo dõi'],['pay','💎','Gói Premium']].map(x=>`<button data-nv="${x[0]}"><b>${x[1]}</b>${x[2]}</button>`).join('')}</div>
+ <div class="row2" style="align-items:center"><b>🌐 Ngôn ngữ</b><button class="btn ${S.lang==='vi'?'sun':'ghost'}" data-l="vi">Tiếng Việt</button><button class="btn ${S.lang==='en'?'sun':'ghost'}" data-l="en">English</button></div>
+ <div class="row2" style="align-items:center"><b>🎵 Âm thanh</b><button class="btn ${Snd.on?'sun':'ghost'}" id="sn">${Snd.on?'Bật':'Tắt'}</button></div>
+ <div class="row2" style="align-items:center"><b>🔊 Âm lượng</b><button class="btn ghost" onclick="document.querySelectorAll('.modal').forEach(x=>x.remove());volPanel()">Điều chỉnh</button></div>
+ <div class="row2" style="align-items:center"><b>🎨 Tùy chỉnh Hero</b><button class="btn ghost" onclick="document.querySelectorAll('.modal').forEach(x=>x.remove());go('lab')">→</button></div>
+ ${u?'<div class="menu"><button id="mo"><b>🚪</b>Đăng xuất</button></div>':''}`);
+ m.addEventListener('click',e=>{if(e.target.closest('[data-nv]'))m.remove()});const q=s=>m.querySelector(s);
+ if(q('#mi'))q('#mi').onclick=()=>{m.remove();auth('in')};if(q('#mu'))q('#mu').onclick=()=>{m.remove();auth('up')};if(q('#mo'))q('#mo').onclick=()=>{S.user=null;save();m.remove();go('home')};
+ q('#sn').onclick=()=>{Snd.toggle();m.remove();menu()};m.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{m.remove();setLang(b.dataset.l)})}
+
+/* ----- Giải đấu 1v1 trong trường/lớp ----- */
+const shuf=a=>a.slice().sort(()=>Math.random()-.5);
+function mkRound(T,list){const m=[];for(let i=0;i<list.length;i+=2){const a=list[i],b=list[i+1]||null;m.push({a,b,w:b?null:a,sa:0,sb:0})}T.rounds.push(m)}
+function school(){let T=S.tour;
+ if(!T){app.innerHTML=`<h2>Giải đấu 1v1 trong trường/lớp</h2><div class="panel"><p class="note">Giáo viên hoặc phụ huynh tạo giải loại trực tiếp cho cả trường hoặc từng lớp, thêm thí sinh rồi xem trực tiếp màn hình hai thí sinh đang thi đấu.</p>
+  <label>Tên giải đấu<input type="text" id="tn" placeholder="VD: Hero Cup lớp 3A"></label><label>Phạm vi<select id="ts"><option>Cả trường</option><option>Lớp</option></select></label><label>Trường / lớp<input type="text" id="tc" placeholder="VD: Tiểu học Lê Lợi, lớp 3A"></label>
+  <label>Thí sinh (mỗi dòng một tên, tối thiểu 2)<textarea id="tp" rows="6" placeholder="Nguyễn An&#10;Trần Bình&#10;Lê Chi"></textarea></label><button class="btn sun" id="tm2">Tạo giải đấu</button></div>`;
+  $('#tm2').onclick=()=>{const ps=[...new Set($('#tp').value.split('\n').map(x=>x.trim()).filter(Boolean))].slice(0,32);if(ps.length<2)return toast('Cần ít nhất 2 thí sinh');if(ps.some(p=>BADW.test(p)))return toast('Tên có thông tin cá nhân hoặc liên kết');
+   S.tour={name:$('#tn').value.trim()||'Giải đấu của lớp',scope:$('#ts').value,place:$('#tc').value.trim(),players:ps,rounds:[],champ:null};mkRound(S.tour,shuf(ps));save();school()};return}
+ for(let g=0;g<6;g++){const cur=T.rounds[T.rounds.length-1];if(!T.champ&&cur.every(m=>m.w)){if(cur.length===1)T.champ=cur[0].w;else mkRound(T,cur.map(m=>m.w))}}save();
+ const fresh=T.rounds.length===1&&T.rounds[0].every(m=>!m.b||m.w===null),last=T.rounds[T.rounds.length-1],nx=T.champ?null:last.findIndex(m=>!m.w);
+ app.innerHTML=`<h2>🏆 ${esc(T.name)}</h2><div class="stats"><div class="st"><small>Phạm vi</small><b style="font-size:20px">${esc(T.scope)}</b></div><div class="st"><small>${esc(T.place||'Trường/lớp')}</small><b>${T.players.length} thí sinh</b></div><div class="st"><small>Vòng hiện tại</small><b>${T.champ?'Kết thúc':T.rounds.length}</b></div></div>
+ ${T.champ?`<div class="panel end"><div class="big">🏆</div><h2>Nhà vô địch: ${esc(T.champ)}</h2><p>Chúc mừng! Giải đấu đã kết thúc.</p></div>`:`<div class="panel end"><p>Trận tiếp theo: <b>${esc(last[nx].a)}</b> ⚔️ <b>${esc(last[nx].b)}</b></p><button class="btn sun" id="st">▶ Bắt đầu trận kế tiếp (xem trực tiếp)</button></div>`}
+ ${fresh&&!T.champ?`<div class="panel"><div class="inp"><input type="text" id="np" placeholder="Thêm thí sinh mới"><button class="btn" id="na">+ Thêm</button></div></div>`:''}
+ <div class="panel"><h3>Sơ đồ thi đấu</h3><div class="br">${T.rounds.map((r,i)=>`<div><b>Vòng ${i+1}</b>${r.map(m=>`<div class="mt">${esc(m.a)} <small>${m.b?m.sa:''}</small><br>${m.b?esc(m.b)+' <small>'+m.sb+'</small>':'<i>được đặc cách</i>'}<br>${m.w?`<span class="w">✔ ${esc(m.w)}</span>`:'<small>chưa đấu</small>'}</div>`).join('')}</div>`).join('')}</div></div>
+ <button class="btn ghost" id="dl">🗑 Xóa giải đấu</button><p class="note">Bản demo mô phỏng thi đấu ngay trên thiết bị này. Để hai bé thi trên hai thiết bị và người tạo xem từ xa cần máy chủ thời gian thực.</p>`;
+ if($('#st'))$('#st').onclick=()=>live(T.rounds.length-1,nx);
+ if($('#na'))$('#na').onclick=()=>{const v=$('#np').value.trim();if(!v||BADW.test(v)||T.players.includes(v))return toast('Tên không hợp lệ hoặc đã có');T.players.push(v);T.rounds=[];mkRound(T,shuf(T.players));save();school()};
+ $('#dl').onclick=()=>{if(confirm('Xóa giải đấu này?')){S.tour=null;save();school()}}}
+function live(ri,mi){const T=S.tour,m=T.rounds[ri][mi],qs=shuf(POOL()).slice(0,5),acc=[.5+Math.random()*.4,.5+Math.random()*.4],sc=[0,0],opts=qs.map(()=>shuf([0,1,2]));let i=0,pk=[null,null],rev=false,alive=true;
+ const pn=k=>{const q=qs[i],o=opts[i];return `<div class="pn"><h3>${k?'🔵':'🔴'} ${esc(k?m.b:m.a)} <span class="chip">${sc[k]} điểm</span></h3><p class="qt">${q.q}</p>${o.map((x,n)=>{const ok=q.o[x][4],p=pk[k]===x,cl=rev?(ok?'g':p?'r':''):(p?'p':'');return `<div class="op ${cl}">${'ABC'[n]}. ${q.o[x][0]} ${rev?(ok?'✅':p?'❌':''):(p?'👈':'')}</div>`}).join('')}<small class="note">${pk[k]==null?'⏳ đang suy nghĩ…':'✔ đã chọn'}</small></div>`};
+ const paint=()=>{if(!$('#lvx'))return alive=false;$('#lvx').innerHTML=`<div class="lv">${pn(0)}<div class="vs">VS<br><small>Câu ${i+1}/5</small></div>${pn(1)}</div>`};
+ const round=()=>{pk=[null,null];rev=false;paint();[0,1].forEach(k=>setTimeout(()=>{if(!alive)return;const q=qs[i],good=opts[i].find(x=>q.o[x][4]),bad=opts[i].filter(x=>!q.o[x][4]);pk[k]=Math.random()<acc[k]?good:bad[Math.floor(Math.random()*bad.length)];paint();if(pk[0]!=null&&pk[1]!=null)setTimeout(reveal,700)},1200+Math.random()*2800))};
+ const reveal=()=>{if(!alive)return;rev=true;const q=qs[i];[0,1].forEach(k=>{if(q.o[pk[k]][4])sc[k]++});Snd.sfx('ok');paint();setTimeout(()=>{if(!alive)return;i++;i<5?round():finish()},1800)};
+ const finish=()=>{const w=sc[0]>sc[1]?m.a:sc[1]>sc[0]?m.b:(Math.random()<.5?m.a:m.b);m.sa=sc[0];m.sb=sc[1];m.w=w;save();boom();$('#lvx').innerHTML=`<div class="panel end"><div class="big">🏆</div><h2>${esc(w)} thắng ${sc[0]}–${sc[1]}!</h2><button class="btn sun" id="bk2">Về sơ đồ giải đấu</button></div>`;$('#bk2').onclick=()=>school()};
+ app.innerHTML=`<button class="back" id="bk">← Thoát</button><h2>🎥 Màn hình người tạo phòng</h2><p class="note">${esc(T.name)} · Vòng ${ri+1}: ${esc(m.a)} ⚔️ ${esc(m.b)}. Bạn đang xem trực tiếp màn hình của cả hai thí sinh.</p><div id="lvx"></div>`;$('#bk').onclick=()=>{alive=false;school()};round()}
+
+/* ----- Trang chủ: video + banner động ----- */
+const _h2=home;home=function(){_h2();const b=$('.banner');
+ b.insertAdjacentHTML('afterbegin','<div class="bn-fx"><span>🎈</span><span>⭐</span><span>☁️</span><span>🦋</span><span>✨</span></div>');
+ const h=$$('#app h2')[0];if(h)h.insertAdjacentHTML('beforebegin',vidHTML());vidInit();applyLang()};
+
 if('speechSynthesis' in window)speechSynthesis.onvoiceschanged=()=>{};
+/* ================= v6 ================= */
+/* ================= v6: ÂM LƯỢNG + NHẠC NỀN THEO TỪNG BÀI (không lời) ================= */
+const LG=(vi,en)=>S.lang==='en'?en:vi;
+if(!S.look)S.look={};S.vol=Object.assign({master:.9,music:.6,sfx:.8,voice:1},S.vol||{});
+Snd.bus=function(){const c=this.init();if(!c)return null;if(!this._b){const m=c.createGain(),cm=c.createDynamicsCompressor(),mu=c.createGain(),sf=c.createGain(),lp=c.createBiquadFilter(),cv=c.createConvolver(),wet=c.createGain(),len=Math.floor(c.sampleRate*1.8),buf=c.createBuffer(2,len,c.sampleRate);
+  for(let h=0;h<2;h++){const d=buf.getChannelData(h);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}
+  cv.buffer=buf;wet.gain.value=.22;lp.type='lowpass';lp.frequency.value=5200;mu.connect(lp);lp.connect(m);lp.connect(cv);cv.connect(wet);wet.connect(m);sf.connect(m);m.connect(cm);cm.connect(c.destination);this._b={m,mu,sf}}
+ this.applyVol();return this._b};
+Snd.applyVol=function(){const b=this._b,c=this.c;if(!b||!c)return;const v=S.vol,t=c.currentTime;b.m.gain.setTargetAtTime(this.on?v.master:0,t,.03);b.mu.gain.setTargetAtTime(v.music*1.1,t,.05);b.sf.gain.setTargetAtTime(v.sfx,t,.03)};
+Snd.tone=function(f,d=.18,ty='sine',v=.12,at=0){const c=this.init(),b=c&&this.bus();if(!b||!this.on)return;const t=c.currentTime+at,o=c.createOscillator(),g=c.createGain();o.type=ty;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(b.sf);o.start(t);o.stop(t+d+.05)};
+Snd.noise=function(d=.3,v=.15,fq=1200,at=0,ty='lowpass'){const c=this.init(),b=c&&this.bus();if(!b||!this.on)return;const n=Math.floor(c.sampleRate*d),bf=c.createBuffer(1,n,c.sampleRate),a=bf.getChannelData(0);for(let i=0;i<n;i++)a[i]=(Math.random()*2-1)*(1-i/n);const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(),t=c.currentTime+at;s.buffer=bf;f.type=ty;f.frequency.value=fq;g.gain.value=v;s.connect(f);f.connect(g);g.connect(b.sf);s.start(t)};
+{const _tg=Snd.toggle;Snd.toggle=function(){const w=Mus.want;_tg.call(this);this.applyVol();if(this.on&&w)Mus.start(w)}}
+
+const MSC={maj:[0,2,4,5,7,9,11],min:[0,2,3,5,7,8,10],dor:[0,2,3,5,7,9,10],pent:[0,2,4,7,9]},mhz=m=>440*Math.pow(2,(m-69)/12);
+const mdeg=(r,sc,d)=>{const n=sc.length;return r+sc[((d%n)+n)%n]+12*Math.floor(d/n)};
+const MP={march:{bpm:116,root:60,mode:'maj',ts:4,prog:[0,3,4,0,0,3,4,0],lead:'marimba',pat:'march',perc:1,dens:.7},
+ wist:{bpm:84,root:57,mode:'min',ts:4,prog:[0,5,3,4,0,5,4,0],lead:'flute',pat:'arp',perc:0,dens:.65},
+ alert:{bpm:100,root:55,mode:'min',ts:4,prog:[0,0,5,4,0,0,3,4],lead:'pluck',pat:'sparse',perc:0,dens:.55,vol:.95},
+ brave:{bpm:96,root:57,mode:'dor',ts:4,prog:[0,3,0,4,0,3,4,0],lead:'pluck',pat:'arp',perc:1,dens:.85},
+ bubble:{bpm:124,root:62,mode:'maj',ts:4,prog:[0,4,5,3,0,4,3,4],lead:'marimba',pat:'march',perc:2,dens:.9},
+ tidy:{bpm:118,root:60,mode:'maj',ts:4,prog:[0,3,0,4,0,3,4,0],lead:'marimba',pat:'march',perc:1,dens:.75},
+ sparkle:{bpm:108,root:64,mode:'maj',ts:4,prog:[0,5,3,4,0,5,3,4],lead:'bell',pat:'arp',perc:1,dens:.7},
+ waltz:{bpm:96,root:60,mode:'maj',ts:3,prog:[0,3,4,0,0,3,4,0],lead:'bell',pat:'waltz',perc:0,dens:.65},
+ lull:{bpm:66,root:60,mode:'maj',ts:3,prog:[0,4,5,3,0,4,3,0],lead:'bell',pat:'waltz',perc:0,dens:.8,vol:.9},
+ study:{bpm:90,root:57,mode:'maj',ts:4,prog:[0,5,3,4,0,5,3,4],lead:'pluck',pat:'arp',perc:1,dens:.5},
+ tender:{bpm:92,root:60,mode:'maj',ts:4,prog:[0,5,3,4,0,3,4,0],lead:'pluck',pat:'arp',perc:0,dens:.55},
+ calm:{bpm:72,root:62,mode:'maj',ts:4,prog:[0,3,0,4,0,3,4,0],lead:'flute',pat:'sparse',perc:0,dens:.5,vol:.9},
+ digital:{bpm:110,root:64,mode:'pent',ts:4,prog:[0,5,3,4,0,5,3,4],lead:'bell',pat:'arp',perc:1,dens:.75},
+ trot:{bpm:104,root:60,mode:'maj',ts:4,prog:[0,4,0,4,0,3,4,0],lead:'pluck',pat:'march',perc:1,dens:.7},
+ flow:{bpm:100,root:62,mode:'maj',ts:4,prog:[0,5,3,4,0,5,3,4],lead:'bell',pat:'flow',perc:0,dens:.7},
+ storm:{bpm:88,root:52,mode:'min',ts:4,prog:[0,5,3,4,0,5,4,0],lead:'bell',pat:'sparse',perc:0,dens:.55,vol:.9},
+ promo:{bpm:120,root:60,mode:'maj',ts:4,prog:[0,4,5,3,0,4,3,4],lead:'marimba',pat:'march',perc:2,dens:.8,vol:.9}};
+const MLM={duong:'march',lac:'wist',chay:'alert',keo:'brave',cua:'brave',om:'brave',tay:'bubble',don:'tidy',tk:'sparkle',tien:'sparkle',chao:'waltz',camon:'waltz',xh:'waltz',ngu:'lull',bai:'study',dien:'alert',lamvo:'tender',nga:'tender',chiase:'tender',rang:'bubble',gian:'calm',rac:'tidy',mang:'digital',nuoc:'flow',sach:'tender',bong:'alert',cho:'trot',bao:'storm'};
+const MLC={sv:'march',bv:'brave',ks:'bubble',lp:'waltz',vl:'study',xl:'tender',cx:'calm',sk:'bubble',tc:'sparkle',mt:'tidy',cn:'digital',nc:'flow',yt:'alert',nh:'alert',dv:'trot',tn:'storm'};
+const MTH={class:'tender',pool:'flow',road:'march',mart:'sparkle',home:'tender',kitchen:'bubble',storm:'storm',park:'march'};
+const Mus={key:null,want:null,timer:null,sess:null,seed:1,stp:0,nt:0,pr:null,mel:null,
+ rnd(){this.seed=this.seed*16807%2147483647;return(this.seed-1)/2147483646},
+ prof(k){if(MP[k])return[MP[k],k];if(/^L:/.test(k)){const[,id,c]=k.split(':'),n=MLM[id]||MLC[c]||'march';return[MP[n],n+':'+id]}return[MP[MTH[k]||'march'],k]},
+ build(pr,seedStr){let h=7;for(const ch of seedStr)h=(h*31+ch.charCodeAt(0))%2147483647;this.seed=h||1;
+  const sc=SC_(pr),spb=pr.ts*4,bars=8,mel=new Array(spb*bars).fill(null),T=sc.length,tri=pr.mode==='pent'?MSC.maj:sc,
+   cells=pr.ts===3?[[4,4,4],[6,2,4],[8,4],[4,8],[12]]:[[4,4,4,4],[6,2,4,4],[2,2,4,8],[8,4,4],[4,2,2,4,4],[16],[4,4,8]];let prev=pr.mode==='pent'?3:4;
+  for(let bar=0;bar<4;bar++){const ch=pr.prog[bar%pr.prog.length];let pos=bar*spb;const cell=bar===3?[spb]:cells[Math.floor(this.rnd()*cells.length)];
+   for(const len of cell){if(this.rnd()<pr.dens){let d=prev+Math.round((this.rnd()-.5)*4);if((pos-bar*spb)%(spb/2)===0){const ct=[0,2,4,7,9,11].map(x=>(pr.mode==='pent'?Math.round(x*T/7):x)+ch);d=ct.reduce((a,b)=>Math.abs(b-d)<Math.abs(a-d)?b:a)}
+     d=Math.max(0,Math.min(T+4,d));prev=d;mel[pos]={d,len}}pos+=len}}
+  for(let i=0;i<spb*4;i++){const m=mel[i];if(m)mel[i+spb*4]={d:Math.max(0,Math.min(T+4,m.d+(this.rnd()<.45?1:0))),len:m.len}}
+  mel[spb*7]={d:T,len:spb};return mel},
+ start(key){this.want=key;if(this.key===key&&this.timer)return;this.halt();const c=Snd.init();if(!c||!Snd.on||!S.vol.music)return;const b=Snd.bus();if(!b)return;
+  const[pr,sd]=this.prof(key);this.key=key;this.pr=pr;this.mel=this.build(pr,sd);this.stp=0;this.nt=c.currentTime+.15;
+  const g=c.createGain();g.gain.value=0;g.gain.setTargetAtTime(1,c.currentTime,.4);g.connect(b.mu);this.sess=g;this.timer=setInterval(()=>this.tick(),30)},
+ halt(){clearInterval(this.timer);this.timer=null;const g=this.sess,c=Snd.c;this.sess=null;this.key=null;if(g&&c){g.gain.cancelScheduledValues(c.currentTime);g.gain.setTargetAtTime(0,c.currentTime,.12);setTimeout(()=>{try{g.disconnect()}catch(e){}},900)}},
+ stop(){this.want=null;this.halt()},
+ tick(){const c=Snd.c,pr=this.pr;if(!c||!pr||document.hidden)return;const spd=60/pr.bpm/4;if(this.nt<c.currentTime)this.nt=c.currentTime;while(this.nt<c.currentTime+.2){this.step(this.stp,this.nt,spd);this.nt+=spd;this.stp++}},
+ step(s,t,spd){const pr=this.pr,spb=pr.ts*4,bar=Math.floor(s/spb)%8,k=s%spb,sc=SC_(pr),tri=pr.mode==='pent'?MSC.maj:sc,chd=pr.prog[bar%pr.prog.length],ch=[0,2,4].map(i=>mdeg(pr.root,tri,chd+i)),bass=mdeg(pr.root-24,tri,chd),V=pr.vol||1,half=spb/2;
+  if(k===0)ch.forEach(m=>this.n('pad',m-12,t,spd*spb*.96,.05*V));
+  const P=pr.pat;
+  if(P==='march'){if(k===0||k===half)this.n('bass',k?bass+7:bass,t,spd*3,.16*V);if(k===spb/4||k===spb*3/4)ch.forEach(m=>this.n('stab',m,t,spd*1.6,.045*V))}
+  else if(P==='waltz'){if(k===0)this.n('bass',bass,t,spd*5,.15*V);if(k===4||k===8)ch.forEach(m=>this.n('stab',m,t,spd*2.5,.04*V))}
+  else if(P==='arp'){if(k%2===0)this.n('pluck',ch[(k/2)%3]+12,t,spd*3,.05*V);if(k===0||k===half)this.n('bass',bass,t,spd*4,.14*V)}
+  else if(P==='flow'){const q=[0,1,2,3,2,1,0,1][k%8];this.n('bell',(ch[q%3]||ch[0])+12*(q>2?2:1),t,spd*2.5,.035*V);if(k===0)this.n('bass',bass,t,spd*8,.13*V)}
+  else if(P==='sparse'){if(k===0)this.n('bass',bass,t,spd*8,.13*V);if(k%4===0&&this.rnd()<.4)this.n('bell',ch[Math.floor(this.rnd()*3)]+12,t,spd*5,.04*V)}
+  if(pr.perc>=1&&k%2===0)this.hat(t,k%4===0?.03:.015);if(pr.perc>=2&&(k===0||k===half))this.kick(t);
+  const m=this.mel[s%(spb*8)];if(m)this.n(pr.lead,mdeg(pr.root,sc,m.d),t,Math.min(m.len,8)*spd*.95,.12*V)},
+ o(type,f,t,d,v,att=.005,dec){const c=Snd.c,g=c.createGain(),o=c.createOscillator();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+(dec||d));o.connect(g);g.connect(this.sess);o.start(t);o.stop(t+(dec||d)+.05);return g},
+ n(i,m,t,d,v){if(!this.sess)return;const f=mhz(m);
+  if(i==='marimba'){this.o('sine',f,t,d,v*1.2,.004,Math.min(d,.5));this.o('sine',f*4,t,d,v*.25,.003,.12)}
+  else if(i==='bell'){this.o('sine',f,t,d,v,.004,Math.max(d,.9));this.o('sine',f*2.76,t,d,v*.22,.004,.5);this.o('sine',f*5.4,t,d,v*.08,.004,.25)}
+  else if(i==='pluck'){this.o('triangle',f,t,d,v,.006,Math.min(Math.max(d,.3),.7));this.o('sine',f*2,t,d,v*.2,.004,.25)}
+  else if(i==='stab'){this.o('triangle',f,t,d,v,.01,Math.min(d,.35))}
+  else if(i==='flute'){const g=this.o('sine',f,t,d,v*1.1,.07,d+.15);const l=Snd.c.createOscillator(),lg=Snd.c.createGain();l.frequency.value=5;lg.gain.value=f*.006;l.connect(lg);const o=Snd.c.createOscillator();o.type='sine';o.frequency.value=f;lg.connect(o.frequency);o.connect(g);l.start(t);l.stop(t+d+.3);o.start(t);o.stop(t+d+.3)}
+  else if(i==='pad'){this.o('triangle',f,t,d,v,.35,d+.5);this.o('sine',f*1.004,t,d,v*.7,.35,d+.5)}
+  else if(i==='bass'){this.o('sine',f,t,d,v,.01,Math.min(d,.6))}},
+ hat(t,v){const c=Snd.c,n=Math.floor(c.sampleRate*.04),b=c.createBuffer(1,n,c.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=(Math.random()*2-1)*(1-i/n);const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=b;f.type='highpass';f.frequency.value=6500;g.gain.value=v;s.connect(f);f.connect(g);g.connect(this.sess);s.start(t)},
+ kick(t){const c=Snd.c,o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);g.gain.setValueAtTime(.2,t);g.gain.exponentialRampToValueAtTime(.0001,t+.18);o.connect(g);g.connect(this.sess);o.start(t);o.stop(t+.2)}};
+const SC_=pr=>MSC[pr.mode];
+Snd.music=function(k){if(!k){Mus.stop();return}Mus.start(k)};
+document.addEventListener('click',()=>{Snd.init();if(Mus.want&&!Mus.timer)Mus.start(Mus.want)},true);
+document.addEventListener('visibilitychange',()=>{const c=Snd.c;if(c)document.hidden?c.suspend():c.resume()});
+
+/* ----- Thanh điều chỉnh âm thanh ----- */
+function volIcon(){return !Snd.on||S.vol.master===0?'🔇':S.vol.master<.4?'🔈':'🔊'}
+function volPanel(){const R=[['master','🔊',LG('Tổng âm lượng','Master volume')],['music','🎵',LG('Nhạc nền','Music')],['sfx','✨',LG('Hiệu ứng','Effects')],['voice','🗣️',LG('Giọng đọc','Voice')]];
+ const m=modal(`<h2>🔊 ${LG('Âm thanh','Sound')}</h2>${R.map(([k,e,t])=>`<div class="vrow"><span>${e} ${t}</span><input type="range" min="0" max="1" step=".05" value="${S.vol[k]}" data-k="${k}" aria-label="${t}"><b id="vv-${k}">${Math.round(S.vol[k]*100)}%</b></div>`).join('')}
+ <div class="row2"><button class="btn ${Snd.on?'sun':'ghost'}" id="vm">${Snd.on?LG('🔊 Đang bật','🔊 On'):LG('🔇 Đang tắt','🔇 Muted')}</button><button class="btn ghost" id="vt">${LG('▶ Nghe thử','▶ Test')}</button></div>
+ <p class="note">${LG('Nhạc nền chỉ có giai điệu, không có lời, và đổi theo từng bài học.','Background music is instrumental and changes with each lesson.')}</p>`);
+ m.querySelectorAll('input[type=range]').forEach(r=>{r.oninput=()=>{const k=r.dataset.k;S.vol[k]=+r.value;$('#vv-'+k).textContent=Math.round(r.value*100)+'%';Snd.applyVol();save();const b=$('#bVol');if(b)b.textContent=volIcon();
+  if(k==='music'){if(S.vol.music===0)Mus.halt();else if(Mus.want&&!Mus.timer)Mus.start(Mus.want)}if(k==='sfx')Snd.sfx('pop')}});
+ m.querySelector('#vm').onclick=()=>{Snd.toggle();m.remove();volPanel();const b=$('#bVol');if(b)b.textContent=volIcon()};
+ m.querySelector('#vt').onclick=()=>{Snd.sfx('ok');Voice.speak(LG('Xin chào, mình là Hero!','Hello, I am Hero!'))}}
+{const _sp=Voice.speak;Voice.speak=function(t,done){if(S.vol.voice===0||S.vol.master===0){const k=++this.tok;if(done)setTimeout(()=>{if(k===this.tok)done()},800);return}return _sp.call(this,t,done)}}
+
+/* ================= v6: CHẤM CÂU TRẢ LỜI BẰNG GIỌNG NÓI THEO Ý ================= */
+const VSTOP=new Set('và là của con bé hero thì mà cho với một những các này đó rồi sẽ đang ạ nhé nha nhỉ thế nào được có tôi mình em hả à ơi vậy thôi cái việc lúc khi sau trước hơn rất lắm thật luôn cũng nữa'.split(' '));
+const VSY=[['người lớn','bố mẹ','ba mẹ','mẹ','má','mami','bố','ba','cha','tía','cô giáo','cô','thầy','giáo viên','ông bà','bà','ông','nhân viên','cô nhân viên','chú bảo vệ','bảo vệ','công an','cảnh sát','chú cứu hộ','cứu hộ','lính cứu hỏa','bác sĩ'],
+ ['người lạ','chú lạ','bạn lạ','người không quen','người mới quen'],['đợi','chờ đợi','chờ','đứng đợi','đứng chờ'],['nắm','cầm','dắt'],['báo','kể','nói với','nói cho','thưa','gọi','nhờ','hỏi','kêu'],
+ ['chạy','phóng','lao'],['giúp','đỡ','giúp đỡ','hỗ trợ'],['xin lỗi','nhận lỗi'],['cảm ơn','cám ơn','biết ơn'],['chào','chào hỏi'],['rửa','xả','cọ'],['dọn','cất','thu dọn','xếp gọn','dọn dẹp'],
+ ['nhặt','lượm'],['ngủ','đi ngủ','đi nằm'],['tắt','tắt đi'],['không','chẳng','đừng','chưa'],['nói thật','thành thật','trung thực'],['chia','chia sẻ','nhường','cho mượn']];
+const VPH=[];VSY.forEach(g=>g.slice(1).concat(g[0]).forEach(p=>{if(p!==g[0]||g.length===1)VPH.push([p,g[0]])}));VSY.forEach(g=>VPH.push([g[0],g[0]]));
+VPH.sort((a,b)=>b[0].length-a[0].length);
+const vEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function vTok(t){t=' '+String(t).toLowerCase().replace(/[“”"'.,!?;:()\-–…]/g,' ').replace(/\s+/g,' ').trim()+' ';
+ VPH.forEach(([p,c])=>{t=t.replace(new RegExp('(\\s)'+vEsc(p)+'(?=\\s)','g'),'$1'+c.replace(/ /g,'_'))});
+ return t.trim().split(' ').filter(w=>w&&!VSTOP.has(w))}
+function vLev(a,b){if(Math.abs(a.length-b.length)>1)return 9;const m=[];for(let i=0;i<=a.length;i++){m[i]=[i];for(let j=1;j<=b.length;j++)m[i][j]=i?Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1)):j}return m[a.length][b.length]}
+const vEq=(a,b)=>a===b||(a.length>3&&b.length>3&&vLev(a,b)<=1);
+function vScore(Sd,O,R){const used=new Set();let m=0,mr=0;const cont=O.filter(x=>x!=='không');
+ cont.forEach(o=>{const j=Sd.findIndex((s,i)=>!used.has(i)&&vEq(s,o));if(j>=0){used.add(j);m++}});
+ if(R)R.forEach(r=>{if(r==='không'||O.includes(r))return;const j=Sd.findIndex((s,i)=>!used.has(i)&&vEq(s,r));if(j>=0){used.add(j);mr+=.5}});
+ const n=Math.max(1,cont.length),sn=Math.max(1,Sd.filter(x=>x!=='không').length);let score=.6*(m/n)+.4*(m/sn)+mr*.08;
+ const sNeg=Sd.includes('không'),oNeg=O.includes('không');if(sNeg&&!oNeg&&m>0)score*=.25;if(!sNeg&&oNeg&&m>0)score*=.8;return{score,m}}
+function vJudge(said,sc,btns,l){const Sd=vTok(said);if(Sd.filter(x=>x!=='không').length<1)return{k:'noise'};const R=vTok(l.l||'');
+ const res=btns.map(x=>{const o=sc.o[x.i],O=vTok(o[0]),r=vScore(Sd,O,o[4]?R:null);return{...r,x,ok:!!o[4],len:O.length}}).sort((a,b)=>b.score-a.score);
+ const t=res[0],u=res[1],minM=t.len>=5?2:1;
+ if(t.score>=.3&&t.m>=minM){if(u&&u.score>=t.score*.9&&u.ok!==t.ok)return{k:'ambig'};return{k:'opt',x:t.x}}return{k:'none'}}
+function voiceHear(html){let h=$('#hear');if(!h){const s=$('.say');if(!s)return;s.insertAdjacentHTML('afterend','<div id="hear" class="hear"></div>');h=$('#hear')}h.innerHTML=html}
+function voiceAnswer(said,l,si){const sc=l.sc?l.sc[si]:l,btns=$$('.choice').map(b=>({b,i:+b.dataset.i}));if(!btns.length||btns.some(x=>x.b.disabled))return;
+ voiceHear(`🎤 ${LG('Hero nghe bé nói','Hero heard')}: “${esc(said)}”`);
+ const lt=said.toLowerCase().match(/(?:chọn|phương án|lựa chọn|đáp án|câu)\s*(a|b|c|một|hai|ba|1|2|3)(?:\s|$)/);
+ if(lt){const n={a:0,b:1,c:2,'một':0,hai:1,ba:2,1:0,2:1,3:2}[lt[1]];if(btns[n]){setTimeout(()=>btns[n].b.click(),600);return}}
+ const r=vJudge(said,sc,btns,l);
+ if(r.k==='opt'){setTimeout(()=>r.x.b.click(),700);return}
+ if(r.k==='noise'){voiceHear('🎤 '+LG('Hero nghe chưa rõ, bé nói lại nhé!','I did not hear clearly, please try again!'));Voice.speak(LG('Hero nghe chưa rõ, bé nói lại nhé','I did not hear clearly, please try again'));return}
+ if(r.k==='ambig'){voiceHear('🤔 '+LG('Hero chưa chắc bé chọn cách nào. Bé nói rõ hơn nhé!','Not sure which one you mean. Please say it more clearly!'));Voice.speak(LG('Bé nói rõ hơn nhé','Please say it more clearly'));return}
+ const b0=S.xp;S.xp=Math.max((lv()-1)*100,S.xp-5);trk('xp',S.xp-b0);save();shell();pose('me','idle','worry');
+ voiceHear(`❌ ${LG('Hero nghe bé nói','Hero heard')}: “${esc(said)}”. ${LG('Câu trả lời chưa đúng hoặc chưa liên quan đến tình huống','That answer is wrong or unrelated to the situation')}${S.xp-b0?` (${S.xp-b0})`:''}. ${LG('Bé thử lại nhé!','Try again!')}`);
+ Voice.speak(LG('Chưa đúng ý rồi. Bé nghe lại tình huống và thử lại nhé','Not quite. Listen to the situation and try again'))}
+
+/* ================= v6: SỬA LỖI NGÔN NGỮ (dịch được và khôi phục lại được) ================= */
+Object.assign(EN,{'Tùy chỉnh Hero':'Customize Hero','Âm lượng':'Volume','Điều chỉnh':'Adjust','Tóc':'Hair','Mặt':'Face','Biểu cảm':'Expression','Áo':'Top','Quần / váy':'Bottoms','Phụ kiện':'Accessories','Ngẫu nhiên':'Random','Đặt lại':'Reset','Xong':'Done','Màu tóc':'Hair color','Kiểu tóc':'Hair style','Nhạc nền':'Music'});
+ENK.length=0;ENK.push(...Object.keys(EN).sort((a,b)=>b.length-a.length));
+const SKIP2=SKIP+',.vwrap,.labx,.hear';const ORG=new WeakMap(),AT=['placeholder','title','aria-label','alt'];
+const trEN=t=>{let r=t;for(const k of ENK)if(r.includes(k))r=r.split(k).join(EN[k]);return r};
+applyLang=function(){if(LB)return;LB=1;try{const en=S.lang==='en',w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;const list=[];while(n=w.nextNode())list.push(n);
+  list.forEach(n=>{const o=ORG.get(n);if(o){if(!en){if(n.nodeValue===o.en)n.nodeValue=o.vi;ORG.delete(n);return}if(n.nodeValue===o.en)return;ORG.delete(n)}
+   if(!en)return;const p=n.parentElement;if(!p||p.closest(SKIP2)||p.closest('script,style'))return;const t=n.nodeValue;if(!/[À-ỹ]/.test(t))return;const r=trEN(t);if(r!==t){ORG.set(n,{vi:t,en:r});n.nodeValue=r}});
+  document.querySelectorAll(AT.map(a=>'['+a+'],[data-vi-'+a+']').join(',')).forEach(e=>{if(e.closest('.vwrap'))return;AT.forEach(a=>{const k='data-vi-'+a;if(!en){if(e.hasAttribute(k)){e.setAttribute(a,e.getAttribute(k));e.removeAttribute(k)}}
+    else if(e.hasAttribute(a)&&!e.hasAttribute(k)){const v=e.getAttribute(a),r=trEN(v);if(r!==v){e.setAttribute(k,v);e.setAttribute(a,r)}}})})}finally{LB=0}};
+setLang=function(l){S.lang=l;save();document.documentElement.lang=l;shell();go(view==='play'?'learn':view);applyLang()};
+
+/* ================= v6: TÙY CHỈNH HERO (tóc, mặt, biểu cảm, áo, quần, phụ kiện) ================= */
+const HLC=['#FFC93C','#FF6B6B','#FF8FA3','#7B5CFF','#3A7BE0','#2EC4A6','#4CAF50','#F08A24','#26325B','#FFFFFF'];
+const HLH=['#5A3A22','#2B2B3A','#E08A3C','#F2C94C','#C0392B','#8E5CD9','#3A7BE0','#FF8FA3'];
+const HLS=['#FFE3C8','#FFD7B5','#F2B98B','#D99A6C','#B77A4B','#8D5A3B'];
+const HLO=()=>({
+ hair:[['st',[['short','Ngắn','Short'],['spiky','Dựng','Spiky'],['bob','Bob','Bob'],['long','Dài','Long'],['pig','Hai bím','Pigtails'],['pony','Đuôi ngựa','Ponytail'],['bun','Búi','Bun'],['curly','Xoăn','Curly']]],['hc','c',HLH]],
+ face:[['skin','c',HLS],['eye',[['round','Tròn','Round'],['big','To','Big'],['arc','Cười','Smiling'],['lash','Mi dài','Lashes'],['dot','Chấm','Dots']]],['brow',[['none','Không','None'],['thin','Mảnh','Thin'],['bold','Đậm','Bold']]]],
+ expr:[['sm',[['smile','Cười mỉm','Smile'],['grin','Toe toét','Grin'],['cat','Miệng mèo','Cat'],['smirk','Nhếch môi','Smirk']]],['bl',[[1,'Má hồng','Blush'],[0,'Không má hồng','No blush']]]],
+ top:[['top','c',HLC],['ts',[['tee','Áo phông','T-shirt'],['hoodie','Áo hoodie','Hoodie'],['stripe','Áo sọc','Striped']]],['emb',[['star','⭐','Star'],['heart','❤️','Heart'],['bolt','⚡','Bolt'],['none','Trơn','Plain']]]],
+ bot:[['bot','c',HLC],['bt',[['pants','Quần dài','Pants'],['shorts','Quần short','Shorts'],['skirt','Váy','Skirt']]],['shoe','c',HLC]],
+ acc:[['acc',[['none','Không','None'],['glasses','Kính','Glasses'],['shades','Kính râm','Shades'],['cap','Mũ lưỡi trai','Cap'],['bow','Nơ','Bow'],['band','Băng đô','Headband'],['crown','Vương miện','Crown'],['mask','Mặt nạ Hero','Hero mask']]],['accC','c',HLC],['cape',[[1,'Có áo choàng','Cape'],[0,'Không áo choàng','No cape']]],['capeC','c',HLC]]});
+const HLT={hair:['💇','Tóc','Hair'],face:['🙂','Mặt','Face'],expr:['😄','Biểu cảm','Expression'],top:['👕','Áo','Top'],bot:['👖','Quần / váy','Bottoms'],acc:['🧢','Phụ kiện','Accessories']};
+const HLG={st:['Kiểu tóc','Hair style'],hc:['Màu tóc','Hair color'],skin:['Màu da','Skin tone'],eye:['Kiểu mắt','Eyes'],brow:['Lông mày','Eyebrows'],sm:['Kiểu cười','Smile'],bl:['Má','Cheeks'],top:['Màu áo','Top color'],ts:['Kiểu áo','Top style'],emb:['Hình trên áo','Chest emblem'],bot:['Màu quần/váy','Bottom color'],bt:['Kiểu','Style'],shoe:['Màu giày','Shoes'],acc:['Phụ kiện','Accessory'],accC:['Màu phụ kiện','Accessory color'],cape:['Áo choàng','Cape'],capeC:['Màu áo choàng','Cape color']};
+let HLtab='hair',HLpose='wave',HLmood='happy';
+const lookNow=()=>S.look||(S.look={});
+function heroLab(){const O=HLO()[HLtab],lk=lookNow(),en=S.lang==='en';
+ const cur=(k,d)=>lk[k]!==undefined?lk[k]:d;
+ app.innerHTML=`<div class="labx"><div class="labp"><div class="labv" id="labv">${char('me',HLpose,HLmood)}</div>
+  <div class="chips">${['happy','laugh','shy','wow','love','worry','sad','scared','angry','sleepy'].map(m=>`<button data-m="${m}" class="${HLmood===m?'on':''}">${{happy:'😊',laugh:'😆',shy:'😳',wow:'😮',love:'😍',worry:'😟',sad:'😢',scared:'😨',angry:'😠',sleepy:'😴'}[m]}</button>`).join('')}</div>
+  <div class="chips">${[['idle','🧍'],['wave','👋'],['cheer','🙌'],['hug','🤗'],['run','🏃'],['bow','🙇']].map(([p,e])=>`<button data-p="${p}" class="${HLpose===p?'on':''}">${e}</button>`).join('')}</div>
+  <div class="row2"><button class="btn sun" id="lr">🎲 ${LG('Ngẫu nhiên','Random')}</button><button class="btn ghost" id="ls">↺ ${LG('Đặt lại','Reset')}</button><button class="btn" id="ld">✅ ${LG('Xong','Done')}</button></div></div>
+  <div class="labc"><div class="chips">${Object.entries(HLT).map(([k,v])=>`<button data-t="${k}" class="${HLtab===k?'on':''}">${v[0]} ${en?v[2]:v[1]}</button>`).join('')}</div>
+  ${O.map(([k,a,b])=>{const t=HLG[k];return `<h4>${en?t[1]:t[0]}</h4>`+(a==='c'?`<div class="sws">${b.map(c=>`<button class="sw ${cur(k,'')===c?'on':''}" data-k="${k}" data-v="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}</div>`:`<div class="chips">${a.map(x=>`<button data-k="${k}" data-v="${x[0]}" class="${String(cur(k,k==='cape'||k==='bl'?1:''))===String(x[0])?'on':''}">${en?(x[2]||x[1]):x[1]}</button>`).join('')}</div>`)}).join('')}</div></div>`;
+ const upd=()=>{$('#labv').innerHTML=char('me',HLpose,HLmood);save();shell()};
+ $$('.labc [data-k]').forEach(b=>b.onclick=()=>{let v=b.dataset.v;if(/^\d$/.test(v))v=+v;lk[b.dataset.k]=v;$$(`.labc [data-k="${b.dataset.k}"]`).forEach(x=>x.classList.toggle('on',x===b));upd()});
+ $$('.labp [data-m]').forEach(b=>b.onclick=()=>{HLmood=b.dataset.m;heroLab()});$$('.labp [data-p]').forEach(b=>b.onclick=()=>{HLpose=b.dataset.p;heroLab()});
+ $$('.labc [data-t]').forEach(b=>b.onclick=()=>{HLtab=b.dataset.t;heroLab()});
+ const pick=a=>a[Math.floor(Math.random()*a.length)];
+ $('#lr').onclick=()=>{const A=HLO();S.look={st:pick(A.hair[0][1])[0],hc:pick(HLH),skin:pick(HLS),eye:pick(A.face[1][1])[0],brow:pick(A.face[2][1])[0],sm:pick(A.expr[0][1])[0],top:pick(HLC),ts:pick(A.top[1][1])[0],emb:pick(A.top[2][1])[0],bot:pick(HLC),bt:pick(A.bot[1][1])[0],shoe:pick(HLC),acc:pick(A.acc[0][1])[0],accC:pick(HLC),cape:Math.random()<.6?1:0,capeC:pick(HLC)};save();Snd.sfx('pop');heroLab()};
+ $('#ls').onclick=()=>{S.look={};save();heroLab()};$('#ld').onclick=()=>{toast(LG('Đã lưu Hero của bé!','Hero saved!'));go('home')}}
+
+/* ================= v6: VIDEO GIỚI THIỆU (khung 960x540, hoạt ảnh đồng bộ theo từng cảnh) ================= */
+const vV=(d,c,h,st='')=>`<div class="va ${c}" style="--d:${d}s;${st}">${h}</div>`;
+const vAc=(k,pose,left,w,s,e,mv,mood)=>`<div class="vac" style="left:${left}px;width:${w}px;animation:vshow 0s ${s}s forwards${e?`,vhide 0s ${e}s forwards`:''}${mv?`,vmv 1.3s linear ${s}s forwards`:''}">${char(k,pose,mood||'happy')}</div>`;
+const VLK=[{st:'pig',hc:'#C0392B',top:'#FF8FA3',bt:'skirt',bot:'#7B5CFF',acc:'bow',accC:'#FFC93C',emb:'heart',eye:'lash'},{st:'spiky',hc:'#2B2B3A',top:'#4F8DF7',bt:'shorts',bot:'#26325B',acc:'cap',accC:'#FF6B6B',cape:0,sm:'grin',skin:'#F2B98B'},{st:'curly',hc:'#F08A24',top:'#2EC4A6',ts:'hoodie',bt:'pants',bot:'#3A7BE0',acc:'glasses',emb:'bolt',cape:1,capeC:'#FF6B6B',skin:'#D99A6C'}];
+const VSC=[
+{d:5200,bg:'linear-gradient(135deg,#6B4DF0,#A58BFF 55%,#FF9FD0)',cap:()=>LG('Little Hero – người bạn nhỏ giúp bé lớn khôn','Little Hero – a little friend who helps kids grow'),
+ h:()=>`<div class="vfl">🎈 ⭐ ✨ 🎵 🌈</div><div class="vrow"><div style="text-align:left;width:540px">${vV(.1,'vlogo','⭐ Little Hero')}${vV(.9,'vtx',LG('Học kỹ năng sống qua những câu chuyện tương tác','Learn life skills through interactive stories'),'margin-top:16px')}${vV(1.5,'vchip',LG('Dành cho bé 3–10 tuổi','For kids aged 3–10'),'margin-top:24px')}</div>${vV(.5,'',char('me','wave'),'width:270px')}</div>`},
+{d:5600,bg:'linear-gradient(135deg,#2A9BD8,#6BC5F0)',cap:()=>LG('Mỗi bài học là một câu chuyện nhỏ về tình huống ngoài đời','Every lesson is a small story about real-life situations'),
+ h:()=>vV(0,'vh',LG('Little Hero là gì?','What is Little Hero?'))+`<div class="vrow3">${vV(.5,'vcard',`<b>🧒</b>${LG('Bé học qua truyện và nhân vật hoạt hình','Kids learn with animated stories')}`)}${vV(1,'vcard',`<b>📚</b>${LESSONS.length} ${LG('bài học','lessons')} · ${CATS.length} ${LG('chủ đề đời sống','life topics')}`)}${vV(1.5,'vcard',`<b>👪</b>${LG('Phụ huynh theo dõi và đồng hành','Parents follow progress')}`)}</div>`+vV(2.3,'vemo',CATS.map(c=>c.e).join(' '))},
+{d:6000,bg:'linear-gradient(135deg,#FFD9A8,#FFF3DC)',dark:1,cap:()=>LG('Bé chọn cách xử lý – Hero làm đúng như bé chọn','Kids choose – Hero acts exactly as chosen'),
+ h:()=>`<div class="vdemo"><div class="vl">${vV(0,'vq',LG('Hero và mẹ ở ngã tư, đèn đang đỏ. Hero làm gì?','Hero and Mom are at a crossing, the light is red. What should Hero do?'))}${[LG('Chạy vụt qua đường','Run across quickly'),LG('Nắm tay mẹ, đợi đèn xanh','Hold Mom’s hand, wait for green'),LG('Tự đi trước mẹ','Walk ahead of Mom')].map((t,i)=>vV(.7+i*.4,'vo'+(i===1?' vok':''),'ABC'[i]+'. '+t)).join('')}<div class="vcur">👆</div></div>
+ <div class="vst"><div class="vgr"></div>${vAc('me','idle',10,150,0,3.1)}${vAc('me','walk',10,150,3.1,4.4,1)}${vAc('me','hug',150,150,4.4)}${vAc('mom','idle',280,185,0,4.4)}${vAc('mom','hug',280,185,4.4)}${vV(4.7,'vxp','+20 ⭐','position:absolute;left:170px;top:20px')}</div></div>`},
+{d:5200,bg:'linear-gradient(135deg,#4F8DF7,#7B5CFF)',cap:()=>LG('Mỗi bài là một mạch truyện nhiều cảnh, chọn đúng mới sang cảnh sau','Each lesson is a multi-scene story – choose right to continue'),
+ h:()=>vV(0,'vh',LG('Truyện nhiều cảnh','Multi-scene stories'))+`<div class="vrow3 v5">${(S.lang==='en'?['🏠 Home','🚦 Crossing','🚸 Crosswalk','🧒 Friend','🏫 School']:['🏠 Cổng nhà','🚦 Ngã tư','🚸 Vạch kẻ','🧒 Gặp bạn','🏫 Cổng chợ']).map((t,i)=>vV(.4+i*.5,'vscn',`<b>${t.split(' ')[0]}</b>${t.split(' ').slice(1).join(' ')}<small>${LG('Cảnh','Scene')} ${i+1}</small>`)).join('')}</div>`+vV(3.2,'vchip vgn',LG('✔ Chọn đúng → sang cảnh mới','✔ Right → next scene'),'margin-top:26px')+vV(3.7,'vchip vrd',LG('✖ Chọn sai → Hero nhắc và thử lại','✖ Wrong → Hero hints, try again'),'margin-top:12px')},
+{d:6200,bg:'linear-gradient(135deg,#E8559A,#FF9FD0)',cap:()=>LG('Bé chỉ cần nói đúng ý – không cần đọc nguyên văn','Just say the right idea – exact words not needed'),
+ h:()=>vV(0,'vh','🎤 '+LG('Trả lời bằng giọng nói','Answer with your voice'))+`<div class="vvoice">${vV(.3,'vmic','🎤<div class="vwv">'+'<i></i>'.repeat(9)+'</div>')}<div class="va vbub" style="--d:.8s"><span class="vrev">“${LG('Con chờ đèn xanh rồi mới qua đường ạ','I will wait for green before crossing')}”</span></div></div>
+ <div class="vtoks">${[LG('chờ ≈ đợi','wait ≈ stay'),LG('đèn xanh','green light'),LG('qua đường','cross')].map((t,i)=>vV(3.1+i*.4,'vchip vgn','✓ '+t)).join('')}</div>${vV(4.4,'vres','✅ '+LG('Đúng ý rồi! +20 ⭐','Correct! +20 ⭐'))}${vV(5,'vwarn',LG('Nói ý khác, không liên quan → ❌ chưa đúng','Unrelated answer → ❌ not correct'))}`},
+{d:5200,bg:'linear-gradient(135deg,#1FA98E,#2EC4A6 60%,#7BE0C9)',cap:()=>LG('Nhạc nền không lời riêng cho từng bài, chỉnh âm lượng dễ dàng','Instrumental music for every lesson, with easy volume control'),
+ h:()=>vV(0,'vh','🎵 '+LG('Nhạc nền & âm lượng','Music & volume'))+`<div class="veq">${Array.from({length:14},(_,i)=>`<i style="animation-delay:${(i*.11).toFixed(2)}s"></i>`).join('')}</div><div class="vnotes">🎵 🎶 🎵 🎶</div>`+vV(1,'vslid','<span>🔊</span><div class="vtrk"><i></i><b>●</b></div>')+vV(1.8,'vchip',LG('Mỗi bài một giai điệu phù hợp','A fitting tune for each lesson'))+vV(2.4,'vchip',LG('Điều chỉnh nhạc, hiệu ứng, giọng đọc','Music, effects and voice controls'),'margin-top:12px')},
+{d:5200,bg:'linear-gradient(135deg,#F08A24,#FFC93C)',cap:()=>LG('Điểm thưởng, cấp độ và nhiệm vụ hằng ngày giúp bé hứng thú','Points, levels and daily quests keep kids motivated'),
+ h:()=>vV(0,'vh','⭐ '+LG('Điểm, cấp độ, nhiệm vụ','Points, levels, quests'))+`<div class="vlv">${vV(.4,'','<div class="vxb"><i></i></div>','width:420px')}${vV(2.6,'vlvb','Lv 2 🎉')}</div><div class="vrow3">${[LG('Hoàn thành 2 bài học','Finish 2 lessons'),LG('Chọn đúng 8 lần','8 right choices'),LG('Đọc 1 truyện tranh','Read a comic')].map((t,i)=>vV(1+i*.6,'vq2',`✅ ${t}`)).join('')}</div>`+vV(3.6,'vemo','🏅 🏆 💎')},
+{d:5600,bg:'linear-gradient(135deg,#7B5CFF,#FF8FA3)',cap:()=>LG('Tự tay thiết kế Hero: tóc, mặt, biểu cảm, áo, quần…','Design your own Hero: hair, face, expression, clothes…'),
+ h:()=>vV(0,'vh','🎨 '+LG('Tùy chỉnh Hero','Customize Hero'))+`<div class="vrow" style="gap:34px"><div class="vtagc">${[['💇','Tóc','Hair'],['🙂','Mặt','Face'],['😄','Biểu cảm','Expression'],['👕','Áo','Top'],['👖','Quần','Bottoms'],['🧢','Phụ kiện','Accessories']].slice(0,3).map((t,i)=>vV(.6+i*.5,'vchip',t[0]+' '+LG(t[1],t[2]))).join('')}</div><div class="vcyc">${VLK.map((lk,i)=>`<div class="vhh" style="animation-delay:${i*1.6}s">${char('me',['cheer','wave','cheer'][i],['laugh','love','wow'][i],lk)}</div>`).join('')}</div><div class="vtagc">${[['💇','Tóc','Hair'],['🙂','Mặt','Face'],['😄','Biểu cảm','Expression'],['👕','Áo','Top'],['👖','Quần','Bottoms'],['🧢','Phụ kiện','Accessories']].slice(3).map((t,i)=>vV(2.1+i*.5,'vchip',t[0]+' '+LG(t[1],t[2]))).join('')}</div></div>`},
+{d:5200,bg:'linear-gradient(135deg,#26325B,#4B3FA8)',cap:()=>LG('Thi đấu 1-1, đấu trường khu vực và toàn quốc','1v1 duels, regional and national arenas'),
+ h:()=>vV(0,'vh','⚔️ '+LG('Thi đấu & xếp hạng','Duels & rankings'))+`<div class="vdemo2"><div class="vduel">${vV(.3,'',char('me','cheer'),'width:150px')}${vV(.5,'vs','VS')}${vV(.7,'',char('gB','sad','sad'),'width:140px')}</div><div class="vrank">${[['🥇','Minh Anh',72],['🥈','Gia Hân',68],['🥉','Khôi Nguyên',64],['🔥',LG('Bạn','You'),75]].map((r,i)=>vV(1+i*.4,'vrk'+(i===3?' me':''),`<span>${r[0]}</span><b>${r[1]}</b><em>${r[2]}</em>`)).join('')}</div></div>`},
+{d:5600,bg:'linear-gradient(135deg,#2A9BD8,#4F8DF7)',cap:()=>LG('Phụ huynh theo dõi tiến độ, hứng thú và thời gian online của bé','Parents track progress, interests and online time'),
+ h:()=>vV(0,'vh','👪 '+LG('Góc phụ huynh','Parent corner'))+`<div class="vdemo2"><div class="vchart">${[40,65,30,80,55,90,70].map((h,i)=>`<i style="--h:${h}%;animation-delay:${.5+i*.2}s"></i>`).join('')}</div><div class="vkp">${vV(1.2,'vcard',`<b>⏱</b>${LG('45 phút hôm nay','45 min today')}`)}${vV(1.8,'vcard',`<b>❤️</b>${LG('Hứng thú: An toàn','Top interest: Safety')}`)}${vV(2.4,'vcard',`<b>🔒</b>${LG('Giới hạn thời gian','Time limit')}`)}</div></div>`},
+{d:6000,bg:'linear-gradient(135deg,#6B4DF0,#A58BFF 55%,#FF9FD0)',cap:()=>LG('Little Hero – cùng bé trưởng thành mỗi ngày','Little Hero – growing up together, every day'),
+ h:()=>`<div class="vfl">🎉 ⭐ 🎈 ✨ 🌈</div>`+vV(0,'',char('me','cheer','laugh'),'width:230px')+vV(.5,'vh',LG('Bắt đầu miễn phí ngay hôm nay!','Start free today!'),'margin-top:8px')+vV(1.1,'vtx',LG('Premium mở khóa toàn bộ bài học, truyện và thẻ bài','Premium unlocks every lesson, comic and card'))+vV(1.7,'vbtn','▶ '+LG('Chơi ngay','Play now'))}];
+const VP={i:-1,t:null,pz:false,start:0,left:0};
+function vidHTML(){return `<h2>${LG('Xem Little Hero hoạt động','See Little Hero in action')}</h2><div class="vwrap pz" id="vwrap"><div class="vin" id="vin"><div class="vbg" id="vbg"></div><div class="vbrand">⭐ Little Hero</div><div class="vsc" id="vsc"></div><div class="vsub" id="vsub"></div><div class="vseg" id="vseg"></div></div>
+ <div class="vctl"><button id="vpz" aria-label="Tạm dừng">⏸</button><button id="vrs" aria-label="Xem lại">⟲</button><button id="vnx" aria-label="Cảnh sau">⏭</button></div><button class="vplay" id="vpl">▶ ${LG('Xem video giới thiệu','Watch the intro video')}</button></div>`}
+function vidFit(){const w=$('#vwrap'),v=$('#vin');if(w&&v)v.style.transform='scale('+w.clientWidth/960+')'}
+function vidShow(i,run){const w=$('#vwrap');if(!w)return;VP.i=i;const sc=VSC[i];$('#vbg').style.background=sc.bg;$('#vsc').innerHTML=sc.h();const s=$('#vsub');s.textContent=sc.cap();s.style.animation='none';void s.offsetWidth;s.style.animation='';
+ w.classList.toggle('dk',!!sc.dark);$('#vseg').innerHTML=VSC.map((x,j)=>`<i class="${j<i?'dn':j===i&&run?'on':''}" style="--dur:${x.d}ms" data-j="${j}"><b></b></i>`).join('');
+ $$('#vseg i').forEach(b=>b.onclick=()=>{vidGo(+b.dataset.j)});if(run){Snd.sfx('pop');VP.start=Date.now();VP.left=sc.d;clearTimeout(VP.t);if(!VP.pz)VP.t=setTimeout(vidNext,sc.d)}}
+function vidGo(j){VP.pz=false;const w=$('#vwrap');if(!w)return;w.classList.remove('pz');$('#vpl').style.display='none';$('#vpz').textContent='⏸';Snd.music('promo');vidShow(j,true)}
+function vidNext(){if(!$('#vwrap'))return;VP.i<VSC.length-1?vidShow(VP.i+1,true):vidEnd()}
+function vidEnd(){const b=$('#vpl');if(!b)return;b.textContent='⟲ '+LG('Xem lại','Replay');b.style.display='';$('#vwrap').classList.add('pz');setTimeout(()=>{if(VP.i===VSC.length-1)Snd.music(null)},1500)}
+function vidInit(){const w=$('#vwrap');if(!w)return;VP.pz=true;clearTimeout(VP.t);vidFit();vidShow(0,false);$('#vpl').onclick=()=>vidGo(0);$('#vrs').onclick=()=>vidGo(0);$('#vnx').onclick=()=>vidGo(Math.min(VSC.length-1,VP.i+1));
+ $('#vpz').onclick=()=>{if($('#vpl').style.display!=='none')return;const p=!VP.pz;VP.pz=p;w.classList.toggle('pz',p);$('#vpz').textContent=p?'▶':'⏸';if(p){clearTimeout(VP.t);VP.left-=Date.now()-VP.start}else{VP.start=Date.now();VP.t=setTimeout(vidNext,Math.max(300,VP.left))}}}
+addEventListener('resize',vidFit);
+
+Object.assign(X,{lab:heroLab});TT.lab='Tùy chỉnh Hero';PH.lab=['🎨','Tùy chỉnh Hero','Thiết kế Hero của riêng bé',G('#7B5CFF','#FF8FA3'),'#F5EEFF','🎀🧢✨'];
+Object.assign(EN,{'Thiết kế Hero của riêng bé':'Design your very own Hero'});ENK.length=0;ENK.push(...Object.keys(EN).sort((a,b)=>b.length-a.length));
+const _play6=play;play=function(l,si,ex){_play6(l,si,ex);if(!$('#hear')&&$('#mic')){const s=$('.choices');if(s)s.insertAdjacentHTML('afterend','<p class="note hearn">🎤 '+LG('Bé có thể trả lời bằng lời của mình, Hero sẽ hiểu ý. Nói ý không liên quan sẽ bị tính là sai.','Answer in your own words – Hero understands the meaning. Unrelated answers count as wrong.')+'</p>')}};
+
 go('home');deep();
 </script>
 </body>
