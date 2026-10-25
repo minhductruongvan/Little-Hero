@@ -6,6 +6,11 @@
         ? "http://127.0.0.1:31377"
         : (window.LITTLE_HERO_API_BASE || "");
       const apiUrl = (path) => `${API_BASE}${path}`;
+      const DEMO_ACCOUNT = Object.freeze({
+        email: "demo@littlehero.id.vn",
+        password: "littlehero-demo",
+        name: "Khách Little Hero"
+      });
       const { categories, lessons, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
       const freshState = () => ({
         childName: "",
@@ -29,6 +34,7 @@
         language: "vi",
         premium: false,
         authenticated: false,
+        demoAccount: false,
         accountEmail: "",
         dailyReviews: [],
         lastRoute: "",
@@ -87,19 +93,25 @@
         });
         state.accountEmail = email;
         state.authenticated = true;
+        state.demoAccount = false;
         if (!savedProgress && accountName) state.childName = accountName;
         normalizeProgressState();
       };
+      const savedDemoAccount = state.authenticated === true && state.demoAccount === true;
       const savedAccountEmail = state.authenticated === true && typeof state.accountEmail === "string"
         ? state.accountEmail.trim().toLowerCase()
         : "";
-      if (/^[^\s@]+@gmail\.com$/i.test(savedAccountEmail)) {
+      if (savedDemoAccount) {
+        state.accountEmail = "";
+        normalizeProgressState();
+      } else if (/^[^\s@]+@gmail\.com$/i.test(savedAccountEmail)) {
         loadAccountProgress(savedAccountEmail);
       } else {
         const defaults = freshState();
         accountProgressFields.forEach((key) => { state[key] = defaults[key]; });
         state.accountEmail = "";
         state.authenticated = false;
+        state.demoAccount = false;
         normalizeProgressState();
       }
 
@@ -590,7 +602,7 @@
       let route = "home";
       let pendingNewsFocus = "";
       let pendingAuthRoute = "";
-      const accountRequiredRoutes = new Set(["parents", "arena", "arena-match", "payment", "premium-success"]);
+      const accountRequiredRoutes = new Set(["map", "lesson", "quiz", "games", "quests", "achievements", "parents", "arena", "arena-match", "payment", "premium-success", "wardrobe"]);
       let activeViewTransition = false;
       let pendingViewUpdate = null;
       let quizPageLesson = null;
@@ -697,7 +709,7 @@
             </div><button class="btn btn-mint btn-small" data-route="lesson/${lesson.id}">${state.completed.includes(lesson.id) ? "Học lại" : "Bắt đầu bài học"} →</button></article>`;
         }).join("");
         const chips = categories.map((category) => routeLink(`lessons/${category.id}`, `${category.icon} ${category.name}`)).join("");
-        $("#routeView").innerHTML = pageShell("lessons", "Học thử không cần tài khoản. Tiến độ trải nghiệm được lưu trên trình duyệt của thiết bị này.", `<div class="page-actions">${routeLink("lessons", "Tất cả chủ đề", "🏝️")}${chips}</div><div class="lesson-catalog">${cards}</div>`, "KHO BÀI HỌC");
+        $("#routeView").innerHTML = pageShell("lessons", "Chọn một bài học để bắt đầu. Cần đăng nhập; khách có thể dùng tài khoản trải nghiệm ở trang đăng nhập.", `<div class="page-actions">${routeLink("lessons", "Tất cả chủ đề", "🏝️")}${chips}</div><div class="lesson-catalog">${cards}</div>`, "KHO BÀI HỌC");
       };
 
       const { getScene, renderSceneBackdrop, renderSceneActor } = window.createLittleHeroSceneModel({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, state });
@@ -1094,7 +1106,10 @@
         if (!quizPageLesson) quizPageLesson = lessons[Math.floor(Math.random() * lessons.length)];
         const lesson = quizPageLesson;
         const scene = getScene(lesson);
-        $("#routeView").innerHTML = pageShell("quiz", "Trải nghiệm không cần tài khoản. Tiến độ được lưu trên trình duyệt của thiết bị này.", `
+        const quizDescription = state.demoAccount
+          ? "Đang dùng tài khoản trải nghiệm; tiến độ chỉ lưu trên trình duyệt của thiết bị này."
+          : "Cùng Hero suy nghĩ và chọn cách xử lý phù hợp trong từng tình huống.";
+        $("#routeView").innerHTML = pageShell("quiz", quizDescription, `
           <article class="score-card quiz-center-card"><div class="lesson-progress"><span>🧠 Tình huống ${state.dailyQuiz + (quizPageChoice === null ? 1 : 0)}</span><span>⭐ ${state.xp} · Lv ${Math.floor(state.xp / 100) + 1}</span></div>
           <article class="scene-card" style="margin:12px 0">
             <div class="scene ${scene.type}" id="quizScene">
@@ -1539,10 +1554,11 @@
             <section id="loginPanel">
               <h3 style="font-size:17px">Đăng nhập Little Hero</h3>
               <form class="simple-form" id="loginForm" autocomplete="on">
-                <label class="form-label">Gmail<input name="email" type="email" autocomplete="username" required placeholder="@gmail.com"></label>
-                <label class="form-label">Mật khẩu<input name="password" type="password" autocomplete="current-password" required placeholder="Nhập mật khẩu"></label>
+                <label class="form-label">Tài khoản dùng thử<input name="email" type="email" autocomplete="username" required value="${DEMO_ACCOUNT.email}"></label>
+                <label class="form-label">Mật khẩu dùng thử<input name="password" type="password" autocomplete="current-password" required value="${DEMO_ACCOUNT.password}"></label>
                 <button class="btn btn-mint btn-small" type="submit">Đăng nhập</button>
               </form>
+              <p class="note">Tài khoản mẫu chỉ lưu dữ liệu trên trình duyệt này; không dùng chung tiến độ với khách khác. Muốn đăng nhập tài khoản thật, hãy thay bằng Gmail và mật khẩu của bạn.</p>
               <p><button class="auth-switch" type="button" data-auth-toggle="register">Chưa có tài khoản? Đăng ký</button></p>
             </section>
             <section id="registrationPanel" hidden>
@@ -1556,10 +1572,10 @@
                 <button class="btn btn-mint btn-small" type="submit">Tạo tài khoản</button>
               </form>
               <p id="registrationError" class="auth-form-error" role="alert" aria-live="polite" hidden></p>
+              <button class="btn btn-light btn-small" id="demoAccountLogin" type="button">Vào với tài khoản trải nghiệm</button>
+              <p class="note">Tài khoản trải nghiệm không cần đăng ký và chỉ lưu dữ liệu trên trình duyệt này.</p>
               <p><button class="auth-switch" type="button" data-auth-toggle="login">Đã có tài khoản? Đăng nhập</button></p>
             </section>
-            <div class="page-actions"><button class="btn btn-light btn-small" type="button" data-route="lessons">▶ Trải nghiệm không cần tài khoản</button></div>
-            <p class="note">Bài học và trò chơi dùng thử miễn phí; tiến độ được lưu trên trình duyệt của thiết bị này.</p>
           </article></div>`, "TÀI KHOẢN");
         const showAuthPanel = (panel) => {
           const register = panel === "register";
@@ -1572,6 +1588,21 @@
         $("#routeView").querySelectorAll("[data-auth-toggle]").forEach((button) => {
           button.addEventListener("click", () => showAuthPanel(button.dataset.authToggle));
         });
+        const enterDemoAccount = () => {
+          state.authenticated = true;
+          state.demoAccount = true;
+          state.accountEmail = "";
+          normalizeProgressState();
+          state.childName = DEMO_ACCOUNT.name;
+          const child = state.children.find((entry) => entry.id === state.activeChildId);
+          if (child) child.name = DEMO_ACCOUNT.name;
+          const nextRoute = pendingAuthRoute || "home";
+          pendingAuthRoute = "";
+          persist();
+          setRoute(nextRoute);
+          toast("Đã vào tài khoản trải nghiệm. Tiến độ chỉ lưu trên trình duyệt này.");
+        };
+        $("#demoAccountLogin").addEventListener("click", enterDemoAccount);
         const registrationError = $("#registrationError");
         const showRegistrationError = (message, field) => {
           registrationError.textContent = message;
@@ -1586,11 +1617,21 @@
           event.preventDefault();
           const form = event.currentTarget;
           const data = new FormData(form);
+          const email = String(data.get("email") || "").trim().toLowerCase();
+          const password = String(data.get("password") || "");
+          if (email === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password) {
+            enterDemoAccount();
+            return;
+          }
+          if (email === DEMO_ACCOUNT.email) {
+            toast("Mật khẩu tài khoản trải nghiệm chưa đúng.");
+            return;
+          }
           try {
             const response = await fetch(apiUrl("/api/auth/login"), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: data.get("email"), password: data.get("password") })
+              body: JSON.stringify({ email, password })
             });
             const result = await response.json();
             if (!response.ok) { toast(result.error || "Không thể đăng nhập. Vui lòng thử lại."); return; }
