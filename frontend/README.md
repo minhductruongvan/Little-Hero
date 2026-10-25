@@ -16,6 +16,6 @@ Các tệp trong `frontend/` không thay thế các tệp frontend thử nghiệ
 
 ## Backend
 
-Backend hiện có ở `../backend/server.js`; backend phục vụ giao diện và API Gemini/tài khoản trên cùng địa chỉ `http://127.0.0.1:5500`.
+Backend hiện có ở `../backend/server.js`, phục vụ API Gemini và tài khoản trên cổng `31377`.
 
-Chạy backend từ thư mục gốc bằng `node backend/server.js`, cấu hình API key qua biến môi trường và mở `http://127.0.0.1:5500/`. Không chạy VS Code Live Server cùng cổng `5500`; xem `../backend/README.md` để biết chi tiết.
+Có thể mở giao diện bằng VS Code Live Server tại `http://127.0.0.1:5500/little-hero.html`; frontend tự gọi backend tại `127.0.0.1:31377`. Cả Live Server lẫn backend cần được chạy đồng thời. Xem `../backend/README.md` để cấu hình API key và chạy máy chủ.

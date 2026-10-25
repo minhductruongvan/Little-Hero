@@ -15,9 +15,13 @@ Máy chủ Node.js phục vụ website, xác thực tài khoản và chuyển c�
 
    Biến chỉ có hiệu lực trong phiên PowerShell này. Không gửi API key qua chat, không ghi key vào source hoặc tệp theo dõi Git.
 
-3. Mở `http://127.0.0.1:5500/`. Backend Node.js sẽ vừa phục vụ ứng dụng Little Hero vừa xử lý API Gemini và tài khoản.
+3. Mở `http://127.0.0.1:31377/`. Backend Node.js sẽ phục vụ website cùng API Gemini và tài khoản.
 
-Cổng mặc định là `5500`; có thể thay đổi bằng biến môi trường `PORT`. API gồm `GET /api/health`, `POST /api/chat`, `POST /api/auth/register` và `POST /api/auth/login`. Không chạy VS Code Live Server trên cổng 5500 cùng lúc: một cổng chỉ có thể được một máy chủ chiếm dụng tại một thời điểm. Thay vào đó hãy khởi chạy backend này và truy cập địa chỉ trên.
+Cổng mặc định là `3000`; đặt `PORT=31377` trong PowerShell trước khi chạy để dùng địa chỉ trên. API gồm `GET /api/health`, `POST /api/chat`, `POST /api/auth/register` và `POST /api/auth/login`.
+
+### Dùng giao diện qua VS Code Live Server ở cổng 5500
+
+Chạy backend với API key Gemini và `PORT=31377`. Trong terminal khác, dùng Live Server mở `little-hero.html` tại `http://127.0.0.1:5500/little-hero.html`. Giao diện tự gửi yêu cầu AI và tài khoản tới backend trên cổng 31377; cần để cả hai máy chủ chạy. Backend cho phép yêu cầu API từ `localhost:5500` và `127.0.0.1:5500`.
 
 ## Hỏi Hero AI
 

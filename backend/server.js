@@ -7,6 +7,21 @@ const { GoogleGenAI } = require('@google/genai');
 const { promisify } = require('util');
 
 const app = express();
+const localAppOrigins = new Set([
+    'http://localhost:5500',
+    'http://127.0.0.1:5500'
+]);
+app.use((req, res, next) => {
+    const origin = req.get('origin');
+    if (localAppOrigins.has(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.vary('Origin');
+    }
+    if (req.method === 'OPTIONS' && req.path.startsWith('/api/')) return res.sendStatus(204);
+    next();
+});
 app.use((req, res, next) => {
     express.json({ limit: req.path === '/api/chat' ? '17mb' : '16kb' })(req, res, next);
 });
@@ -282,14 +297,5 @@ app.use((error, req, res, next) => {
     next(error);
 });
 
-const PORT = process.env.PORT || 5500;
-const HOST = process.env.HOST || '127.0.0.1';
-const server = app.listen(PORT, HOST, () => console.log(`Server running on http://${HOST}:${PORT}`));
-server.on('error', (error) => {
-    if (error.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use. Stop the app currently using that port, then restart the Little Hero backend.`);
-    } else {
-        console.error('Little Hero backend failed to start:', error);
-    }
-    process.exitCode = 1;
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on http://127.0.0.1:${PORT}`));

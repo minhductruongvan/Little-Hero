@@ -2,7 +2,8 @@
       "use strict";
 
       const STORAGE_KEY = "little-hero-new-home-v1";
-      const apiUrl = (path) => path;
+      const API_BASE = location.port === "5500" ? "http://127.0.0.1:31377" : "";
+      const apiUrl = (path) => `${API_BASE}${path}`;
       const { categories, lessons, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
       const freshState = () => ({
         childName: "",
