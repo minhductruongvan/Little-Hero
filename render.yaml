@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: little-hero-api
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: node backend/server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: little-hero-accounts
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: LITTLE_HERO_AUTH_FILE
+        value: /var/data/accounts.json
+      - key: LITTLE_HERO_ALLOWED_ORIGINS
+        value: https://littlehero.id.vn,https://www.littlehero.id.vn

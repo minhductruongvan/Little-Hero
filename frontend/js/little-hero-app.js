@@ -2,7 +2,9 @@
       "use strict";
 
       const STORAGE_KEY = "little-hero-new-home-v1";
-      const API_BASE = location.port === "5500" ? "http://127.0.0.1:31377" : "";
+      const API_BASE = location.port === "5500"
+        ? "http://127.0.0.1:31377"
+        : (window.LITTLE_HERO_API_BASE || "");
       const apiUrl = (path) => `${API_BASE}${path}`;
       const { categories, lessons, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
       const freshState = () => ({
@@ -1599,7 +1601,7 @@
             toast(`Chào mừng ${result.user.name} trở lại Little Hero!`);
           } catch (error) {
             console.error("Không thể kết nối tới máy chủ đăng nhập.", error);
-            toast("Không thể kết nối tới máy chủ. Hãy kiểm tra máy chủ và thử lại.");
+            toast("Hiện chưa thể đăng nhập. Vui lòng thử lại sau nhé.");
           }
         });
         $("#registrationForm").addEventListener("submit", async (event) => {
@@ -1639,7 +1641,7 @@
             toast("Tạo tài khoản thành công. Hãy đăng nhập bằng Gmail và mật khẩu vừa đăng ký.");
           } catch (error) {
             console.error("Không thể kết nối tới máy chủ đăng ký.", error);
-            showRegistrationError("Không thể kết nối máy chủ đăng ký. Hãy chạy backend bằng lệnh `node backend/server.js` rồi thử lại.");
+            showRegistrationError("Tính năng tạo tài khoản hiện chưa sẵn sàng. Vui lòng thử lại sau nhé.");
           } finally {
             submitButton.disabled = false;
           }

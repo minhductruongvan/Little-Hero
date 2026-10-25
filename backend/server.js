@@ -7,13 +7,20 @@ const { GoogleGenAI } = require('@google/genai');
 const { promisify } = require('util');
 
 const app = express();
-const localAppOrigins = new Set([
+const configuredAppOrigins = (process.env.LITTLE_HERO_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+const allowedAppOrigins = new Set([
     'http://localhost:5500',
-    'http://127.0.0.1:5500'
+    'http://127.0.0.1:5500',
+    'https://littlehero.id.vn',
+    'https://www.littlehero.id.vn',
+    ...configuredAppOrigins
 ]);
 app.use((req, res, next) => {
     const origin = req.get('origin');
-    if (localAppOrigins.has(origin)) {
+    if (allowedAppOrigins.has(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
