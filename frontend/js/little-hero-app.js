@@ -590,7 +590,7 @@
       let route = "home";
       let pendingNewsFocus = "";
       let pendingAuthRoute = "";
-      const accountRequiredRoutes = new Set(["map", "lesson", "quiz", "games", "quests", "achievements", "parents", "arena", "arena-match", "payment", "premium-success", "wardrobe"]);
+      const accountRequiredRoutes = new Set(["parents", "arena", "arena-match", "payment", "premium-success"]);
       let activeViewTransition = false;
       let pendingViewUpdate = null;
       let quizPageLesson = null;
@@ -697,7 +697,7 @@
             </div><button class="btn btn-mint btn-small" data-route="lesson/${lesson.id}">${state.completed.includes(lesson.id) ? "Học lại" : "Bắt đầu bài học"} →</button></article>`;
         }).join("");
         const chips = categories.map((category) => routeLink(`lessons/${category.id}`, `${category.icon} ${category.name}`)).join("");
-        $("#routeView").innerHTML = pageShell("lessons", "Chọn một tình huống gần gũi và cùng Hero tìm cách xử lý an toàn.", `<div class="page-actions">${routeLink("lessons", "Tất cả chủ đề", "🏝️")}${chips}</div><div class="lesson-catalog">${cards}</div>`, "KHO BÀI HỌC");
+        $("#routeView").innerHTML = pageShell("lessons", "Học thử không cần tài khoản. Tiến độ trải nghiệm được lưu trên trình duyệt của thiết bị này.", `<div class="page-actions">${routeLink("lessons", "Tất cả chủ đề", "🏝️")}${chips}</div><div class="lesson-catalog">${cards}</div>`, "KHO BÀI HỌC");
       };
 
       const { getScene, renderSceneBackdrop, renderSceneActor } = window.createLittleHeroSceneModel({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, state });
@@ -1094,7 +1094,7 @@
         if (!quizPageLesson) quizPageLesson = lessons[Math.floor(Math.random() * lessons.length)];
         const lesson = quizPageLesson;
         const scene = getScene(lesson);
-        $("#routeView").innerHTML = pageShell("quiz", "Cùng Hero suy nghĩ và chọn cách xử lý phù hợp trong từng tình huống.", `
+        $("#routeView").innerHTML = pageShell("quiz", "Trải nghiệm không cần tài khoản. Tiến độ được lưu trên trình duyệt của thiết bị này.", `
           <article class="score-card quiz-center-card"><div class="lesson-progress"><span>🧠 Tình huống ${state.dailyQuiz + (quizPageChoice === null ? 1 : 0)}</span><span>⭐ ${state.xp} · Lv ${Math.floor(state.xp / 100) + 1}</span></div>
           <article class="scene-card" style="margin:12px 0">
             <div class="scene ${scene.type}" id="quizScene">
@@ -1558,6 +1558,8 @@
               <p id="registrationError" class="auth-form-error" role="alert" aria-live="polite" hidden></p>
               <p><button class="auth-switch" type="button" data-auth-toggle="login">Đã có tài khoản? Đăng nhập</button></p>
             </section>
+            <div class="page-actions"><button class="btn btn-light btn-small" type="button" data-route="lessons">▶ Trải nghiệm không cần tài khoản</button></div>
+            <p class="note">Bài học và trò chơi dùng thử miễn phí; tiến độ được lưu trên trình duyệt của thiết bị này.</p>
           </article></div>`, "TÀI KHOẢN");
         const showAuthPanel = (panel) => {
           const register = panel === "register";
