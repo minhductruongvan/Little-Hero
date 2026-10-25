@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#C7EEE0"/>
+      <stop offset="1" stop-color="#FCE8C7"/>
+    </linearGradient>
+    <linearGradient id="island" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#B6DEAA"/>
+      <stop offset="1" stop-color="#83C7A4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sea)"/>
+  <g stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" opacity=".55">
+    <path d="M-40 180c190-66 340-63 520 3s340 72 520 9 390-57 660 23"/>
+    <path d="M-60 720c200-76 360-64 540 9s340 72 520 9 390-57 660 23"/>
+    <path d="M-20 490c180-55 335-48 500 14s335 61 500 8 365-47 640 18"/>
+  </g>
+  <g opacity=".8">
+    <ellipse cx="280" cy="365" rx="208" ry="112" fill="#5CAFA8" opacity=".38"/>
+    <ellipse cx="280" cy="347" rx="178" ry="90" fill="url(#island)"/>
+    <ellipse cx="280" cy="362" rx="139" ry="56" fill="#D8EFBF" opacity=".85"/>
+    <path d="M207 354c6-68 35-108 73-108 39 0 61 39 66 108-33 17-103 17-139 0Z" fill="#64B991"/>
+    <circle cx="280" cy="269" r="52" fill="#FFE4B8"/>
+    <path d="M250 273c0-18 13-32 30-32s30 14 30 32v26h-60v-26Z" fill="#543E34"/>
+    <circle cx="269" cy="276" r="4" fill="#344255"/>
+    <circle cx="292" cy="276" r="4" fill="#344255"/>
+    <path d="M271 289c6 6 13 6 19 0" stroke="#C77869" stroke-width="4" stroke-linecap="round"/>
+    <path d="m258 310-17 30 25 10 14-24 17 25 26-13-17-31" fill="#FF9C63"/>
+    <path d="m260 349-10 43m49-43 10 43" stroke="#536F8D" stroke-width="15" stroke-linecap="round"/>
+    <path d="m249 392-16 2m77-2 16 2" stroke="#F4A65C" stroke-width="13" stroke-linecap="round"/>
+  </g>
+  <g fill="#FFF4D8" opacity=".85">
+    <circle cx="810" cy="250" r="16"/>
+    <circle cx="1325" cy="365" r="11"/>
+    <circle cx="1085" cy="785" r="18"/>
+    <circle cx="555" cy="760" r="10"/>
+  </g>
+</svg>

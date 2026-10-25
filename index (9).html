@@ -237,6 +237,102 @@ footer{background:var(--w);border-top:4px solid var(--sun);margin-top:30px;opaci
 .br{display:flex;gap:12px;overflow:auto;padding-bottom:6px}.br>div{min-width:200px}.mt{background:#fff;border-radius:14px;padding:6px 10px;margin:6px 0;font-size:15px;box-shadow:0 3px 0 #26325B22}.mt .w{font-weight:800;color:#0E9F6E}
 details.fq{background:#fff;border-radius:18px;padding:10px 16px;margin:8px 0;box-shadow:0 4px 0 #26325B22}details.fq summary{cursor:pointer;font-weight:800}details.fq p{margin:6px 0 0}
 @media(max-width:760px){.lv{grid-template-columns:1fr}.vs{padding:0}.phero{flex-wrap:wrap}.vs4{font-size:26px;gap:6px}.vstep{padding:8px 10px}}
+.lh-home{display:grid;gap:24px}
+.lh-hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(220px,.75fr);align-items:center;gap:18px;padding:clamp(20px,4vw,38px);min-height:300px;border-radius:32px;color:#fff;background:radial-gradient(circle at 80% 18%,#ffffff44 0 5%,transparent 5.4%),linear-gradient(120deg,#6047d9,#8d69f6 58%,#e979b7);box-shadow:0 10px 0 #26325b1c;overflow:hidden}
+.lh-hero h1{font-size:clamp(32px,5vw,52px);line-height:1.05;margin:8px 0}.lh-hero p{font-size:20px;margin:8px 0 18px}.lh-hero-art{align-self:end;justify-self:center;width:min(100%,250px);filter:drop-shadow(0 14px 12px #31206555);animation:lh-float 3s ease-in-out infinite}.lh-hero-actions{display:flex;flex-wrap:wrap;gap:10px}.lh-eyebrow{display:inline-flex;gap:8px;align-items:center;padding:5px 12px;border-radius:99px;background:#fff3;font-size:14px;font-weight:800}
+.lh-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px}.lh-section-head h2{margin:0}.lh-section-head p{margin:2px 0 0;opacity:.72}
+.lh-missions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.lh-mission{display:flex;gap:12px;align-items:center;min-height:104px;padding:14px;background:#fff;border-radius:22px;text-align:left;box-shadow:0 5px 0 #26325b1b;transition:transform .15s,box-shadow .15s}.lh-mission:hover,.lh-island:hover{transform:translateY(-3px);box-shadow:0 8px 0 #26325b1b}.lh-mission-icon{display:grid;place-items:center;flex:none;width:52px;height:52px;border-radius:17px;background:#fff4cf;font-size:28px}.lh-mission b,.lh-mission small{display:block}.lh-mission small{opacity:.7}.lh-mission .bar{margin-top:8px}.lh-mission-copy{flex:1;min-width:0}
+.lh-islands{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.lh-island{min-height:174px;padding:16px;border-radius:24px;color:#fff;text-align:left;box-shadow:0 6px 0 #26325b21;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}.lh-island:after{content:"";position:absolute;width:110px;height:110px;border-radius:50%;right:-34px;top:-38px;background:#ffffff25}.lh-island .lh-island-icon{display:block;font-size:38px;line-height:1.2}.lh-island b,.lh-island small{display:block;position:relative;z-index:1}.lh-island b{font-size:17px;line-height:1.15;margin:8px 0 2px}.lh-island small{opacity:.9}.lh-island .bar{margin-top:9px;background:#ffffff55}.lh-island .bar i{background:#fff}
+.lh-arena{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.lh-arena button{min-height:132px;padding:16px;border-radius:22px;color:#fff;text-align:left;box-shadow:0 5px 0 #26325b1b;transition:transform .15s}.lh-arena button:hover{transform:translateY(-3px)}.lh-arena b,.lh-arena small{display:block}.lh-arena b{font-size:18px}.lh-arena .lh-arena-icon{font-size:30px;margin-bottom:8px}.lh-arena small{opacity:.9;margin-top:3px}
+.lh-next{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 18px;background:#fff;border-radius:22px;box-shadow:0 5px 0 #26325b16}.lh-next .bar{min-width:70px;max-width:140px}
+.lh-roadmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:14px;margin:12px 0 22px}.lh-roadmap .card{height:100%;min-height:194px}.lh-roadmap .lh-planned{background:#fff;border:2px dashed #d5deef;border-radius:24px;padding:14px;text-align:left;min-height:194px;display:flex;flex-direction:column;justify-content:space-between;color:var(--ink);opacity:.88}.lh-roadmap .lh-planned .thumb{height:auto;min-height:64px;font-size:38px;display:flex;justify-content:space-between;align-items:flex-start}.lh-roadmap .lh-planned .t{padding-top:10px}.lh-roadmap .lh-planned h3{font-size:18px}.lh-roadmap .lh-planned small{display:block;margin-top:8px;color:#65708d}
+.lh-topic-tabs{display:flex;gap:8px;overflow:auto;padding:4px 2px 10px;scrollbar-width:thin}.lh-topic-tabs button{white-space:nowrap;background:#fff;border:2px solid transparent;border-radius:99px;padding:8px 14px;font-weight:800}.lh-topic-tabs button.on{border-color:var(--vio);background:#f2edff;color:#513bc1}
+.lh-progress-note{padding:12px 16px;border-radius:18px;background:#fff7df;margin:10px 0 16px}
+.lh-practice{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:16px 18px;margin:0 0 22px;background:#fff;border-radius:22px;box-shadow:0 5px 0 #26325b16}.lh-practice-icon{font-size:32px}.lh-practice h4{margin:0 0 4px}.lh-practice p{margin:0;font-size:15px;opacity:.8}
+@keyframes lh-float{50%{transform:translateY(-8px)}}
+@media(max-width:760px){.right{width:100%;margin-left:0;justify-content:flex-end;gap:6px}.right #tm{display:none}.right .chip{padding:4px 8px;font-size:14px}.right .xp{display:none}.right .btn{padding:6px 10px;font-size:14px}.right .un{max-width:52px}.lh-hero{grid-template-columns:1fr;min-height:0}.lh-hero-art{width:150px;grid-row:1;justify-self:end;margin-bottom:-12px}.lh-hero-content{grid-row:2}.lh-missions{grid-template-columns:1fr}.lh-islands{grid-template-columns:repeat(2,minmax(0,1fr))}.lh-arena{grid-template-columns:repeat(2,minmax(0,1fr))}.lh-island{min-height:155px;padding:13px}}
+@media(max-width:380px){.lh-islands{grid-template-columns:1fr 1fr;gap:9px}.lh-island b{font-size:15px}.lh-hero-actions .btn{width:100%}}
+.lh-focused{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:32px;padding-top:8px;min-width:0}.lh-focused>*{min-width:0}
+.lh-focused-hero{position:relative;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(240px,.9fr);align-items:center;min-height:390px;padding:clamp(26px,5vw,58px);border:1px solid #e6ebf5;border-radius:32px;background:linear-gradient(115deg,#fff 0%,#fff 54%,#f5f1ff 100%);overflow:hidden;box-shadow:0 18px 50px #26325b0c;min-width:0;width:100%}
+.lh-focused-copy{position:relative;z-index:2;max-width:590px;min-width:0}.lh-focused-kicker{display:inline-block;margin-bottom:10px;color:#6654bd;font-size:13px;font-weight:800;letter-spacing:.08em}.lh-focused-copy h1{font-size:clamp(36px,5.3vw,58px);line-height:1.05;margin:0 0 14px;letter-spacing:-.035em}.lh-focused-copy p{max-width:470px;margin:0 0 22px;color:#66708a;font-size:19px}.lh-focused-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.lh-focused-actions .btn{box-shadow:0 4px 12px #26325b14}.lh-focused-art{position:relative;align-self:stretch;display:grid;place-items:center;min-height:260px;min-width:0}.lh-focused-art:before{content:"";position:absolute;width:min(88%,340px);aspect-ratio:1;border-radius:50%;background:linear-gradient(145deg,#e7dcff,#fff0f7);box-shadow:inset 0 0 0 16px #fff8}.lh-focused-art:after{content:"⭐";position:absolute;top:15%;right:11%;font-size:38px;animation:lh-float 3.4s ease-in-out infinite}.lh-focused-art .ch{position:relative;z-index:1;width:min(82%,245px);filter:drop-shadow(0 18px 12px #4335792b);animation:lh-float 3.2s ease-in-out infinite}
+.lh-continue{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:16px 20px;border:1px solid #e6ebf5;border-radius:22px;background:#fff}.lh-continue-icon{display:grid;place-items:center;width:54px;height:54px;border-radius:17px;background:#f2edff;font-size:29px}.lh-continue-copy small,.lh-continue-copy b{display:block}.lh-continue-copy small{color:#707a92}.lh-continue-copy b{font-size:19px}.lh-continue .btn{white-space:nowrap}
+.lh-featured-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:12px}.lh-featured-head h2{margin:0;font-size:27px}.lh-featured-head p{margin:2px 0 0;color:#737d94;font-size:16px}
+.lh-featured-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.lh-featured-grid .card{border:1px solid #e9edf5;box-shadow:0 7px 22px #26325b0b}.lh-featured-grid .thumb{height:152px}.lh-featured-grid .card .t{padding:13px 16px 16px}.lh-featured-grid .card h3{font-size:18px}
+.lh-topic-shelf{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.lh-topic-shelf button{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid #e8ebf3;border-radius:14px;font-size:15px;font-weight:700;transition:background .15s,border-color .15s,transform .15s}.lh-topic-shelf button:hover{background:#f7f5ff;border-color:#cfc4ff;transform:translateY(-2px)}.lh-topic-shelf button span{font-size:21px}
+.lh-home-note{display:flex;align-items:center;gap:9px;color:#748099;font-size:14px}.lh-home-note span{color:#28a184}
+header{gap:18px;padding:10px clamp(16px,4vw,48px);border-bottom:1px solid #e9edf5;box-shadow:0 4px 20px #26325b08}
+header .logo{font-size:21px;white-space:nowrap}header .logo i{border-radius:11px}
+header nav{gap:6px}header nav button{padding:8px 13px;color:#67718a;font-size:16px}header nav button.on{background:#f0edff;color:#5443b6}
+header .right{gap:9px}header .right #tm{display:none}header .right .chip{background:#f5f6fa;font-size:14px;padding:6px 12px}header .right .xp{width:44px;height:7px;background:#e2e5ef}
+header .right #bPlan{padding:8px 14px;font-size:14px;box-shadow:none;background:#fff5d8}
+header .right #bVol{display:none}
+@media(max-width:760px){header{gap:4px;padding:8px 12px 74px;min-height:61px;flex-wrap:nowrap}header .logo{font-size:19px}header .logo span{display:inline}header nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(14px);justify-content:space-around;padding:7px max(8px,env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));border-top:1px solid #e6eaf3;box-shadow:0 -6px 24px #26325b0c;z-index:30}header nav button{flex:1;justify-content:center;padding:5px 3px;font-size:12px;color:#68718a}header nav button b{font-size:20px}header nav button.on{background:#f0edff;color:#5443b6}header .right{width:auto;margin-left:auto;gap:5px}header .right .chip{font-size:12px;padding:5px 8px}header .right .xp{display:none}header .right #bPlan{display:none}header .right #bMenu{padding:7px 10px;font-size:14px}header .right .un{display:none}}
+@media(max-width:760px){.lh-focused{gap:23px;padding-top:2px}.lh-focused-hero{grid-template-columns:minmax(0,1fr) 155px;min-height:265px;padding:25px 20px;border-radius:24px;gap:3px}.lh-focused-copy h1{font-size:clamp(32px,8vw,43px)}.lh-focused-copy p{font-size:16px;margin-bottom:16px}.lh-focused-art{min-height:180px}.lh-focused-art .ch{width:min(100%,150px)}.lh-focused-art:before{width:140px}.lh-focused-art:after{font-size:27px;right:4%;top:17%}.lh-focused-actions{gap:8px}.lh-focused-actions .btn{padding:9px 13px;font-size:15px}.lh-continue{grid-template-columns:auto 1fr;gap:11px;padding:13px}.lh-continue .btn{grid-column:1/-1;width:100%}.lh-featured-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.lh-featured-grid .card:last-child{display:none}.lh-featured-grid .thumb{height:112px}.lh-featured-head h2{font-size:23px}.lh-featured-head p{font-size:14px}.lh-topic-shelf{gap:7px}.lh-topic-shelf button{padding:8px 10px;font-size:13px}}
+@media(max-width:420px){.lh-focused-hero{grid-template-columns:minmax(0,1fr) 110px;padding:22px 15px}.lh-focused-art{min-height:140px}.lh-focused-art .ch{width:115px}.lh-focused-art:before{width:105px}.lh-focused-copy h1{font-size:32px}.lh-focused-actions .btn{font-size:14px;padding:8px 10px}.lh-topic-shelf button{font-size:12px;padding:7px 9px}}
+main{max-width:1160px}
+.lh-menu-modal{z-index:70}.lh-menu-modal .box{max-width:520px;padding:22px;border:1px solid #e8ebf3;box-shadow:0 24px 80px #1c234533}.lh-menu-head{display:flex;align-items:center;gap:12px;margin-bottom:15px}.lh-menu-head>div:nth-child(2){flex:1;min-width:0}.lh-menu-head>div:nth-child(2)>b{font-size:20px}.lh-menu-head .note{margin:2px 0 0}.lh-menu-primary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}.lh-menu-primary button{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f6f5fb;border-radius:15px;text-align:left;font-weight:700}.lh-menu-primary b{font-size:22px}.lh-menu-more{border-top:1px solid #eceef4;border-bottom:1px solid #eceef4;padding:12px 0}.lh-menu-more summary{cursor:pointer;font-weight:800}.lh-menu-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;margin-top:8px}.lh-menu-links button,.lh-menu-foot button{background:none;text-align:left;padding:7px 3px;color:#626d86}.lh-menu-links button:hover,.lh-menu-foot button:hover{color:#5745b5}.lh-menu-foot{display:flex;flex-wrap:wrap;gap:4px 14px;padding-top:10px}.lh-menu-modal .row2 .btn{flex:1}.lh-focused .card[data-id]{cursor:pointer}
+@media(max-width:760px){header{padding:8px 12px}main{padding:14px}.lh-menu-modal .box{padding:18px;border-radius:24px}.lh-topic-shelf{overflow:auto;flex-wrap:nowrap;padding:2px 2px 8px}.lh-topic-shelf button{flex:none}.lh-menu-foot{gap:4px 10px}}
+.ch{overflow:visible;transform-box:fill-box;transform-origin:50% 100%}
+.ch .hd,.ch .bd,.ch .aL,.ch .aR,.ch .lL,.ch .lR,.ch .cp{transform-box:fill-box;transform-origin:50% 15%;transition:transform .24s ease}
+.ch .lL,.ch .lR{transform-origin:50% 8%}
+.ch .hd{transform-origin:50% 82%}
+.ch .cp{transform-origin:50% 0}
+.phero,.bn-fx{display:none!important}
+.lh-page-intro{position:relative;overflow:hidden;display:flex;align-items:center;min-height:112px;padding:20px 24px;margin:0 0 18px;border-radius:22px;background:linear-gradient(115deg,#fff,#f0edff);border:1px solid #ebe8f7}
+.lh-page-intro h1{position:relative;margin:0;font-size:clamp(25px,4vw,34px);line-height:1.1}
+.lh-page-intro p{position:relative;margin:3px 0 0;color:#6c7590}
+.lh-page-orbit{position:absolute;right:7%;width:66px;height:66px;border-radius:50%;background:radial-gradient(circle at 35% 32%,#fff 0 7%,#a991ff 8% 45%,#735ce0 46% 100%);box-shadow:0 10px 24px #735ce033}
+.lh-page-orbit:before,.lh-page-orbit:after{content:"";position:absolute;border-radius:50%;background:#ffc93c}
+.lh-page-orbit:before{width:15px;height:15px;right:-12px;top:1px}
+.lh-page-orbit:after{width:9px;height:9px;left:-11px;bottom:5px;background:#ff8fa3}
+.book-reader{--paper:#fffdf8;--edge:#e7dfce;max-width:1050px;margin:0 auto}
+.book-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 12px}
+.book-toolbar .book-progress{color:#6c7590;font-size:15px}
+.book-stage{position:relative;padding:24px 56px;border-radius:30px;background:linear-gradient(135deg,#d8e9fb,#f5e9d5);box-shadow:inset 0 0 0 1px #fff9,0 12px 28px #26325b12;perspective:1600px}
+.book-spread{position:relative;display:grid;grid-template-columns:1fr 1fr;min-height:430px;overflow:hidden;border-radius:12px 20px 20px 12px;background:var(--paper);box-shadow:0 10px 24px #26325b20}
+.comic-page{position:relative;min-width:0;padding:14px;background:var(--paper);border-right:1px solid #e8e1d6}
+.comic-page:last-of-type{border-right:0}
+.comic-page:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.26;background:repeating-linear-gradient(0deg,transparent 0 34px,#e7dfce 35px,transparent 36px)}
+.comic-page-art{position:relative;height:278px;overflow:hidden;border:5px solid #fff;border-radius:12px;background:var(--scene);box-shadow:0 4px 12px #26325b18}
+.comic-page-art:after{content:"";position:absolute;inset:auto 0 0;height:24%;background:linear-gradient(transparent,#26325b1a);pointer-events:none}
+.comic-page-art .book-ground{position:absolute;bottom:0;left:0;right:0;height:17%;background:linear-gradient(#a6e884,#6fcb5a);border-top:4px solid #86d96c}
+.comic-page-art .book-sun{position:absolute;right:9%;top:9%;width:44px;height:44px;border-radius:50%;background:#ffd567;box-shadow:0 0 0 10px #ffd56733}
+.comic-page-art .book-object{position:absolute;z-index:3;width:72px;height:72px;filter:drop-shadow(0 4px 2px #26325b22)}
+.comic-page-art .book-object svg{width:100%;height:100%}
+.comic-page-art .book-actor{position:absolute;z-index:4;bottom:7%;width:30%;max-width:132px;min-width:75px;animation:book-bob 2.4s ease-in-out infinite}
+.comic-page-art .book-actor .ch{width:100%;height:auto}
+.comic-caption{position:relative;margin:10px 2px 2px;font-size:16px;line-height:1.35;font-weight:700}
+.comic-page-number{position:absolute;right:18px;bottom:8px;color:#a09a90;font-size:13px}
+.book-flip-sheet{position:absolute;z-index:8;top:0;bottom:0;width:50%;background:var(--paper);transform-style:preserve-3d;backface-visibility:hidden;pointer-events:none}
+.book-flip-sheet.next{right:0;transform-origin:left center}
+.book-flip-sheet.prev{left:0;transform-origin:right center}
+.book-flip-sheet.anim-next{animation:book-flip-next .7s cubic-bezier(.5,.04,.25,1) forwards}
+.book-flip-sheet.anim-prev{animation:book-flip-prev .7s cubic-bezier(.5,.04,.25,1) forwards}
+.book-flip-face{position:absolute;inset:0;overflow:hidden;padding:14px;background:var(--paper);backface-visibility:hidden}
+.book-flip-face.back{transform:rotateY(180deg)}
+.book-flip-face .comic-page-art{height:100%}
+.book-turn-shadow{position:absolute;z-index:7;top:0;bottom:0;left:50%;width:2px;background:linear-gradient(90deg,#26325b24,#fff,#26325b12);pointer-events:none}
+.book-arrow{position:absolute;z-index:10;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;background:#fff;color:#26325b;box-shadow:0 4px 12px #26325b22;font-size:20px}
+.book-arrow:disabled{opacity:.35;cursor:default}
+.book-arrow.prev{left:8px}.book-arrow.next{right:8px}
+.book-controls{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin:15px 0 0}
+.book-controls .btn{min-width:124px}
+.book-controls .book-dots{display:flex;gap:7px;align-items:center}
+.book-dots i{width:8px;height:8px;border-radius:50%;background:#c8cbd6}
+.book-dots i.on{width:22px;border-radius:9px;background:#7b5cff}
+.book-note{margin-top:10px;text-align:center;color:#778098;font-size:14px}
+.book-object-float{animation:object-float 3.2s ease-in-out infinite}
+.cf{position:fixed;z-index:110;top:-24px;width:9px;height:15px;border-radius:3px;background:#ffc93c;pointer-events:none;animation:confetti-fall 2.7s ease-in forwards}
+.cf:nth-child(4n+1){border-radius:50%;background:#ff8fa3}
+.cf:nth-child(4n+2){background:#2ec4a6;transform:rotate(22deg)}
+.cf:nth-child(4n+3){width:7px;height:19px;background:#7b5cff;transform:rotate(-18deg)}
+@keyframes book-bob{50%{transform:translateY(-6px) rotate(-2deg)}}
+@keyframes object-float{50%{transform:translateY(-5px) rotate(2deg)}}
+@keyframes confetti-fall{to{transform:translate3d(12px,110vh,0) rotate(260deg);opacity:0}}
+@keyframes book-flip-next{0%{transform:rotateY(0);box-shadow:none}45%{box-shadow:12px 5px 20px #26325b33}100%{transform:rotateY(-180deg);box-shadow:none}}
+@keyframes book-flip-prev{0%{transform:rotateY(180deg);box-shadow:none}55%{box-shadow:-12px 5px 20px #26325b33}100%{transform:rotateY(0);box-shadow:none}}
+@media(max-width:700px){.lh-page-intro{min-height:86px;padding:16px 18px}.lh-page-orbit{right:5%;width:48px;height:48px}.book-stage{padding:14px 38px;border-radius:22px}.book-spread{grid-template-columns:1fr;min-height:0;border-radius:14px}.comic-page{padding:10px;border-right:0}.comic-page:nth-child(2){display:none}.comic-page-art{height:clamp(210px,62vw,320px)}.book-flip-sheet{display:none}.book-turn-shadow{display:none}.book-arrow{width:36px;height:36px}.book-arrow.prev{left:2px}.book-arrow.next{right:2px}.book-controls .btn{min-width:0}.book-toolbar{align-items:flex-start}.comic-caption{font-size:15px}}
+@media(prefers-reduced-motion:reduce){.ch,.ch *, .book-reader *, .lh-page-orbit,.cf{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -246,7 +342,7 @@ details.fq{background:#fff;border-radius:18px;padding:10px 16px;margin:8px 0;box
 <footer><div class="fg"><div><b>🦸 Little Hero</b><p>Học kỹ năng sống qua những câu chuyện tương tác cùng Hero và bạn bè.</p></div>
 <div><b>Khám phá</b><button class="lk" data-nv="learn">Bài học</button><button class="lk" data-nv="quiz">Bài kiểm tra</button><button class="lk" data-nv="forum">Diễn đàn</button><button class="lk" data-nv="school">Giải đấu trường lớp</button><button class="lk" data-nv="faq">FAQs</button></div>
 <div><b>Phụ huynh</b><button class="lk" data-nv="parent">Theo dõi tiến độ</button><button class="lk" data-nv="pay">Gói Premium</button><button class="lk" data-nv="reviews">Đánh giá</button></div>
-<div><b>Liên hệ</b><p>hello@littlehero.vn<br>Hotline: 1900 0000</p></div></div><small>© 2026 Little Hero – bản demo. Dữ liệu lưu trên trình duyệt này.</small></footer>
+<div><b>Liên hệ</b><p>hello@littlehero.vn<br>Hotline: 1900 0000</p></div></div><small>© 2026 Little Hero – bản demo. Dữ liệu lưu trên trình duyệt này.</small><p class="note" style="text-align:center;margin:8px 0 0">Thông tin đăng ký Bộ Công Thương sẽ được cập nhật khi hoàn tất thủ tục.</p></footer>
 <div id="sheet"></div>
 
 <script>
@@ -1272,6 +1368,264 @@ Object.assign(X,{lab:heroLab});TT.lab='Tùy chỉnh Hero';PH.lab=['🎨','Tùy c
 Object.assign(EN,{'Thiết kế Hero của riêng bé':'Design your very own Hero'});ENK.length=0;ENK.push(...Object.keys(EN).sort((a,b)=>b.length-a.length));
 const _play6=play;play=function(l,si,ex){_play6(l,si,ex);if(!$('#hear')&&$('#mic')){const s=$('.choices');if(s)s.insertAdjacentHTML('afterend','<p class="note hearn">🎤 '+LG('Bé có thể trả lời bằng lời của mình, Hero sẽ hiểu ý. Nói ý không liên quan sẽ bị tính là sai.','Answer in your own words – Hero understands the meaning. Unrelated answers count as wrong.')+'</p>')}};
 
+/* ----- Chuẩn hóa giao diện theo 8 chủ đề SEL / E.A.C.T. ----- */
+const TOPICS=[
+ {id:'emotion',name:'Thế giới cảm xúc và bản thân',icon:'🎨',color:'#9B51E0',legacy:['cx'],lessons:['Nhận biết cảm xúc của mình','Khi bé đang giận','Nói ra điều con đang cảm thấy','Con tự tin vào bản thân','Điều gì làm con vui?','Bình tĩnh khi lo lắng','Mỗi bạn đều đặc biệt','Con có thể nhờ giúp đỡ','Tự hào về việc con làm được','Yêu thương và chăm sóc bản thân']},
+ {id:'social',name:'Kỹ năng xã hội và giao tiếp',icon:'🤝',color:'#E8559A',legacy:['xl','lp'],lessons:['Làm quen với bạn mới','Chia sẻ đồ chơi','Nhặt sách giúp bạn','Nói lời cảm ơn','Chào hỏi lễ phép','Xếp hàng chờ đến lượt','Lắng nghe khi bạn nói','Cùng nhau giải quyết bất đồng','Xin lỗi và làm hòa','Làm việc nhóm vui vẻ']},
+ {id:'safety',name:'An toàn và tự bảo vệ',icon:'🛡️',color:'#4F72D8',legacy:['sv','bv','nc','yt','nh'],lessons:['Qua đường an toàn','Khi bị lạc','Không đi theo người lạ','Có người lạ gõ cửa','Cẩn thận với ổ điện','Bị bỏng nước nóng','An toàn khi ở gần nước','Thấy khói hoặc lửa','Bảo vệ cơ thể của con','Tìm người lớn tin cậy']},
+ {id:'health',name:'Sức khỏe và tự lập',icon:'🍏',color:'#24A982',legacy:['ks','sk','vl'],lessons:['Rửa tay sạch sẽ','Đánh răng mỗi tối','Dọn đồ chơi','Ăn uống đủ chất','Uống nước mỗi ngày','Đến giờ đi ngủ','Làm việc rồi mới vui chơi','Mặc quần áo phù hợp','Vận động mỗi ngày','Tự chăm sóc đồ dùng']},
+ {id:'thinking',name:'Tư duy và ra quyết định',icon:'🧩',color:'#E5A800',legacy:['tc'],lessons:['Heo đất tiết kiệm','Con chọn cách giải quyết','Dừng lại và suy nghĩ','Thử lại khi gặp khó','Phân biệt điều cần và điều muốn','Tìm nhiều cách làm','Hỏi khi chưa hiểu','Sắp xếp việc cần làm','Học từ một sai lầm','Chọn điều an toàn và tử tế']},
+ {id:'environment',name:'Trách nhiệm và môi trường',icon:'🌿',color:'#55A747',legacy:['mt','dv','tn'],lessons:['Bỏ rác đúng chỗ','Chăm sóc cây xanh','Tiết kiệm nước','Giữ gìn đồ dùng chung','Chăm sóc thú cưng an toàn','Trời giông bão','Giúp đỡ việc nhà','Tôn trọng thiên nhiên','Phân loại rác cùng gia đình','Có trách nhiệm với lời hứa']},
+ {id:'creative',name:'Sáng tạo và khám phá',icon:'💡',color:'#F08A24',legacy:[],lessons:['Khám phá âm thanh quanh con','Vẽ một điều con tưởng tượng','Xây tháp theo cách riêng','Thí nghiệm với nước','Kể một câu chuyện mới','Tìm hình dạng quanh nhà','Chế tạo đồ chơi từ giấy','Đặt câu hỏi vì sao','Cùng nhau sáng tạo','Tự tin chia sẻ ý tưởng']},
+ {id:'family',name:'Gia đình, cộng đồng và thế giới số',icon:'🌐',color:'#3489C9',legacy:['cn'],lessons:['Người lạ nhắn tin','Giữ kín thông tin cá nhân','Dùng thiết bị cùng bố mẹ','Chọn nội dung phù hợp','Cư xử tử tế trên mạng','Tìm hiểu cộng đồng quanh con','Cùng gia đình đặt quy tắc màn hình','Báo người lớn khi thấy điều lạ','Tôn trọng sự riêng tư','Cùng nhau giúp đỡ cộng đồng']}
+];
+const TOPIC_FOR={};
+TOPICS.forEach(t=>t.legacy.forEach(id=>TOPIC_FOR[id]=t.id));
+const topicOf=l=>TOPIC_FOR[l.c]||'creative';
+const topicLessons=t=>LESSONS.filter(l=>topicOf(l)===t.id);
+const topicDone=t=>topicLessons(t).filter(okd).length;
+const pct=(n,total)=>Math.min(100,Math.round(n/total*100));
+const TOPIC_PRACTICE={
+ emotion:['cx',KN.cx.c],social:['xl',KN.xl.c],safety:['sv',KN.sv.c],health:['ks',KN.ks.c],
+ thinking:['tc',KN.tc.c],environment:['mt',KN.mt.c],creative:['creative','Cùng gia đình sáng tạo một món đồ chơi từ giấy tái sử dụng rồi kể về ý tưởng của con.'],
+ family:['cn',KN.cn.c]
+};
+
+home=function(){
+ const next=LESSONS.find(l=>!locked(l)&&!okd(l))||LESSONS.find(l=>!locked(l));
+ const h=H(),plays=Math.min(3,h.plays||0),minutes=Math.min(10,mins()),tests=Math.min(1,h.quiz||0);
+ app.innerHTML=`<div class="lh-home">
+  <section class="lh-hero" aria-label="Chào mừng đến với Little Hero">
+   <div class="lh-hero-content"><span class="lh-eyebrow">⭐ HỌC KỸ NĂNG SỐNG · 4–8 TUỔI</span>
+    <h1>Chào ${S.user?esc(S.user.name):'bạn nhỏ'}! 👋</h1><p>Cùng ${S.hero==='girl'?'Mia':'Bin'} khám phá thế giới kỹ năng sống nhé.</p>
+    <div class="lh-hero-actions"><button class="btn sun" id="lhContinue">▶ ${next?'Học tiếp: '+esc(next.t):'Khám phá bài học'}</button><button class="btn ghost" id="lhCostume">🎭 Đổi trang phục Hero</button></div>
+    <div class="seg" style="margin-top:16px">Chọn Hero: <button data-h="boy" class="${S.hero==='boy'?'on':''}">👦 Bin</button><button data-h="girl" class="${S.hero==='girl'?'on':''}">👧 Mia</button></div>
+   </div><div class="lh-hero-art" aria-hidden="true">${char('me','wave')}</div>
+  </section>
+  <section aria-labelledby="lhMissionTitle"><div class="lh-section-head"><div><h2 id="lhMissionTitle">Nhiệm vụ hôm nay</h2><p>Mỗi bước nhỏ giúp con tiến bộ mỗi ngày.</p></div><button class="btn ghost" data-nv="quests">Xem tất cả</button></div>
+   <div class="lh-missions">
+    <button class="lh-mission" data-nv="quests"><span class="lh-mission-icon">🎮</span><span class="lh-mission-copy"><b>Chơi 3 lượt</b><small>${plays}/3 lượt hoàn thành</small><span class="bar"><i style="width:${pct(plays,3)}%"></i></span></span></button>
+    <button class="lh-mission" data-nv="learn"><span class="lh-mission-icon">⏱️</span><span class="lh-mission-copy"><b>Học 10 phút</b><small>${minutes}/10 phút hôm nay</small><span class="bar"><i style="width:${pct(minutes,10)}%"></i></span></span></button>
+    <button class="lh-mission" data-nv="quiz"><span class="lh-mission-icon">🧠</span><span class="lh-mission-copy"><b>Làm 1 bài kiểm tra</b><small>${tests}/1 bài hoàn thành</small><span class="bar"><i style="width:${pct(tests,1)}%"></i></span></span></button>
+   </div>
+  </section>
+  <section aria-labelledby="lhTopicTitle"><div class="lh-section-head"><div><h2 id="lhTopicTitle">8 hòn đảo kỹ năng</h2><p>80 bài học nhỏ theo khung E.A.C.T. — Cảm xúc, Nhận biết, Lựa chọn, Vận dụng.</p></div><button class="btn ghost" id="lhAllLessons">Tất cả bài học</button></div>
+   <div class="lh-islands">${TOPICS.map(t=>{const done=topicDone(t);return `<button class="lh-island" data-topic="${t.id}" style="background:linear-gradient(145deg,${t.color},${t.color}cc)" aria-label="${t.name}: ${done}/10 bài hoàn thành"><span class="lh-island-icon">${t.icon}</span><b>${t.name}</b><small>${done}/10 bài hoàn thành</small><span class="bar"><i style="width:${pct(done,10)}%"></i></span></button>`}).join('')}</div>
+  </section>
+  <section aria-labelledby="lhArenaTitle"><div class="lh-section-head"><div><h2 id="lhArenaTitle">Đấu trường Little Hero</h2><p>Luyện tập vui vẻ, thi đấu và cổ vũ bạn bè.</p></div></div>
+   <div class="lh-arena">${[['duel','⚔️','Đấu 1v1','Thử sức với bạn mới','#FF6666'],['region','🏙️','Đấu trường khu vực','Bảng xếp hạng địa phương','#388BD8'],['nation','🇻🇳','Đấu trường toàn quốc','Cùng học sinh cả nước','#B54A58'],['school','🏫','Giải đấu lớp','Tham gia bằng mã phòng','#6355C9']].map(x=>`<button data-nv="${x[0]}" style="background:linear-gradient(145deg,${x[4]},${x[4]}dd)"><span class="lh-arena-icon">${x[1]}</span><b>${x[2]}</b><small>${x[3]}</small></button>`).join('')}</div>
+  </section>
+  <section class="lh-next" aria-label="Tiến độ của bé"><span>⏱️ <b>${mins()} phút</b> hôm nay</span><span>🔥 <b>${H().plays||0}</b> lượt học</span><span>⭐ <b>${S.xp}</b> điểm · Lv ${lv()}</span><span class="bar"><i style="width:${S.xp%100}%"></i></span></section>
+ </div>`;
+ $$('.seg button[data-h]').forEach(b=>b.onclick=()=>{S.hero=b.dataset.h;S.look={};save();home()});
+ $('#lhContinue').onclick=()=>next?play(next):go('learn');
+ $('#lhCostume').onclick=()=>go('lab');
+ $('#lhAllLessons').onclick=()=>{S.catSel='all';go('learn')};
+ $$('.lh-island').forEach(b=>b.onclick=()=>{S.catSel=b.dataset.topic;go('learn')});
+ $$('[data-nv]').forEach(b=>b.onclick=()=>go(b.dataset.nv));
+};
+
+learn=function(){
+ const selected=S.catSel||'all',visible=TOPICS.filter(t=>selected==='all'||selected===t.id);
+ app.innerHTML=`<h2>80 bài học kỹ năng sống</h2><p class="note">Mỗi bài học theo khung E.A.C.T.: nhận biết cảm xúc, hiểu tình huống, chọn cách ứng xử và thực hành ngoài đời.</p>
+  <div class="lh-topic-tabs" role="group" aria-label="Lọc theo chủ đề"><button data-topic-filter="all" class="${selected==='all'?'on':''}">🌈 Tất cả chủ đề</button>${TOPICS.map(t=>`<button data-topic-filter="${t.id}" class="${selected===t.id?'on':''}">${t.icon} ${t.name}</button>`).join('')}</div>
+  ${visible.map(t=>{const ls=topicLessons(t),done=topicDone(t),existing=new Set(ls.map(l=>l.t.trim().toLocaleLowerCase('vi'))),planned=t.lessons.filter(title=>!existing.has(title.trim().toLocaleLowerCase('vi'))).slice(0,Math.max(0,10-ls.length)),practice=TOPIC_PRACTICE[t.id],practiceDone=!!S.chd[practice[0]];return `<section aria-label="${t.name}"><h3 class="chd" style="border-color:${t.color}">${t.icon} ${t.name} <small>${done}/10 hoàn thành · ${ls.length} bài đã có nội dung</small></h3>
+   <p class="lh-progress-note">🌱 Tiến độ chủ đề: <b>${done}/10</b> bài hoàn thành. Khung E.A.C.T. giúp bé học qua tình huống và vận dụng cùng gia đình.</p>
+   <div class="lh-roadmap">${ls.map(l=>lcard(l)).join('')}${planned.slice(0,Math.max(0,10-ls.length)).map((title,i)=>`<article class="lh-planned" aria-label="${esc(title)} — đang biên soạn"><div class="thumb"><span>${t.icon}</span><span aria-hidden="true">🔒</span></div><div class="t"><h3>${esc(title)}</h3><small>Bài ${String(ls.length+i+1).padStart(2,'0')} · Nội dung đang biên soạn</small></div></article>`).join('')}</div>
+   <div class="lh-practice"><span class="lh-practice-icon">🌍</span><div><h4>Thử thách ngoài đời</h4><p>${practice[1]}</p></div><button class="btn ${practiceDone?'ghost':'sun'}" data-practice="${practice[0]}" ${practiceDone?'disabled':''}>${practiceDone?'✅ Đã hoàn thành':'Con đã làm! +15 ⭐'}</button></div></section>`}).join('')}`;
+ $$('.lh-topic-tabs button').forEach(b=>b.onclick=()=>{S.catSel=b.dataset.topicFilter;save();learn()});
+ $$('.card[data-id]').forEach(b=>b.onclick=()=>{const l=LESSONS.find(x=>x.id===b.dataset.id);if(l)locked(l)?plans():play(l)});
+ $$('[data-practice]').forEach(b=>b.onclick=()=>{if(b.disabled)return;S.chd[b.dataset.practice]=1;S.xp+=15;trk('xp',15);save();shell();boom();learn()});
+};
+
+const parentWithExistingAnalytics=parentV;
+parentV=function(){
+ parentWithExistingAnalytics();
+ const skills=$$('.panel').find(p=>p.querySelector('h3')?.textContent.includes('Kỹ năng theo chủ đề'));
+ if(skills)skills.innerHTML=`<h3>Kỹ năng theo chủ đề</h3>${TOPICS.map(t=>{const done=topicDone(t);return `<div class="row"><span>${t.icon} ${t.name}</span><div class="bar"><i style="width:${pct(done,10)}%;background:${t.color}"></i></div><b>${done}/10</b></div>`}).join('')}`;
+ const interest=$$('.panel').find(p=>p.querySelector('h3')?.textContent.includes('Bé hứng thú kỹ năng nào'));
+ if(interest){
+  const totals={};Object.values(S.hist).forEach(day=>Object.entries(day.cat||{}).forEach(([id,n])=>{const topic=TOPIC_FOR[id];if(topic)totals[topic]=(totals[topic]||0)+n}));
+  const data=TOPICS.map(t=>({v:totals[t.id]||0,c:t.color,n:t.name,e:t.icon})),top=[...data].sort((a,b)=>b.v-a.v)[0];
+  interest.innerHTML=`<h3>❤️ Bé hứng thú kỹ năng nào</h3><div class="row" style="border:0">${DON(data)}<div style="font-size:15px">${data.map(p=>`<div><span style="color:${p.c}">●</span> ${p.e} ${p.n}: ${p.v}</div>`).join('')}</div></div><p class="note">Hứng thú nhất: <b>${top&&top.v?top.e+' '+top.n:'chưa có dữ liệu'}</b>.</p>`;
+ }
+};
+
+shell=function(){
+ const current=view==='play'?'learn':view;
+ const tabs=[['home','🏠','Trang chủ'],['learn','📚','Bài học'],['comic','📖','Truyện'],['cards','🃏','Bộ thẻ'],['chat','🎙️','Hỏi Hero'],['parent','👪','Phụ huynh']];
+ $('#nav').innerHTML=tabs.map(([key,icon,label])=>`<button data-v="${key}" class="${current===key?'on':''}" aria-label="${label}"><b>${icon}</b><span>${label}</span></button>`).join('');
+ $$('#nav button').forEach(button=>button.onclick=()=>go(button.dataset.v));
+ $('#right').innerHTML=`<span class="chip" id="tm">⏱ ${mins()}p</span><span class="chip" aria-label="${S.xp} sao, cấp ${lv()}">⭐ ${S.xp} · Lv ${lv()}<span class="xp"><i style="width:${S.xp%100}%"></i></span></span>
+  <button class="btn sun" id="bPlan"><span id="pl">${S.plan==='premium'?'👑 '+fmtLeft(S.exp-Date.now(),1):'✨ Nâng cấp'}</span></button>
+  <button class="btn ghost" id="bVol" aria-label="Âm lượng">${typeof volIcon==='function'?volIcon():'🔊'}</button>
+  <button class="btn ghost" id="bMenu" aria-label="Mở menu">☰ <span class="un">${S.user?esc(S.user.name):'Tài khoản'}</span></button>`;
+ $('#bPlan').onclick=plans;$('#bVol').onclick=volPanel;$('#bMenu').onclick=menu;
+};
+
+home=function(){
+ const available=LESSONS.filter(l=>!locked(l));
+ const next=available.find(l=>!okd(l))||available[0];
+ const featured=available.filter(l=>l.id!==next?.id).slice(0,3);
+ app.innerHTML=`<div class="lh-focused">
+  <section class="lh-focused-hero">
+   <div class="lh-focused-copy"><span class="lh-focused-kicker">LITTLE HERO · KỸ NĂNG SỐNG CHO BÉ 4–8 TUỔI</span>
+    <h1>Mỗi ngày một kỹ năng nhỏ, con thêm tự tin.</h1>
+    <p>Cùng ${S.hero==='girl'?'Mia':'Bin'} học qua những câu chuyện gần gũi.</p>
+    <div class="lh-focused-actions"><button class="btn sun" id="lhStart">▶ ${next?'Học tiếp':'Bắt đầu học'}</button><button class="btn ghost" id="lhExplore">Khám phá bài học</button></div>
+   </div><div class="lh-focused-art" aria-hidden="true">${char('me','wave')}</div>
+  </section>
+  ${next?`<section class="lh-continue" aria-label="Tiếp tục bài học"><span class="lh-continue-icon">${next.e}</span><span class="lh-continue-copy"><small>${okd(next)?'GỢI Ý BÀI TIẾP THEO':'TIẾP TỤC HỌC'}</small><b>${esc(next.t)}</b></span><button class="btn" id="lhContinue">Vào bài học →</button></section>`:''}
+  ${featured.length?`<section><div class="lh-featured-head"><div><h2>Bài học gợi ý</h2><p>Những câu chuyện khác bé có thể học tiếp.</p></div><button class="btn ghost" id="lhAllLessons">Tất cả bài học</button></div>
+   <div class="lh-featured-grid">${featured.map(l=>lcard(l)).join('')}</div>
+  </section>`:''}
+  <section><div class="lh-featured-head"><div><h2>Chọn chủ đề</h2><p>8 nhóm kỹ năng, mỗi nhóm có lộ trình riêng.</p></div></div>
+   <div class="lh-topic-shelf">${TOPICS.map(t=>`<button data-topic="${t.id}"><span>${t.icon}</span>${t.name}</button>`).join('')}</div>
+  </section>
+  <div class="lh-home-note"><span>✓</span> Bài học tương tác ngắn, dễ cùng con học mỗi ngày.</div>
+ </div>`;
+ $('#lhStart').onclick=()=>next?play(next):go('learn');
+ if($('#lhContinue'))$('#lhContinue').onclick=()=>next&&play(next);
+ $('#lhExplore').onclick=()=>{S.catSel='all';go('learn')};
+ if($('#lhAllLessons'))$('#lhAllLessons').onclick=()=>{S.catSel='all';go('learn')};
+ $$('.lh-topic-shelf [data-topic]').forEach(button=>button.onclick=()=>{S.catSel=button.dataset.topic;go('learn')});
+ $$('.lh-featured-grid .card[data-id]').forEach(button=>button.onclick=()=>{const lesson=LESSONS.find(l=>l.id===button.dataset.id);if(lesson)locked(lesson)?plans():play(lesson)});
+};
+
+menu=function(){
+ const user=S.user,m=modal(`<div class="acc"><div class="av2">${user?esc(user.name[0]).toUpperCase():'👤'}</div><div><b style="font-size:20px">${user?esc(user.name):'Khách'}</b><div class="note">${user?esc(user.email)+' · Lv '+lv()+' · '+(S.plan==='premium'?'👑 '+fmtLeft(S.exp-Date.now(),1):'Miễn phí'):'Bạn chưa đăng nhập'}</div></div><button class="btn ghost" data-close aria-label="Đóng menu">✕</button></div>
+  ${user?'<div class="menu"><button data-nv="profile"><b>🧒</b>Thông tin cá nhân</button></div>':'<div class="row2"><button class="btn" data-action="login">Đăng nhập</button><button class="btn sun" data-action="signup">Đăng ký</button></div>'}
+  <div class="menu lh-restored-menu">${[['quests','🎯','Nhiệm vụ hằng ngày'],['quiz','🧠','Bài kiểm tra'],['duel','⚔️','Thi đấu 1 đối 1'],['school','🏫','Giải đấu trường lớp'],['region','🏙️','Đấu trường khu vực'],['nation','🇻🇳','Đấu trường toàn quốc'],['wall','🏅','Tường thành tích'],['forum','💬','Diễn đàn'],['reviews','⭐','Đánh giá ứng dụng'],['faq','❓','Câu hỏi thường gặp'],['parent','👪','Góc phụ huynh & theo dõi'],['pay','💎','Gói Premium']].map(([key,icon,label])=>`<button data-nv="${key}"><b>${icon}</b>${label}</button>`).join('')}</div>
+  <div class="row2" style="align-items:center"><b>🌐 Ngôn ngữ</b><button class="btn ${S.lang==='vi'?'sun':'ghost'}" data-lang="vi">Tiếng Việt</button><button class="btn ${S.lang==='en'?'sun':'ghost'}" data-lang="en">English</button></div>
+  <div class="row2" style="align-items:center"><b>🎵 Âm thanh</b><button class="btn ${Snd.on?'sun':'ghost'}" data-action="sound">${Snd.on?'Bật':'Tắt'}</button><button class="btn ghost" data-action="volume">Điều chỉnh</button></div>
+  <div class="row2" style="align-items:center"><b>🎨 Tùy chỉnh Hero</b><button class="btn ghost" data-nv="lab">Mở tủ đồ</button></div>
+  ${user?'<div class="menu"><button data-action="logout"><b>🚪</b>Đăng xuất</button></div>':''}`);
+ m.classList.add('lh-menu-modal');
+ m.addEventListener('click',event=>{
+  const target=event.target.closest('[data-nv],[data-action],[data-lang],[data-close]');if(!target)return;
+  if(target.hasAttribute('data-close')){m.remove();return}
+  if(target.dataset.nv){event.stopPropagation();m.remove();go(target.dataset.nv);return}
+  if(target.dataset.lang){m.remove();setLang(target.dataset.lang);return}
+  m.remove();
+  if(target.dataset.action==='login')auth('in');
+  else if(target.dataset.action==='signup')auth('up');
+  else if(target.dataset.action==='sound'){Snd.toggle();menu()}
+  else if(target.dataset.action==='volume')volPanel();
+  else if(target.dataset.action==='logout'){S.user=null;save();go('home')}
+ });
+};
+
+function storyObject(kind){
+ const art={
+  sun:'<circle cx="50" cy="50" r="20" fill="#FFD567"/><g stroke="#F4AE3A" stroke-width="6" stroke-linecap="round"><path d="M50 6v10M50 84v10M6 50h10M84 50h10M19 19l8 8M73 73l8 8M81 19l-8 8M27 73l-8 8"/></g>',
+  cloud:'<path d="M23 66h53a16 16 0 0 0 0-32 26 26 0 0 0-49-4 18 18 0 0 0-4 36Z" fill="#fff" stroke="#8BB6E8" stroke-width="4"/>',
+  rain:'<path d="M22 57h53a16 16 0 0 0 0-32 26 26 0 0 0-49-4 18 18 0 0 0-4 36Z" fill="#dcecff" stroke="#7fa8d9" stroke-width="4"/><path d="m34 68-5 12m24-12-5 12m24-12-5 12" stroke="#4f8df7" stroke-width="5" stroke-linecap="round"/>',
+  school:'<path d="M14 42 50 16l36 26v39H14Z" fill="#ffcf6a" stroke="#b9783a" stroke-width="4"/><path d="M7 43 50 11l43 32" fill="none" stroke="#e87567" stroke-width="8" stroke-linejoin="round"/><path d="M42 57h16v24H42z" fill="#8c654b"/><path d="M23 51h12v12H23zm42 0h12v12H65z" fill="#b8e4ff"/>',
+  faucet:'<path d="M23 24h38a14 14 0 0 1 14 14v8H59v-7H36v12H22V37a13 13 0 0 1 1-13Z" fill="#b9d9ed" stroke="#6486a1" stroke-width="5"/><path d="M62 18h19M71 9v18" stroke="#6486a1" stroke-width="5" stroke-linecap="round"/><path d="M70 53c-8 12-7 18 0 21 8-3 9-9 0-21Z" fill="#4f8df7"/>',
+  soap:'<rect x="27" y="35" width="46" height="52" rx="10" fill="#77d7c5" stroke="#318f85" stroke-width="4"/><path d="M39 35v-9h23v9M44 26v-8h19" fill="none" stroke="#318f85" stroke-width="5" stroke-linecap="round"/><path d="M38 55h24" stroke="#fff" stroke-width="5" stroke-linecap="round"/>',
+  bubbles:'<circle cx="34" cy="58" r="20" fill="#bceaff" stroke="#68bfe6" stroke-width="4"/><circle cx="65" cy="35" r="14" fill="#d8f4ff" stroke="#68bfe6" stroke-width="4"/><circle cx="69" cy="72" r="11" fill="#d8f4ff" stroke="#68bfe6" stroke-width="4"/><circle cx="27" cy="51" r="4" fill="#fff"/>',
+  bowl:'<path d="M13 50h74c-3 23-17 36-37 36S16 73 13 50Z" fill="#ff9d78" stroke="#bf655b" stroke-width="4"/><path d="M20 47c4-16 19-24 31-19 13-5 28 3 32 19Z" fill="#fffdf8" stroke="#e6d6bd" stroke-width="4"/><circle cx="39" cy="41" r="3" fill="#f5c34e"/><circle cx="57" cy="37" r="3" fill="#f5c34e"/>',
+  plate:'<circle cx="50" cy="50" r="38" fill="#fff" stroke="#9bb4cc" stroke-width="5"/><circle cx="50" cy="50" r="25" fill="#f5f8fb" stroke="#cbd6e0" stroke-width="3"/><path d="M37 51h26" stroke="#70bd83" stroke-width="6" stroke-linecap="round"/>',
+  traffic:'<rect x="29" y="12" width="42" height="75" rx="12" fill="#36445e"/><circle cx="50" cy="31" r="9" fill="#ff6565"/><circle cx="50" cy="50" r="9" fill="#ffd567"/><circle cx="50" cy="69" r="9" fill="#68cf83"/><path d="M50 87v8" stroke="#36445e" stroke-width="6"/>',
+  car:'<path d="M13 57h74l-8-21a10 10 0 0 0-9-6H34a10 10 0 0 0-9 6Z" fill="#4f8df7" stroke="#315a9d" stroke-width="4"/><path d="M20 57h60v17H20Z" fill="#4f8df7" stroke="#315a9d" stroke-width="4"/><path d="m34 34-6 18h20V34Zm20 0v18h20l-6-18Z" fill="#c8efff"/><circle cx="32" cy="76" r="9" fill="#36445e"/><circle cx="69" cy="76" r="9" fill="#36445e"/>',
+  umbrella:'<path d="M10 48a40 40 0 0 1 80 0H10Z" fill="#ff8fa3" stroke="#c95d7e" stroke-width="4"/><path d="M50 48v31a10 10 0 0 0 20 0" fill="none" stroke="#8a633e" stroke-width="5" stroke-linecap="round"/><path d="M30 48q0 18 20 0 0 18 20 0" fill="none" stroke="#c95d7e" stroke-width="3"/>',
+  blocks:'<rect x="14" y="48" width="31" height="31" rx="5" fill="#ff8fa3"/><rect x="45" y="29" width="38" height="50" rx="5" fill="#7b5cff"/><rect x="22" y="40" width="15" height="10" rx="5" fill="#ffc93c"/><rect x="56" y="20" width="16" height="10" rx="5" fill="#ffc93c"/>',
+  box:'<path d="m15 34 35-18 35 18-35 18Z" fill="#e7b875" stroke="#a6743d" stroke-width="4"/><path d="M15 34v39l35 18V52ZM85 34v39L50 91V52Z" fill="#d69d58" stroke="#a6743d" stroke-width="4"/><path d="M50 17v34" stroke="#ffdf8b" stroke-width="7"/>',
+  book:'<path d="M12 23q20-8 38 5v57q-18-13-38-5Zm76 0q-20-8-38 5v57q18-13 38-5Z" fill="#fff" stroke="#5677aa" stroke-width="4"/><path d="M21 36q12-3 22 3M21 48q12-3 22 3M79 36q-12-3-22 3M79 48q-12-3-22 3" stroke="#8bb6e8" stroke-width="4" stroke-linecap="round"/>',
+  speech:'<path d="M15 18h70v47H47L28 80V65h-13Z" fill="#fff" stroke="#7b5cff" stroke-width="5" stroke-linejoin="round"/><circle cx="35" cy="42" r="4" fill="#7b5cff"/><circle cx="50" cy="42" r="4" fill="#7b5cff"/><circle cx="65" cy="42" r="4" fill="#7b5cff"/>',
+  star:'<path d="m50 8 12 27 29 3-22 19 7 29-26-15-26 15 7-29L9 38l29-3Z" fill="#ffd567" stroke="#d99936" stroke-width="4"/>'
+ };
+ return `<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">${art[kind]||art.star}</svg>`;
+}
+function storyArt(c,index){
+ const p=c.pn[index],actors=p[1].split(',').map((entry,i)=>{const [key,x,pose,mood]=entry.split(':');return `<div class="book-actor" style="left:${Math.max(3,Math.min(70,+x-12))}%;animation-delay:${i*.25}s">${char(key,pose,mood||'happy')}</div>`}).join('');
+ const objects={
+  c1:[['bowl','sun'],['faucet'],['bubbles','soap'],['plate','star']],
+  c2:[['school','book'],['speech','star'],['blocks'],['sun','blocks']],
+  c3:[['rain','umbrella'],['traffic','umbrella'],['traffic','car'],['school','star']],
+  c4:[['blocks','box'],['speech'],['box','blocks'],['star','sun']]
+ }[c.id]||[['sun'],['star'],['blocks'],['star']];
+ const objectsHtml=objects[index].map((kind,objectIndex)=>`<span class="book-object book-object-float" style="${objectIndex?'right:8%;top:8%':'left:7%;top:12%'}">${storyObject(kind)}</span>`).join('');
+ return `<div class="comic-page-art" style="--scene:${p[0]}"><span class="book-sun"></span>${objectsHtml}<div class="book-ground"></div>${actors}</div>`;
+}
+function storyPage(c,index){
+ const p=c.pn[index];
+ return `<article class="comic-page"><div class="book-page-inner">${storyArt(c,index)}<p class="comic-caption">${esc(p[2])}</p></div><span class="comic-page-number">${index+1}</span></article>`;
+}
+function renderStoryBook(c,start,flip=null){
+ const end=Math.min(start+1,c.pn.length-1),lesson=LESSONS.find(item=>item.id===c.link),last=end===c.pn.length-1;
+ const oldIndex=flip?flip.from:start,oldPage=c.pn[flip?.direction==='next'?Math.min(oldIndex+1,c.pn.length-1):oldIndex],newIndex=flip?.to;
+ app.innerHTML=`<section class="book-reader">
+  <div class="book-toolbar"><button class="btn ghost" id="bookBack">← Tất cả truyện</button><span class="book-progress">${esc(c.t)} · Trang ${start+1}${end>start?'–'+(end+1):''} / ${c.pn.length}</span></div>
+  <div class="book-stage">
+   <button class="book-arrow prev" id="bookPrev" aria-label="Trang trước" ${start===0?'disabled':''}>‹</button>
+   <div class="book-spread" id="bookSpread" aria-live="polite">${storyPage(c,start)}${end>start?storyPage(c,end):'<article class="comic-page book-blank" aria-hidden="true"></article>'}
+    ${flip?`<div class="book-flip-sheet ${flip.direction}"><div class="book-flip-face front">${storyArt(c,oldPage===undefined?start:flip.direction==='next'?end:start)}</div><div class="book-flip-face back">${storyArt(c,c.pn[newIndex]?newIndex:start)}</div></div>`:''}
+    <div class="book-turn-shadow"></div>
+   </div>
+   <button class="book-arrow next" id="bookNext" aria-label="Trang kế tiếp" ${last?'disabled':''}>›</button>
+  </div>
+  <div class="book-controls"><button class="btn ghost" id="bookPrevText" ${start===0?'disabled':''}>◀ Trang trước</button><span class="book-dots" aria-label="Tiến độ">${c.pn.map((_,index)=>`<i class="${index>=start&&index<=end?'on':''}"></i>`).join('')}</span>
+   ${last?`<button class="btn sun" id="bookLesson">🎮 Chơi bài: ${esc(lesson?lesson.t:'Bài học')}</button>`:'<button class="btn" id="bookNextText">Trang tiếp ▶</button>}
+   <button class="btn ghost" id="bookRead" aria-label="Đọc trang này">🔊 Đọc truyện</button></div>
+  <p class="book-note">Lật từng trang để theo dõi câu chuyện của Hero.</p>
+ </section>`;
+ $('#bookBack').onclick=()=>go('comic');
+ const nextButton=$('#bookNext'),prevButton=$('#bookPrev'),nextText=$('#bookNextText'),prevText=$('#bookPrevText');
+ const turn=direction=>{
+  const target=direction==='next'?start+2:start-2;
+  if(target<0||target>=c.pn.length||app.querySelector('.book-flip-sheet.anim-next,.book-flip-sheet.anim-prev'))return;
+  Voice.stop();
+  const destination=Math.min(target,c.pn.length-1);
+  const previewIndex=direction==='next'?Math.min(start+1,c.pn.length-1):start;
+  const temporary=document.createElement('div');
+  temporary.innerHTML=`<div class="book-flip-sheet ${direction}"><div class="book-flip-face front">${storyArt(c,previewIndex)}</div><div class="book-flip-face back">${storyArt(c,destination)}</div></div>`;
+  const sheet=temporary.firstElementChild;
+  $('#bookSpread').append(sheet);
+  const finish=()=>renderStoryBook(c,destination);
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){finish();return}
+  requestAnimationFrame(()=>sheet.classList.add(direction==='next'?'anim-next':'anim-prev'));
+  sheet.addEventListener('animationend',finish,{once:true});
+  setTimeout(()=>{if(sheet.isConnected)finish()},850);
+ };
+ if(start>0){prevButton.onclick=()=>turn('prev');prevText.onclick=()=>turn('prev')}
+ if(!last){nextButton.onclick=()=>turn('next');nextText.onclick=()=>turn('next')}
+ if(last&&lesson)$('#bookLesson').onclick=()=>locked(lesson)?plans():play(lesson);
+ $('#bookRead').onclick=()=>Voice.speak(c.pn.slice(start,end+1).map(page=>page[2]).join(' '));
+ if(!flip)setTimeout(()=>Voice.speak(c.pn.slice(start,end+1).map(page=>page[2]).join(' ')),350);
+}
+readC=function(c,index){
+ if(!c)return go('comic');
+ if(c.p&&S.plan!=='premium'){plans();return}
+ view='comic';Voice.stop();shell();renderStoryBook(c,Math.max(0,Math.min(c.pn.length-1,Math.floor(index/2)*2)));
+};
+afterGo=function(v){
+ document.body.dataset.v=v;
+ const page=PH[v];
+ document.body.style.background=page?page[4]:'';
+ if(page)app.insertAdjacentHTML('afterbegin',`<section class="lh-page-intro"><div><h1>${page[1]}</h1><p>${page[2]}</p></div><span class="lh-page-orbit" aria-hidden="true"></span></section>`);
+};
+boom=function(){
+ const colors=['#ffc93c','#ff8fa3','#2ec4a6','#7b5cff'];
+ for(let i=0;i<24;i++){
+  const piece=document.createElement('span');piece.className='cf';piece.style.left=Math.random()*100+'vw';
+  piece.style.backgroundColor=colors[i%colors.length];piece.style.animationDelay=(Math.random()*.7)+'s';
+  document.body.append(piece);setTimeout(()=>piece.remove(),3000);
+ }
+};
+const _playObjects=play;
+play=function(lesson,scene,ex){
+ _playObjects(lesson,scene,ex);
+ $$('.stage .cl').forEach(cloud=>{cloud.textContent='';cloud.insertAdjacentHTML('afterbegin',storyObject('cloud'))});
+ const sun=$('.stage .sn');if(sun){sun.textContent='';sun.insertAdjacentHTML('afterbegin',storyObject('sun'))}
+ const prop=$('#pp');
+ if(prop){
+  const label=prop.textContent;
+  const kind=label.includes('🚦')||label.includes('🔴')?'traffic':label.includes('🚗')?'car':label.includes('🏫')?'school':label.includes('🚰')?'faucet':label.includes('🧼')?'soap':label.includes('🫧')?'bubbles':label.includes('🍚')?'bowl':label.includes('🍽')?'plate':label.includes('🌧')?'rain':label.includes('☔')?'umbrella':label.includes('📦')?'box':label.includes('📚')?'book':label.includes('🧱')?'blocks':'star';
+  prop.textContent='';prop.insertAdjacentHTML('afterbegin',storyObject(kind));
+ }
+};
+go('home');deep();
 go('home');deep();
 </script>
 </body>

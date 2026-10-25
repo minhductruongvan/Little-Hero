@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffaf2">
+  <meta name="description" content="Little Hero giúp trẻ 4–8 tuổi học kỹ năng sống qua truyện tương tác, lựa chọn và thực hành cùng gia đình.">
+  <title>Little Hero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./frontend/css/little-hero.css">
+
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap header">
+      <a class="brand" href="#/home" data-route="home" aria-label="Little Hero — trang chủ">
+        <span class="brand-mark" aria-hidden="true">✦</span><span>little <em>hero</em></span>
+      </a>
+      <nav class="nav" id="mainNav" aria-label="Điều hướng chính">
+        <a class="active" href="#/home" data-route="home">⌂ &nbsp;Trang chủ</a>
+        <details>
+          <summary>▤ &nbsp;Kho bài học⌄</summary>
+          <div class="dropdown" id="lessonDropdown"></div>
+        </details>
+        <a href="#/stories" data-route="stories">▧ &nbsp;Truyện</a>
+        <a href="#/games" data-route="games">🎮 &nbsp;Trò chơi</a>
+        <a href="#/quiz" data-route="quiz">📝 &nbsp;Kiểm tra</a>
+        <details>
+          <summary>Thêm⌄</summary>
+          <div class="dropdown">
+            <a href="#/quests" data-route="quests">🎯 &nbsp;Nhiệm vụ</a>
+            <a href="#/arena" data-route="arena">⚔ &nbsp;Đấu trường</a>
+            <a href="#/pricing" data-route="pricing">♛ &nbsp;Gói Premium</a>
+            <a href="#/tutor" data-route="tutor">✳ &nbsp;Hỏi Hero</a>
+            <a href="#/parents" data-route="parents">♧ &nbsp;Phụ huynh</a>
+            <a href="#/parent-news" data-route="parent-news">📰 &nbsp;Tin tức & LITTLE HERO</a>
+            <a href="#/forum" data-route="forum">💬 &nbsp;Diễn đàn</a>
+            <a href="#/faq" data-route="faq">❔ &nbsp;Câu hỏi thường gặp</a>
+            <a href="#/achievements" data-route="achievements">🏅 &nbsp;Tường thành tích</a>
+            <a href="#/reviews" data-route="reviews">⭐ &nbsp;Đánh giá ứng dụng</a>
+            <a href="#/language" data-route="language">🌐 &nbsp;Ngôn ngữ</a>
+            <a href="#/wardrobe" data-route="wardrobe">🎭 &nbsp;Đổi trang phục Hero</a>
+          </div>
+        </details>
+      </nav>
+      <div class="head-actions">
+        <span class="stat-pill account-stat" title="Thời gian học trong phiên hôm nay"><span>◷</span><span id="timeToday">0 phút</span></span>
+        <span class="stat-pill account-stat" title="Chuỗi ngày hoàn thành bài học"><span>🔥</span><span id="streakValue">0 ngày</span></span>
+        <span class="stat-pill level account-stat" title="Điểm sao và cấp độ"><span>⭐</span><span id="xpValue">0 · Lv 1</span></span>
+        <button class="btn btn-primary btn-small" id="upgradeBtn">♛ Premium</button>
+        <button class="icon-btn" id="soundBtn" aria-label="Cài đặt giọng đọc" title="Âm thanh">♫</button>
+        <button class="icon-btn" id="themeBtn" aria-label="Đổi giao diện sáng/tối" title="Đổi giao diện">☾</button>
+        <button class="btn btn-light btn-small" id="accountBtn">Đăng nhập</button>
+        <details class="account-menu" id="accountMenu">
+          <summary aria-label="Mở menu tài khoản"><span aria-hidden="true">☰</span><span id="accountMenuName">Tài khoản</span></summary>
+          <div class="account-dropdown">
+            <div class="account-name" id="accountMenuGreeting">Chào bạn nhỏ</div>
+            <a href="#/auth" data-route="auth">👤 &nbsp;Thông tin tài khoản</a>
+            <a href="#/parents" data-route="parents">📔 &nbsp;Nhật ký học tập</a>
+            <a href="#/parent-news" data-route="parent-news">📰 &nbsp;Bài viết cho ba mẹ</a>
+            <a href="#/wardrobe" data-route="wardrobe">🎭 &nbsp;Nhân vật của bé</a>
+            <a href="#/language" data-route="language">🌐 &nbsp;Ngôn ngữ</a>
+            <a href="#/pricing" data-route="pricing">♛ &nbsp;Gói Premium</a>
+          </div>
+        </details>
+        <button class="menu-btn" id="menuBtn" aria-label="Mở menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="hero wrap" aria-labelledby="heroTitle">
+      <div class="hero-card">
+        <div class="hero-copy">
+          <span class="eyebrow">✦ HỌC KỸ NĂNG SỐNG QUA TRẢI NGHIỆM · 4–8 TUỔI</span>
+          <h1 id="heroTitle">Chào <span id="childName">bạn nhỏ</span>!<br>Cùng Hero <span class="highlight">khám phá</span> nhé.</h1>
+          <p>Mỗi câu chuyện là một chuyến phiêu lưu. Bé tự suy nghĩ, chọn cách xử lý và học thêm một điều hữu ích cho cuộc sống.</p>
+          <div class="hero-ctas">
+            <button class="btn btn-mint" id="continueBtn">▶ &nbsp;Bắt đầu bài học</button>
+              <button class="btn btn-light" data-route="wardrobe">♧ &nbsp;Đổi trang phục Hero</button>
+          </div>
+          <div class="mini-trust"><div class="faces" aria-hidden="true"><span>👩🏻</span><span>👨🏽</span><span>🧒🏻</span></div><span>Cùng gia đình học điều hay mỗi ngày</span></div>
+        </div>
+        <div class="hero-art" id="heroMascot" role="button" tabindex="0" aria-label="Nghe Hero chào">
+          <div class="orbit"></div><div class="hero-blob"></div>
+          <span class="hello-bubble">Chào bạn! Sẵn sàng chưa? ✨</span>
+          <div class="mascot" id="homeHeroCharacter" aria-hidden="true"></div>
+          <span class="float-tag one">✦ Dũng cảm thử điều mới</span><span class="float-tag two">+10 sao chờ bé!</span>
+        </div>
+      </div>
+      <div class="quests account-only" id="dailyQuests" aria-label="Nhiệm vụ hôm nay"></div>
+    </section>
+
+    <section class="section wrap" id="about">
+      <div class="brand-intro">
+        <div class="brand-intro-copy">
+          <div class="brand-intro-art" id="aboutHero" aria-hidden="true"></div>
+          <div><span class="kicker">MỘT THẾ GIỚI HỌC TẬP CÙNG HERO</span><h2>LITTLE HERO là gì?</h2>
+            <p>Little Hero là nền tảng học kỹ năng sống qua hình ảnh, tình huống thực tế và trò chơi tương tác, giúp trẻ tự tin, an toàn và trưởng thành hơn mỗi ngày.</p>
+          </div>
+        </div>
+        <div class="brand-values">
+          <article class="brand-value"><span class="brand-value-icon" aria-hidden="true">😊</span><h3>Dễ hiểu</h3><p>Hình ảnh sinh động, gần gũi với trẻ.</p></article>
+          <article class="brand-value"><span class="brand-value-icon" aria-hidden="true">🛡️</span><h3>An toàn</h3><p>Nội dung lành mạnh, có người lớn đồng hành.</p></article>
+          <article class="brand-value"><span class="brand-value-icon" aria-hidden="true">🌟</span><h3>Hiệu quả</h3><p>Học mà chơi, nhớ lâu hơn.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap" id="whyLifeSkills">
+      <div class="section-head">
+        <div><h2>Vì sao nên học kỹ năng sống từ sớm?</h2></div>
+      </div>
+      <div class="skills-why"><div class="skills-reasons">
+        <a class="skills-reason" href="#/parent-news" data-route="parent-news" data-news-focus="skill-thinking" style="--reason-color:#f43f5e"><span class="skills-reason-icon" aria-hidden="true">🧠</span><h3>Phát triển tư duy</h3><p>Giúp trẻ hiểu và xử lý tình huống tốt hơn.</p><span class="skills-reason-link">Đọc bài viết liên quan →</span></a>
+        <a class="skills-reason" href="#/parent-news" data-route="parent-news" data-news-focus="skill-confidence" style="--reason-color:#f3b824"><span class="skills-reason-icon" aria-hidden="true">❤️</span><h3>Tự tin & độc lập</h3><p>Trẻ biết tự chăm sóc và đưa ra quyết định.</p><span class="skills-reason-link">Đọc bài viết liên quan →</span></a>
+        <a class="skills-reason" href="#/parent-news" data-route="parent-news" data-news-focus="skill-communication" style="--reason-color:#378c69"><span class="skills-reason-icon" aria-hidden="true">🙌</span><h3>Giao tiếp & ứng xử</h3><p>Trẻ biết yêu thương, tôn trọng mọi người.</p><span class="skills-reason-link">Đọc bài viết liên quan →</span></a>
+        <a class="skills-reason" href="#/parent-news" data-route="parent-news" data-news-focus="skill-future" style="--reason-color:#087fcd"><span class="skills-reason-icon" aria-hidden="true">⭐</span><h3>Hành trang tương lai</h3><p>Nền tảng quan trọng để trưởng thành hạnh phúc.</p><span class="skills-reason-link">Đọc bài viết liên quan →</span></a>
+        <a class="skills-reason" href="#/parent-news" data-route="parent-news" data-news-focus="skill-family" style="--reason-color:#8738dc"><span class="skills-reason-icon" aria-hidden="true">👨‍👩‍👧</span><h3>Gắn kết gia đình</h3><p>Cùng học — cùng chơi — cùng phát triển.</p><span class="skills-reason-link">Đọc bài viết liên quan →</span></a>
+      </div></div>
+    </section>
+
+    <section class="section wrap" id="learningJourney">
+      <div class="section-head">
+        <div><span class="kicker">HỌC QUA TRẢI NGHIỆM · TIẾN BỘ TỪNG BƯỚC</span><h2>Hành trình học tập cùng Little Hero</h2><p>Mỗi bài học giúp bé khám phá tình huống, lựa chọn cách ứng xử và cùng Hero tiến bộ.</p></div>
+      </div>
+      <div class="learning-showcase">
+        <div><div class="learning-steps">
+          <article class="learning-step" style="--step-bg:#e7f3ff;--step-line:#c9e3ff"><div class="learning-step-illustration">💻</div><h3>Xem tình huống</h3><p>Bé xem câu chuyện gần gũi trong cuộc sống.</p></article>
+          <article class="learning-step" style="--step-bg:#effbef;--step-line:#c8eccb"><div class="learning-step-illustration">😊🫵</div><h3>Chọn phản ứng</h3><p>Bé chọn cách xử lý phù hợp cho tình huống.</p></article>
+          <article class="learning-step" style="--step-bg:#fff9e9;--step-line:#f3e5bd"><div class="learning-step-illustration">🎮</div><h3>Chơi mini game</h3><p>Bé học qua trò chơi tương tác vui nhộn.</p></article>
+          <article class="learning-step" style="--step-bg:#f7efff;--step-line:#e7d6ff"><div class="learning-step-illustration">🎁</div><h3>Nhận phần thưởng</h3><p>Bé tích lũy sao và ghi nhận nỗ lực.</p></article>
+        </div><div class="learning-cta"><button class="btn" data-route="lessons">Khám phá khóa học <span aria-hidden="true">➜</span></button></div></div>
+        <div class="parent-hero" id="journeyHero" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="section wrap" id="world">
+      <div class="section-head">
+        <div><span class="kicker">HERO WORLD · 8 ỐC ĐẢO KỸ NĂNG</span><h2>Bản đồ phiêu lưu của bé</h2><p>Mỗi ốc đảo là một chủ đề kỹ năng; chọn điểm dừng để mở câu chuyện và bài học.</p></div>
+        <a class="btn btn-mint btn-small" href="#/map" data-route="map">🗺️ Khám phá bản đồ</a>
+      </div>
+      <div class="map-guide"><div><strong>🌊 Lần theo con đường kỳ diệu</strong><p>Chạm vào một ốc đảo để bắt đầu bài học. Muốn xem toàn bộ hành trình, mở bản đồ chi tiết nhé!</p></div></div>
+      <div class="journey-map" id="islandGrid" aria-label="Bản đồ lộ trình 8 bài học"></div>
+    </section>
+
+    <section class="section wrap" id="featured">
+      <div class="section-head">
+        <div><span class="kicker">HỌC MỘT CHÚT, LỚN MỘT CHÚT</span><h2>Chuyến phiêu lưu hôm nay</h2><p>Những câu chuyện gần gũi để bé tập cách ứng xử an toàn.</p></div>
+        <button class="text-link" id="randomLessonBtn">Đổi gợi ý ↻</button>
+      </div>
+      <div class="lesson-feature">
+        <article class="lesson-card" id="featuredLesson"></article>
+        <aside class="journal-card account-only">
+          <div class="journal-top"><div><span class="kicker">LEARNING JOURNAL</span><h3>Nhật ký khám phá</h3><p>Tiến bộ nhỏ cũng đáng tự hào.</p></div><span class="journal-emoji">📔</span></div>
+          <div class="journal-stat"><div><strong id="journalLessons">0</strong><span>Bài đã hoàn thành</span></div><div><strong id="journalStars">0 ⭐</strong><span>Sao bé tích lũy</span></div><div><strong id="journalDays">0</strong><span>Ngày chăm chỉ</span></div></div>
+          <div class="journal-recommend"><strong>🌱 Gợi ý cho bước tiếp theo</strong><p id="journalTip">Chọn một bài học để Hero tìm hoạt động phù hợp cùng bé.</p></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section wrap account-only" id="arena">
+      <div class="section-head"><div><span class="kicker">THI ĐUA LÀNH MẠNH</span><h2>Cùng bạn chinh phục thử thách</h2><p>Cùng ôn bài, luyện suy nghĩ và ghi nhận nỗ lực mỗi ngày.</p></div></div>
+      <div class="arena-grid">
+        <article class="arena-card">
+          <span class="kicker">HERO ARENA</span><h3>Mỗi câu trả lời, thêm tự tin.</h3><p>Thử sức với câu hỏi tình huống. Hãy cùng học, không cần áp lực thắng thua.</p>
+          <div class="rank-big"><strong id="rankPoints">0 RP</strong><span>điểm rèn luyện của bé</span></div>
+          <div class="arena-tabs" id="arenaTabs">
+            <button class="arena-tab active" data-mode="duel" aria-pressed="true">Đấu 1v1</button><button class="arena-tab" data-mode="region" aria-pressed="false">Khu vực</button>
+            <button class="arena-tab" data-mode="city" aria-pressed="false">Thành phố</button><button class="arena-tab" data-mode="nation" aria-pressed="false">Toàn quốc</button>
+          </div>
+          <button class="btn btn-light btn-small" id="arenaStart">⚡ Thử thách ngay · +25 RP</button>
+        </article>
+        <article class="leader-card">
+          <div class="leader-title"><h3>🏆 Bảng vinh danh</h3><span id="leaderScope">Bạn nhỏ · tuần này</span></div>
+          <div id="leaderboard"></div>
+          <div class="leader-you" id="leaderYou"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section wrap" id="stories">
+      <div class="section-head"><div><span class="kicker">MỞ TRANG TRUYỆN, BẮT ĐẦU TRÒ CHUYỆN</span><h2>Những câu chuyện của Hero</h2><p>Bé nghe tình huống, suy nghĩ về lựa chọn và tự chọn diễn biến tiếp theo.</p></div></div>
+      <div class="story-grid" id="storyGrid"></div>
+    </section>
+
+    <section class="section wrap account-only" id="parents">
+      <div class="co-card">
+        <div class="co-copy"><span class="kicker">CÙNG CON HỌC ĐIỀU HAY</span><h2>Học trong câu chuyện,<br>thực hành ngoài đời.</h2>
+          <p>Phụ huynh có thể cùng bé thử một việc nhỏ mỗi ngày và ghi nhận nỗ lực của con. Trải nghiệm xác nhận trong trang này chỉ lưu trên thiết bị hiện tại.</p>
+          <div class="co-visual" aria-hidden="true">👩‍👧 <span style="font-size:42px">🌱</span> 🤝</div>
+        </div>
+        <div class="challenge-list" id="challengeList"></div>
+      </div>
+    </section>
+
+    <section class="section wrap" id="trust">
+      <div class="section-head"><div><span class="kicker">GÓC CHIA SẺ GIA ĐÌNH</span><h2>Phụ huynh nói gì về LITTLE HERO?</h2><p>Phản hồi chỉ hiển thị khi được người dùng gửi; chúng tôi không tạo nhận xét thay phụ huynh.</p></div></div>
+      <div class="testimonials-grid" id="homeTestimonials" aria-live="polite"></div>
+      <div style="display:flex;justify-content:center;margin-top:18px"><a class="btn btn-light btn-small" href="#/reviews" data-route="reviews">Chia sẻ trải nghiệm thật →</a></div>
+      <article class="proof-banner" style="margin-top:20px"><span class="kicker">CÙNG BÉ HỌC QUA TRẢI NGHIỆM</span><h3>Hiểu cảm xúc trước khi chọn hành động.</h3><p>Little Hero gợi mở để bé gọi tên cảm xúc, hiểu tình huống, cân nhắc lựa chọn an toàn và thử áp dụng điều đã học vào cuộc sống.</p>
+        <div class="proof-numbers"><div><strong>08</strong><span>chủ đề kỹ năng</span></div><div><strong>4–8</strong><span>tuổi trải nghiệm</span></div><div><strong>Thử & học</strong><span>học qua thực hành</span></div></div>
+      </article>
+    </section>
+
+    <section class="section wrap" id="pricing">
+      <div class="section-head"><div><span class="kicker">GÓI HỌC LINH HOẠT</span><h2>Bắt đầu miễn phí, nâng cấp khi sẵn sàng</h2><p>Phụ huynh có thể chọn gói phù hợp với gia đình.</p></div></div>
+      <div class="pricing-grid">
+        <article class="plan-card"><h3>🌱 Khám phá</h3><p>Dành cho gia đình muốn làm quen.</p><div class="price">0đ <span>/ mãi mãi</span></div>
+          <ul class="features"><li>12 bài học cơ bản</li><li>3 truyện tương tác</li><li>Thử thách học tập và sao thưởng</li><li>Nhật ký tiến bộ trên thiết bị</li></ul>
+          <button class="btn btn-light" id="freePlanBtn">Bắt đầu khám phá</button>
+        </article>
+        <article class="plan-card premium"><span class="popular">ĐƯỢC YÊU THÍCH</span><h3>♛ Đồng hành Premium</h3><p>Thêm lựa chọn cho hành trình của bé.</p><div class="price">99.000đ <span>/ tháng</span></div>
+          <ul class="features"><li>Mở khóa thư viện hướng tới 80 bài</li><li>Truyện và thử thách bổ sung</li><li>Thử thách không giới hạn</li><li>Gợi ý Learning Journal mở rộng</li></ul>
+          <button class="btn btn-primary" id="premiumBtn">♛ Tìm hiểu gói Premium</button>
+        </article>
+      </div>
+      <div class="table-scroll">
+        <table class="pricing-compare" aria-label="Bảng so sánh gói Free và Premium">
+          <thead><tr><th>Tính năng</th><th>🌱 Free</th><th>♛ Premium</th></tr></thead>
+          <tbody>
+            <tr><td>Bài học kỹ năng cơ bản</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Truyện và hoạt cảnh tương tác</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Tiến độ học tập trên thiết bị</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Bộ sưu tập bài học mở rộng</td><td>—</td><td>✓ Theo gói</td></tr>
+            <tr><td>Nhật ký học tập nâng cao</td><td>—</td><td>✓ Theo gói</td></tr>
+            <tr><td>Giá dự kiến</td><td>Miễn phí</td><td>99.000đ/tháng</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="section wrap" id="finalCta">
+      <div class="home-final-cta">
+        <div><span class="kicker">CHUYẾN PHIÊU LƯU ĐANG CHỜ BÉ</span><h2>Bắt đầu hành trình tuyệt vời cùng LITTLE HERO!</h2><p>Đăng ký ngay để bé nhận những bài học thú vị và phần thưởng hấp dẫn mỗi ngày.</p></div>
+        <div class="parent-hero final-hero-art" id="ctaHero" aria-hidden="true"></div>
+        <span class="cta-treasure" aria-hidden="true">🧰<span>⭐</span></span>
+        <a class="btn" href="#/auth" data-route="auth">Tạo tài khoản miễn phí <span aria-hidden="true">＋</span></a>
+      </div>
+    </section>
+    <section class="route-view wrap" id="routeView" aria-live="polite"></section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div class="footer-brand"><a class="brand" href="#/home" data-route="home"><span class="brand-mark">✦</span><span>little <em>hero</em></span></a><p>Học kỹ năng sống qua những câu chuyện tương tác cùng Hero và bạn bè.</p></div>
+        <div><h3>Khám phá</h3><a href="#/lessons" data-route="lessons">Kho bài học</a><a href="#/games" data-route="games">Trò chơi</a><a href="#/stories" data-route="stories">Truyện tranh</a><a href="#/faq" data-route="faq">Câu hỏi thường gặp</a></div>
+        <div><h3>Phụ huynh</h3><a href="#/parents" data-route="parents">Theo dõi tiến độ</a><a href="#/parent-news" data-route="parent-news">Tin tức & LITTLE HERO</a><a href="#/pricing" data-route="pricing">Gói Premium</a><a href="#/reviews" data-route="reviews">Đánh giá ứng dụng</a><a href="#privacy">Chính sách riêng tư</a></div>
+        <div><h3>Liên hệ</h3><p>Liên hệ Little Hero qua Zalo, Facebook hoặc Messenger tại các nút nổi.</p><p>Các liên kết mở trang công khai được cấu hình cho ứng dụng.</p></div>
+      </div>
+      <div class="footer-bottom" id="privacy"><span>© 2026 Little Hero · Cùng bé học điều hay mỗi ngày</span><span>Trẻ em học an toàn hơn khi có người lớn đồng hành.</span></div>
+    </div>
+  </footer>
+
+  <dialog class="dialog" id="appDialog" aria-labelledby="dialogTitle"><div class="dialog-inner" id="dialogContent"></div></dialog>
+  <div id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+  <aside class="floating-actions" id="floatingActions" aria-label="Liên hệ và ủng hộ Little Hero">
+    <a class="fab-link zalo-fab" href="https://zalo.me/0567659218" target="_blank" rel="noopener noreferrer" aria-label="Liên hệ qua Zalo (mở tab mới)" title="Zalo">Zalo</a>
+    <a class="fab-link facebook-fab" href="https://www.facebook.com/baongocamai16" target="_blank" rel="noopener noreferrer" aria-label="Liên hệ qua Facebook (mở tab mới)" title="Facebook">f</a>
+    <a class="fab-link messenger-fab" href="https://www.facebook.com/baongocamai16" target="_blank" rel="noopener noreferrer" aria-label="Liên hệ qua Messenger (mở tab mới)" title="Messenger">➤</a>
+    <a class="fab-link support-fab" href="#/payment" data-route="payment" aria-label="Ủng hộ Little Hero" title="Ủng hộ Little Hero">♡</a>
+    <button class="fab-toggle" id="fabToggle" type="button" aria-label="Mở liên hệ và ủng hộ" aria-expanded="false" aria-controls="floatingActions">+</button>
+  </aside>
+  <button class="ai-launcher" type="button" data-route="tutor" aria-label="Mở trợ lý hỏi đáp Hero AI">
+    <span aria-hidden="true">✦</span><span>Hỏi Hero AI</span>
+  </button>
+  <script src="./frontend/js/modules/lesson-catalog.js"></script>
+  <script src="./frontend/js/modules/character-model.js"></script>
+  <script src="./frontend/js/modules/scene-model.js"></script>
+  <script src="./frontend/js/little-hero-app.js"></script>
+</body>
+</html>
