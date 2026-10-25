@@ -743,6 +743,25 @@
         if (choice.includes("xin lỗi")) return "💛";
         return lesson.category === "emotion" ? "💬" : lesson.category === "social" ? "🤝" : "✨";
       };
+      const animateSceneChoice = (sceneId, heroId, friendId, propId, storyId, answer, lesson, correct) => {
+        const hero = $(`#${heroId}`);
+        const friend = $(`#${friendId}`);
+        if (!hero || !friend) return;
+        [hero, friend].forEach((actor) => {
+          actor.classList.remove("action-wave", "action-help", "action-calm", "action-unsafe", "action-approach", "action-celebrate", "action-walk", "action-run", "action-jump", "action-pickup", "action-receive");
+          void actor.offsetWidth;
+        });
+        playSceneEnvironment(sceneId);
+        const movement = movementForChoice(answer, correct);
+        hero.classList.add(movement);
+        friend.classList.add(correct ? (movement === "action-pickup" ? "action-receive" : "action-wave") : "action-unsafe");
+        setCharacterExpression(hero, correct ? "happy" : "sad");
+        setCharacterExpression(friend, correct ? "happy" : (friend.classList.contains("adult-actor") ? "angry" : "sad"));
+        $(`#${propId}`).textContent = correct ? propForChoice(answer, lesson) : "⚡";
+        $(`#${storyId}`).textContent = correct
+          ? answer
+          : "Thử nghĩ lại nhé: Hero cùng bạn dừng lại và tìm cách an toàn hơn.";
+      };
 
       const renderLessonRoute = (lessonId) => {
         const lesson = lessonById(lessonId);
@@ -810,22 +829,8 @@
             const correct = choice === question.correct;
             recordLearningAttempt(lesson, choice, questionIndex, question.correct);
             button.disabled = true;
-            ["heroActor", "friendActor"].forEach((id) => {
-              const actor = $(`#${id}`);
-              actor.classList.remove("action-wave", "action-help", "action-calm", "action-unsafe", "action-approach", "action-celebrate", "action-walk", "action-run", "action-jump", "action-pickup", "action-receive");
-              void actor.offsetWidth;
-            });
-            playSceneEnvironment("lessonScene");
             const selectedAnswer = question.answers[choice];
-            const movement = movementForChoice(selectedAnswer, correct);
-            $("#heroActor").classList.add(movement);
-            $("#friendActor").classList.add(correct ? (movement === "action-pickup" ? "action-receive" : "action-wave") : "action-unsafe");
-            setCharacterExpression($("#heroActor"), correct ? "happy" : "sad");
-            setCharacterExpression($("#friendActor"), correct ? "happy" : ($("#friendActor").classList.contains("adult-actor") ? "angry" : "sad"));
-            $("#sceneProp").textContent = correct ? propForChoice(selectedAnswer, lesson) : "⚡";
-            $("#sceneStory").textContent = correct
-              ? selectedAnswer
-              : "Thử lại nhé: Cùng Hero suy nghĩ cách an toàn và phù hợp hơn.";
+            animateSceneChoice("lessonScene", "heroActor", "friendActor", "sceneProp", "sceneStory", selectedAnswer, lesson, correct);
             speak(correct
               ? `Kết quả thành công! ${question.prompt}`
               : `Mình cùng nghĩ lại nhé. ${question.story} Hãy thử một phương án khác.`);
@@ -1086,8 +1091,19 @@
       const renderQuizPage = () => {
         if (!quizPageLesson) quizPageLesson = lessons[Math.floor(Math.random() * lessons.length)];
         const lesson = quizPageLesson;
+        const scene = getScene(lesson);
         $("#routeView").innerHTML = pageShell("quiz", "Cùng Hero suy nghĩ và chọn cách xử lý phù hợp trong từng tình huống.", `
           <article class="score-card quiz-center-card"><div class="lesson-progress"><span>🧠 Tình huống ${state.dailyQuiz + (quizPageChoice === null ? 1 : 0)}</span><span>⭐ ${state.xp} · Lv ${Math.floor(state.xp / 100) + 1}</span></div>
+          <article class="scene-card" style="margin:12px 0">
+            <div class="scene ${scene.type}" id="quizScene">
+              ${renderSceneBackdrop(scene)}
+              <span class="scene-kicker">📍 ${escapeHtml(scene.place)}</span><span class="scene-prop" id="quizSceneProp">${scene.prop}</span>
+              ${renderSceneActor("quizHeroActor", "Hero", true)}
+              ${renderSceneActor("quizFriendActor", scene.friend.name, false, scene.friend)}
+            </div>
+            <div class="scene-status" id="quizSceneStatus" aria-live="polite">🎬 <span><strong>Hoạt cảnh tương tác:</strong> <span id="quizSceneStory">${escapeHtml(lesson.story)}</span></span></div>
+            <div class="scene-video-controls"><button id="quizSceneReplay" type="button">▶ Xem hoạt cảnh</button><div class="scene-video-track" aria-hidden="true"><i></i></div><span>0:03</span></div>
+          </article>
           <div class="story-box">${escapeHtml(lesson.story)}</div><button class="btn btn-light btn-small" id="quizPageSpeak">♫ Nghe đề bài và các phương án</button><h3 style="font-size:15px">Bé sẽ chọn cách nào?</h3>
           <div class="lesson-choices">${lesson.answers.map((answer, index) => `<button class="lesson-choice ${quizPageChoice === index ? (index === lesson.correct ? "correct" : "incorrect") : ""}" data-quiz-page="${index}" ${quizPageChoice !== null ? "disabled" : ""}><span class="choice-letter">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(answer)}</span></button>`).join("")}</div>
           <p class="lesson-feedback" id="quizPageFeedback">${quizPageChoice === null ? "Chọn một phương án để xem phản hồi." : quizPageChoice === lesson.correct ? "Kết quả thành công! Bé chọn được cách an toàn. +5 ⭐" : "Kết quả chưa thành công. Câu này đã khóa, không thể chọn lại; hãy chuyển sang câu tiếp theo."}</p>
@@ -1095,6 +1111,16 @@
           <div class="page-actions"><button class="btn btn-mint btn-small" id="nextQuiz" ${quizPageChoice === null ? "disabled" : ""}>Câu tiếp theo →</button>${routeLink("achievements", "Xem thành tích", "🏅")}</div></article>
         `, "ÔN TẬP QUA TÌNH HUỐNG");
         $("#quizPageSpeak").addEventListener("click", () => speak(`${lesson.title}. ${lesson.story} Các phương án. ${lesson.answers.map((answer, index) => `Phương án ${index + 1}: ${answer}`).join(". ")}`));
+        $("#quizSceneReplay").addEventListener("click", () => {
+          if (quizPageChoice === null) {
+            playSceneAnimation("quizScene", ["quizHeroActor", "quizFriendActor"], "quizSceneStatus", "Hero và bạn cùng quan sát tình huống.");
+            return;
+          }
+          animateSceneChoice("quizScene", "quizHeroActor", "quizFriendActor", "quizSceneProp", "quizSceneStory", lesson.answers[quizPageChoice], lesson, quizPageChoice === lesson.correct);
+        });
+        if (quizPageChoice !== null) {
+          animateSceneChoice("quizScene", "quizHeroActor", "quizFriendActor", "quizSceneProp", "quizSceneStory", lesson.answers[quizPageChoice], lesson, quizPageChoice === lesson.correct);
+        }
       };
 
       const renderAchievementsPage = () => {
