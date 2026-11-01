@@ -14,6 +14,10 @@ Hero, bạn bè và người thân trong các cảnh dùng chung mô hình SVG; 
 
 Các tệp trong `frontend/` không thay thế các tệp frontend thử nghiệm đã có (`data.js`, `auth.js`, `comics.js`, `voice.js`, `style.css`); ứng dụng Little Hero chính sử dụng riêng các tệp có tiền tố `little-hero` và thư mục `js/modules`.
 
+Đăng ký và đăng nhập tài khoản thật dùng các API trong `../backend/server.js`; thông tin tài khoản được lưu trong SQLite trên máy chủ, mật khẩu được băm, còn tiến độ học tập vẫn lưu cục bộ theo tài khoản trên trình duyệt. Khôi phục mật khẩu gửi mã xác minh qua email (Resend) hoặc SMS (Twilio) khi backend đã được cấu hình thông tin nhà cung cấp; xem `../backend/README.md`. Ảnh minh họa truyện tải từ Unsplash nên cần kết nối Internet; phần lật sách, hiệu ứng và nội dung chữ vẫn dùng được khi ảnh không tải được.
+
+Hỏi Hero gửi câu hỏi tới Gemini qua backend; cần đặt `GEMINI_API_KEY` cho máy chủ, không đặt key trong frontend. Nhận diện và đọc giọng nói dùng Web Speech của trình duyệt. Chế độ “Hội thoại rảnh tay” gửi câu hỏi sau khoảng lặng, đọc câu trả lời rồi tiếp tục nghe; cần HTTPS hoặc localhost, quyền micro và trình duyệt hỗ trợ Web Speech.
+
 ## Backend
 
 Backend hiện có ở `../backend/server.js`, phục vụ API Gemini và tài khoản trên cổng `31377`.

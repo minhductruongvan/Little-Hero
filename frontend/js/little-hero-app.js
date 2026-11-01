@@ -2,15 +2,63 @@
       "use strict";
 
       const STORAGE_KEY = "little-hero-new-home-v1";
+      const localHosts = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
       const API_BASE = location.port === "5500"
         ? "http://127.0.0.1:31377"
-        : (window.LITTLE_HERO_API_BASE || "");
+        : localHosts.has(location.hostname)
+          ? ""
+          : (window.LITTLE_HERO_API_BASE || "");
       const apiUrl = (path) => `${API_BASE}${path}`;
+      const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       const DEMO_ACCOUNT = Object.freeze({
         email: "demo@littlehero.id.vn",
         password: "littlehero-demo",
         name: "Khách Little Hero"
       });
+      const sampleForumPosts = [
+        {
+          id: "sample-forum-kindness",
+          author: "Gia đình Mây",
+          date: "Bài mẫu",
+          body: "Hôm nay bé đã biết chờ đến lượt và nhường bạn chọn trò chơi trước. Một hành động nhỏ mà cả nhà đều vui! 🌱",
+          isSample: true,
+          liked: false,
+          myReaction: "",
+          reactionCounts: { "❤️": 8, "👍": 12, "👏": 6, "🤗": 3 },
+          comments: [{ author: "Gia đình Thỏ", body: "Cùng ghi nhận những điều tử tế mỗi ngày nhé! 💚" }],
+          shares: 2
+        },
+        {
+          id: "sample-forum-safety",
+          author: "Nhà Thỏ",
+          date: "Bài mẫu",
+          body: "Cả nhà vừa cùng Hero ôn lại quy tắc an toàn khi đi chơi: luôn ở gần người lớn và nhờ cô chú đáng tin cậy giúp đỡ khi cần. 🛡️",
+          isSample: true,
+          liked: false,
+          myReaction: "",
+          reactionCounts: { "❤️": 10, "👍": 7, "👏": 4, "🤗": 5 },
+          comments: [{ author: "Gia đình Mây", body: "Ôn lại cùng nhau giúp bé nhớ lâu hơn ạ!" }],
+          shares: 1
+        },
+        {
+          id: "sample-forum-reading",
+          author: "Gia đình Cầu Vồng",
+          date: "Bài mẫu",
+          body: "Góc đọc truyện cuối tuần: bé tự chọn cách giúp bạn trong câu chuyện rồi kể lại vì sao mình chọn như vậy. 📚✨",
+          isSample: true,
+          liked: false,
+          myReaction: "",
+          reactionCounts: { "❤️": 5, "👍": 9, "👏": 8, "🤗": 2 },
+          comments: [{ author: "Nhà Thỏ", body: "Thật vui khi được nghe suy nghĩ của các bé!" }],
+          shares: 3
+        }
+      ];
+      const sampleReviews = [
+        { id: "sample-review-family", stars: 5, title: "Cùng con học kỹ năng mỗi ngày", body: "Các tình huống gần gũi giúp gia đình có thêm chủ đề để trò chuyện và thực hành cùng bé.", author: "Đánh giá mẫu · Gia đình Mây", date: "Minh họa", helpful: 12, isSample: true },
+        { id: "sample-review-stories", stars: 5, title: "Truyện tương tác dễ hiểu", body: "Bé thích được tự chọn cách xử lý trong truyện. Giao diện nhiều màu sắc và dễ sử dụng.", author: "Đánh giá mẫu · Nhà Thỏ", date: "Minh họa", helpful: 8, isSample: true },
+        { id: "sample-review-progress", stars: 4, title: "Hoạt động vui cho cả nhà", body: "Các trò chơi ngắn giúp việc ôn lại bài học nhẹ nhàng hơn. Mong có thêm nhiều chủ đề mới.", author: "Đánh giá mẫu · Gia đình Cầu Vồng", date: "Minh họa", helpful: 6, isSample: true },
+        { id: "sample-review-hero", stars: 5, title: "Một người bạn nhỏ đáng yêu", body: "Hero đồng hành trong các tình huống về cảm xúc, giao tiếp và an toàn rất gần gũi với bé.", author: "Đánh giá mẫu · Gia đình Nắng", date: "Minh họa", helpful: 4, isSample: true }
+      ];
       const { categories, lessons, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
       const freshState = () => ({
         childName: "",
@@ -39,8 +87,12 @@
         dailyReviews: [],
         lastRoute: "",
         lastHomeScroll: 0,
-        reviews: [],
-        forumPosts: [],
+        reviews: sampleReviews.map((review) => ({ ...review })),
+        forumPosts: sampleForumPosts.map((post) => ({
+          ...post,
+          reactionCounts: { ...post.reactionCounts },
+          comments: post.comments.map((comment) => ({ ...comment }))
+        })),
         children: [],
         activeChildId: "",
         learningHistory: [],
@@ -104,7 +156,7 @@
       if (savedDemoAccount) {
         state.accountEmail = "";
         normalizeProgressState();
-      } else if (/^[^\s@]+@gmail\.com$/i.test(savedAccountEmail)) {
+      } else if (savedAccountEmail.length <= 254 && validEmail(savedAccountEmail)) {
         loadAccountProgress(savedAccountEmail);
       } else {
         const defaults = freshState();
@@ -114,6 +166,10 @@
         state.demoAccount = false;
         normalizeProgressState();
       }
+      const seededReviewIds = new Set((state.reviews || []).map((review) => review.id));
+      state.reviews = [...sampleReviews.filter((review) => !seededReviewIds.has(review.id)), ...(state.reviews || [])];
+      const seededPostIds = new Set((state.forumPosts || []).map((post) => post.id));
+      state.forumPosts = [...sampleForumPosts.filter((post) => !seededPostIds.has(post.id)), ...(state.forumPosts || [])];
 
       const $ = (selector, root = document) => root.querySelector(selector);
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
@@ -150,10 +206,11 @@
         $("#dialogContent").innerHTML = content;
         if (!dialog.open) dialog.showModal();
       };
-      const speak = (text) => {
+      const speak = (text, onComplete) => {
         if (!("speechSynthesis" in window)) {
           toast("Trình duyệt chưa hỗ trợ giọng đọc. Bé vẫn có thể đọc nội dung trên màn hình.");
-          return;
+          onComplete?.();
+          return false;
         }
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
@@ -161,10 +218,19 @@
         utterance.rate = 0.92;
         const vietnameseVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith("vi"));
         if (vietnameseVoice) utterance.voice = vietnameseVoice;
+        let completed = false;
+        const finishSpeech = () => {
+          if (completed) return;
+          completed = true;
+          onComplete?.();
+        };
         utterance.onerror = (event) => {
           if (event.error !== "canceled" && event.error !== "interrupted") toast("Không thể phát giọng đọc trên thiết bị này.");
+          finishSpeech();
         };
+        utterance.onend = finishSpeech;
         window.speechSynthesis.speak(utterance);
+        return true;
       };
       const closeDialog = () => $("#appDialog").close();
       const closeParentConfirmation = () => {
@@ -239,6 +305,9 @@
         });
         $("#accountMenuName").textContent = state.childName || "Tài khoản";
         $("#accountMenuGreeting").textContent = state.childName ? `Xin chào, ${state.childName}` : "Chào bạn nhỏ";
+        $("#accountBtn").hidden = state.authenticated;
+        $("#accountBtn").textContent = "Đăng nhập / đăng ký";
+        $("#logoutBtn").hidden = !state.authenticated;
         document.body.dataset.authenticated = String(state.authenticated);
         $("#upgradeBtn").textContent = state.premium ? "♛ Premium của bé" : "♛ Premium";
         $("#xpValue").textContent = `${state.xp} · Lv ${Math.floor(state.xp / 100) + 1}`;
@@ -602,6 +671,7 @@
       let route = "home";
       let pendingNewsFocus = "";
       let pendingAuthRoute = "";
+      let cleanupTutorSession = null;
       const accountRequiredRoutes = new Set(["map", "lesson", "quiz", "games", "quests", "achievements", "parents", "arena", "arena-match", "payment", "premium-success", "wardrobe"]);
       let activeViewTransition = false;
       let pendingViewUpdate = null;
@@ -620,6 +690,10 @@
         <div class="page-heading"><span class="kicker">LITTLE HERO · ${icon}</span><h1>${escapeHtml(pageTitle(name))}</h1><p>${description}</p></div>${body}`;
       const setRoute = (nextRoute, options = {}) => {
         const targetRoute = String(nextRoute || "home").split("/")[0];
+        if (cleanupTutorSession && (targetRoute !== "tutor" || route.split("/")[0] === "tutor")) {
+          cleanupTutorSession();
+          cleanupTutorSession = null;
+        }
         if (!state.authenticated && accountRequiredRoutes.has(targetRoute)) {
           pendingAuthRoute = nextRoute;
           if (route !== "auth") setRoute("auth", { pop: options.pop });
@@ -722,24 +796,6 @@
         card.classList.add("playing");
         window.setTimeout(() => { if (card.isConnected) card.classList.remove("playing"); }, 3400);
       };
-      const playSceneAnimation = (sceneId, actorIds, statusId, statusText) => {
-        const scene = $(`#${sceneId}`);
-        if (!scene) return;
-        playSceneEnvironment(sceneId);
-        actorIds.forEach((id, index) => {
-          const actor = $(`#${id}`);
-          if (!actor) return;
-          actor.classList.remove("action-wave", "action-help", "action-calm", "action-unsafe", "action-approach", "action-celebrate", "action-walk", "action-run", "action-jump", "action-pickup", "action-receive");
-          void actor.offsetWidth;
-          actor.classList.add(index === 0 ? "action-walk" : "action-jump");
-        });
-        const status = $(`#${statusId}`);
-        if (status) {
-          const story = status.querySelector("#sceneStory");
-          if (story) story.textContent = statusText;
-          else status.textContent = `🎬 ${statusText}`;
-        }
-      };
       const movementForChoice = (answer, correct) => {
         const choice = answer.toLocaleLowerCase("vi");
         if (correct && ["nhặt", "gom", "xếp lại", "xây lại"].some((phrase) => choice.includes(phrase))) return "action-pickup";
@@ -757,7 +813,7 @@
         if (choice.includes("xin lỗi")) return "💛";
         return lesson.category === "emotion" ? "💬" : lesson.category === "social" ? "🤝" : "✨";
       };
-      const animateSceneChoice = (sceneId, heroId, friendId, propId, storyId, answer, lesson, correct) => {
+      const animateSceneChoice = (sceneId, heroId, friendId, propId, answer, lesson, correct) => {
         const hero = $(`#${heroId}`);
         const friend = $(`#${friendId}`);
         if (!hero || !friend) return;
@@ -772,9 +828,6 @@
         setCharacterExpression(hero, correct ? "happy" : "sad");
         setCharacterExpression(friend, correct ? "happy" : (friend.classList.contains("adult-actor") ? "angry" : "sad"));
         $(`#${propId}`).textContent = correct ? propForChoice(answer, lesson) : "⚡";
-        $(`#${storyId}`).textContent = correct
-          ? answer
-          : "Thử nghĩ lại nhé: Hero cùng bạn dừng lại và tìm cách an toàn hơn.";
       };
 
       const renderLessonRoute = (lessonId) => {
@@ -800,14 +853,12 @@
                   ${renderSceneActor("heroActor", "Hero", true)}
                   ${renderSceneActor("friendActor", scene.friend.name, false, scene.friend)}
                 </div>
-                <div class="scene-status" id="sceneStatus" aria-live="polite">🎬 <span><strong>Phim hoạt cảnh tương tác:</strong> <span id="sceneStory">${escapeHtml(lesson.story)}</span></span></div>
-                <div class="scene-video-controls"><button id="lessonVideoPlay" type="button">▶ Xem phim tình huống</button><div class="scene-video-track" aria-hidden="true"><i></i></div><span>0:03</span></div>
               </article>
               <div class="score-card" style="margin-top:14px">
                 <div class="lesson-progress"><span><strong>${escapeHtml(lesson.title)}</strong></span><span>⭐ +3 mỗi câu đúng · lần đầu hoàn thành +${lesson.reward} · sai −3</span></div>
                 <p id="questionStory" style="margin:5px 0 11px;color:#687789;font-size:11px"></p>
                 <p id="questionPrompt" style="margin:5px 0 11px;font-size:12px;font-weight:800"></p>
-                <div class="page-actions"><button class="btn btn-light btn-small" id="sceneReplay">▶ Xem hoạt cảnh</button><button class="btn btn-light btn-small" id="lessonSpeak">♫ Nghe đề bài và 3 phương án</button></div>
+                <div class="page-actions"><button class="btn btn-light btn-small" id="lessonSpeak">♫ Nghe đề bài và 3 phương án</button></div>
                 <div class="lesson-choices" id="lessonChoices"></div>
                 <p class="lesson-feedback" id="lessonRouteFeedback" aria-live="polite">${prior ? `Bé đã thử ${prior} lựa chọn chưa phù hợp. Hãy bình tĩnh suy nghĩ lại nhé.` : "Bé hãy chọn phương án mình nghĩ là phù hợp."}</p>
               </div>
@@ -826,13 +877,11 @@
         $("#heroActor").style.setProperty("--hero-shirt", safeWardrobe(state.closet).shirt);
         $("#heroActor").style.setProperty("--hero-pants", safeWardrobe(state.closet).pants);
         $("#heroActor").style.setProperty("--hero-shoes", safeWardrobe(state.closet).shoes);
-        $("#lessonVideoPlay").addEventListener("click", () => playSceneAnimation("lessonScene", ["heroActor", "friendActor"], "sceneStatus", "Hero bước đến trò chuyện cùng bạn."));
         const renderQuestion = () => {
           const question = questions[questionIndex];
           $("#questionProgress").textContent = `Câu hỏi ${questionIndex + 1}/${questions.length}${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}`;
           $("#questionStory").textContent = question.story;
           $("#questionPrompt").textContent = question.prompt;
-          $("#sceneStory").textContent = question.story;
           $("#lessonChoices").innerHTML = question.answers.map((answer, index) =>
             `<button type="button" class="lesson-choice" data-choice="${index}"><span class="choice-letter">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(answer)}</span></button>`
           ).join("");
@@ -844,7 +893,7 @@
             recordLearningAttempt(lesson, choice, questionIndex, question.correct);
             button.disabled = true;
             const selectedAnswer = question.answers[choice];
-            animateSceneChoice("lessonScene", "heroActor", "friendActor", "sceneProp", "sceneStory", selectedAnswer, lesson, correct);
+            animateSceneChoice("lessonScene", "heroActor", "friendActor", "sceneProp", selectedAnswer, lesson, correct);
             speak(correct
               ? `Kết quả thành công! ${question.prompt}`
               : `Mình cùng nghĩ lại nhé. ${question.story} Hãy thử một phương án khác.`);
@@ -907,9 +956,6 @@
           }));
         };
         renderQuestion();
-        $("#sceneReplay").addEventListener("click", () => {
-          playSceneAnimation("lessonScene", ["heroActor", "friendActor"], "sceneStatus", "Hero bước tới chào hỏi và bắt đầu câu chuyện.");
-        });
         $("#lessonSpeak").addEventListener("click", () => {
           const question = questions[questionIndex];
           speak(`${question.story} ${question.prompt} ${question.answers.map((answer, index) => `Phương án ${index + 1}: ${answer}`).join(". ")}`);
@@ -917,10 +963,25 @@
       };
 
       const renderStoriesPage = () => {
+        const storyImages = {
+          emotion: ["photo-1503454537195-1dcabb73ffb9", "Bạn nhỏ đang vui chơi"],
+          social: ["photo-1516627145497-ae6968895b74", "Các bạn nhỏ vui chơi cùng nhau"],
+          safety: ["photo-1511497584788-876760111969", "Con đường trong khu rừng xanh"],
+          health: ["photo-1584820927498-cfe5211fd8bf", "Rửa tay sạch với xà phòng"],
+          thinking: ["photo-1503676260728-1c00da094a0b", "Bé học tập và suy nghĩ"],
+          care: ["photo-1476231682828-37e571bc172f", "Khu rừng xanh cần được chăm sóc"],
+          creative: ["photo-1470770841072-f978cf4d019e", "Phong cảnh thiên nhiên để khám phá"],
+          community: ["photo-1511895426328-dc8714191300", "Gia đình cùng nhau khám phá"]
+        };
+        const storyImageUrl = (categoryId) => {
+          const [photo, alt] = storyImages[categoryId] || storyImages.creative;
+          return { src: `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=1100&q=85`, alt };
+        };
         const stories = lessons.map((lesson) => {
           const category = categories.find((item) => item.id === lesson.category);
+          const image = storyImageUrl(lesson.category);
           return `<article class="storybook-card">
-            <div class="storybook-cover" style="--book-bg:${category.color}"><span class="storybook-cover-icon" aria-hidden="true">${lesson.icon}</span><span class="story-label">TRUYỆN TRANH · ${escapeHtml(lesson.duration)}</span></div>
+            <div class="storybook-cover" style="--book-bg:${category.color}"><img src="${image.src}" alt="${escapeHtml(image.alt)}" loading="lazy"><span class="storybook-cover-icon" aria-hidden="true">${lesson.icon}</span><span class="story-label">TRUYỆN TRANH · ${escapeHtml(lesson.duration)}</span></div>
             <div class="storybook-card-copy"><span class="kicker">${category.icon} ${escapeHtml(category.name)}</span><h2>${escapeHtml(lesson.title)}</h2><p>${escapeHtml(lesson.story)}</p>
               <button class="btn btn-mint btn-small" data-route="storybook/${lesson.id}">📖 Mở sách truyện</button></div></article>`;
         }).join("");
@@ -928,6 +989,7 @@
       };
 
       const storybookPages = new Map();
+      const storybookTurnDirections = new Map();
       const renderStorybookPage = (lessonId) => {
         const lesson = lessonById(lessonId);
         if (!lesson) {
@@ -935,6 +997,17 @@
           return;
         }
         const category = categories.find((item) => item.id === lesson.category);
+        const imageIds = {
+          emotion: "photo-1503454537195-1dcabb73ffb9",
+          social: "photo-1516627145497-ae6968895b74",
+          safety: "photo-1511497584788-876760111969",
+          health: "photo-1584820927498-cfe5211fd8bf",
+          thinking: "photo-1503676260728-1c00da094a0b",
+          care: "photo-1476231682828-37e571bc172f",
+          creative: "photo-1470770841072-f978cf4d019e",
+          community: "photo-1511895426328-dc8714191300"
+        };
+        const pageImage = `https://images.unsplash.com/${imageIds[lesson.category] || imageIds.creative}?auto=format&fit=crop&w=1200&q=85`;
         const pages = [
           { kicker: "BÌA TRUYỆN", title: lesson.title, text: lesson.goal, icon: lesson.icon },
           { kicker: "TRANG 1 · MỘT CHUYỆN NHỎ", title: "Chuyện bắt đầu", text: lesson.story, icon: lesson.icon },
@@ -946,8 +1019,9 @@
         const page = pages[pageIndex];
         $("#routeView").innerHTML = pageShell("storybook", `Truyện ${escapeHtml(category.name)} · ${escapeHtml(lesson.duration)} · Dùng nút hoặc phím mũi tên để lật trang.`, `
           <div class="storybook" id="storybook" tabindex="0" aria-label="Sách truyện ${escapeHtml(lesson.title)}">
-            <div class="storybook-spread" id="storybookSpread" aria-live="polite">
-              <div class="storybook-picture" style="--book-bg:${category.color}" role="img" aria-label="${escapeHtml(page.icon)}">
+            <div class="storybook-spread${storybookTurnDirections.has(lessonId) ? ` turn-${storybookTurnDirections.get(lessonId)}` : ""}" id="storybookSpread" aria-live="polite">
+              <div class="storybook-picture" style="--book-bg:${category.color}">
+                <img src="${pageImage}" alt="Minh họa truyện ${escapeHtml(lesson.title)}" loading="lazy">
                 <span class="storybook-picture-icon" aria-hidden="true">${page.icon}</span>
               </div>
               <article class="storybook-page-copy">
@@ -965,29 +1039,44 @@
           </div>
           <div class="page-actions">${routeLink("stories", "← Về thư viện truyện")}</div>`, "SÁCH TRUYỆN");
         const book = $("#storybook");
-        book.addEventListener("click", (event) => {
-          const turn = event.target.closest("[data-story-page]");
-          if (!turn || turn.disabled) return;
-          storybookPages.set(lessonId, pageIndex + Number(turn.dataset.storyPage));
-          renderStorybookPage(lessonId);
-          $("#storybook").focus();
-        });
-        book.addEventListener("keydown", (event) => {
-          if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-          event.preventDefault();
-          const direction = event.key === "ArrowRight" ? 1 : -1;
+        const turnStoryPage = (direction) => {
           const nextPage = Math.max(0, Math.min(pages.length - 1, pageIndex + direction));
           if (nextPage === pageIndex) return;
+          storybookTurnDirections.set(lessonId, direction > 0 ? "next" : "previous");
           storybookPages.set(lessonId, nextPage);
           renderStorybookPage(lessonId);
           $("#storybook").focus();
+        };
+        book.addEventListener("click", (event) => {
+          const turn = event.target.closest("[data-story-page]");
+          if (!turn || turn.disabled) return;
+          turnStoryPage(Number(turn.dataset.storyPage));
+        });
+        let swipeStartX = null;
+        book.addEventListener("pointerdown", (event) => {
+          if (event.target.closest("button, a")) return;
+          swipeStartX = event.clientX;
+        });
+        book.addEventListener("pointerup", (event) => {
+          if (swipeStartX === null) return;
+          const swipeDistance = event.clientX - swipeStartX;
+          swipeStartX = null;
+          if (Math.abs(swipeDistance) >= 55) turnStoryPage(swipeDistance < 0 ? 1 : -1);
+        });
+        book.addEventListener("pointercancel", () => { swipeStartX = null; });
+        book.addEventListener("keydown", (event) => {
+          if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+          event.preventDefault();
+          turnStoryPage(event.key === "ArrowRight" ? 1 : -1);
         });
       };
 
       const miniGames = {
-        memory: { icon: "🃏", title: "Thẻ nhớ kỳ diệu", description: "Lật thẻ và tìm các cặp hình giống nhau. Trò chơi rèn trí nhớ và sự tập trung.", reward: 10 },
-        pattern: { icon: "🔎", title: "Thám tử quy luật", description: "Quan sát chuỗi hình, tìm xem hình nào sẽ xuất hiện tiếp theo.", reward: 10 },
-        feelings: { icon: "💛", title: "Nhà thám hiểm cảm xúc", description: "Đọc tình huống và đoán cảm xúc mà bạn nhỏ có thể đang trải qua.", reward: 10 }
+        memory: { icon: "🃏", title: "Thẻ nhớ kỳ diệu", description: "Lật thẻ và tìm các cặp hình giống nhau. Trò chơi rèn trí nhớ và sự tập trung.", reward: 10, accent: "#fff2d5" },
+        pattern: { icon: "🔎", title: "Thám tử quy luật", description: "Quan sát chuỗi hình, tìm xem hình nào sẽ xuất hiện tiếp theo.", reward: 10, accent: "#e5f4ff" },
+        feelings: { icon: "💛", title: "Nhà thám hiểm cảm xúc", description: "Đọc tình huống và đoán cảm xúc mà bạn nhỏ có thể đang trải qua.", reward: 10, accent: "#ffe8ed" },
+        sequence: { icon: "🧭", title: "Xếp bước thật khéo", description: "Sắp xếp cách xử lý tình huống theo thứ tự an toàn và hợp lý.", reward: 10, accent: "#e8f7e9" },
+        observe: { icon: "🧐", title: "Mắt tinh của Hero", description: "Tìm chi tiết khác biệt, rèn khả năng quan sát và tập trung.", reward: 10, accent: "#f0e9ff" }
       };
       const patternRounds = [
         { sequence: ["🔴", "🔵", "🔴", "🔵", "?"], options: ["🔴", "🟡", "🟢"], answer: 0, hint: "Hai màu đang thay phiên nhau." },
@@ -999,6 +1088,20 @@
         { situation: "Tháp xếp hình bạn đang xây bỗng đổ xuống.", options: ["😠 Tức giận", "😢 Buồn hoặc thất vọng", "😴 Buồn ngủ"], answer: 1 },
         { situation: "Bạn nghe tiếng sấm lớn khi đang ở trong nhà.", options: ["😟 Lo lắng hoặc sợ", "😄 Vui", "😎 Tự hào"], answer: 0 }
       ];
+      const sequenceRounds = [
+        { situation: "Nước vừa đổ ra bàn và sách ở gần đó.", options: ["Báo người lớn → cùng lau nước", "Dùng máy sấy điện → lau nước", "Bỏ đi → để nước lan ra"], answer: 0, hint: "Trước tiên hãy báo người lớn; sau đó cùng lau khi đã an toàn." },
+        { situation: "Bé muốn làm quen với bạn đang xếp hình.", options: ["Giật đồ chơi → bắt đầu chơi", "Chào bạn → hỏi bạn có muốn chơi cùng", "Ra lệnh bạn nhường chỗ → ngồi xuống"], answer: 1, hint: "Một lời chào thân thiện và câu hỏi lịch sự giúp bạn được tự chọn." },
+        { situation: "Bé vừa chơi ngoài sân và sắp đến giờ ăn.", options: ["Rửa tay với xà phòng → ngồi vào bàn", "Lau tay vào áo → ăn ngay", "Ăn trước → rửa tay sau"], answer: 0, hint: "Rửa tay sạch trước khi ăn giúp giữ vệ sinh." }
+      ];
+      const observationRounds = [
+        { items: ["🍎", "🍎", "🦊", "🍎"], options: ["🦊 Con cáo", "🍎 Quả táo", "🍐 Quả lê"], answer: 0, hint: "Ba hình là trái cây; hãy tìm hình không phải trái cây." },
+        { items: ["🐶", "🐱", "🐰", "🥕"], options: ["🐱 Con mèo", "🥕 Củ cà rốt", "🐰 Con thỏ"], answer: 1, hint: "Ba hình là các con vật; tìm món ăn khác nhóm nhé." },
+        { items: ["🔵", "🔵", "🟡", "🔵"], options: ["🟢 Xanh lá", "🔴 Đỏ", "🟡 Vàng"], answer: 2, hint: "Ba hình tròn có màu xanh; hình nào có màu khác?" }
+      ];
+      const miniGameRounds = (gameId) => gameId === "pattern" ? patternRounds
+        : gameId === "sequence" ? sequenceRounds
+          : gameId === "observe" ? observationRounds
+            : feelingsRounds;
       const dailyGameRewardKey = (gameId) => `${currentDay()}:${gameId}`;
       const miniGameRewardEarned = (gameId) => state.gameRewards.includes(dailyGameRewardKey(gameId));
       const awardMiniGame = (gameId) => {
@@ -1077,17 +1180,22 @@
           if (miniGameRun.id === "memory") body = renderMemoryGame(game);
           else if (miniGameRun.id === "pattern") {
             body = renderQuestionGame(game, patternRounds, (round) => `<div class="pattern-question"><p>Hình nào sẽ đến tiếp theo?</p><div class="pattern-sequence">${round.sequence.map((icon) => `<span>${icon}</span>`).join("")}</div></div>`);
+          } else if (miniGameRun.id === "sequence") {
+            body = renderQuestionGame(game, sequenceRounds, (round) => `<div class="feelings-question sequence-question"><p>Tình huống:</p><blockquote>“${round.situation}”</blockquote><p>Thứ tự nào an toàn và hợp lý nhất?</p></div>`);
+          } else if (miniGameRun.id === "observe") {
+            body = renderQuestionGame(game, observationRounds, (round) => `<div class="pattern-question"><p>Hình nào khác với những hình còn lại?</p><div class="pattern-sequence observation-sequence">${round.items.map((icon) => `<span>${icon}</span>`).join("")}</div></div>`);
           } else {
             body = renderQuestionGame(game, feelingsRounds, (round) => `<div class="feelings-question"><p>Hãy đọc tình huống:</p><blockquote>“${round.situation}”</blockquote><p>Bạn nhỏ có thể cảm thấy thế nào?</p></div>`);
           }
         } else {
           const cards = Object.entries(miniGames).map(([id, game]) => {
             const played = miniGameRewardEarned(id);
-            return `<article class="game-card mini-game-card"><span class="catalog-icon" style="--tile:#fff1d9">${game.icon}</span><div class="mini-game-card-copy"><span class="game-tag">${id === "memory" ? "TRÍ NHỚ" : id === "pattern" ? "TƯ DUY LOGIC" : "GỌI TÊN CẢM XÚC"}</span><h3>${game.title}</h3><p>${game.description}</p><small>${played ? "✓ Đã nhận sao hôm nay" : `🎁 Hoàn thành nhận ${game.reward} sao`}</small></div><button class="btn btn-mint btn-small" data-mini-game-start="${id}">Chơi ngay →</button></article>`;
+            const gameTag = id === "memory" ? "TRÍ NHỚ" : id === "pattern" ? "TƯ DUY LOGIC" : id === "sequence" ? "GIẢI QUYẾT VẤN ĐỀ" : id === "observe" ? "QUAN SÁT" : "GỌI TÊN CẢM XÚC";
+            return `<article class="game-card mini-game-card" style="--game-tint:${game.accent}"><span class="catalog-icon" style="--tile:${game.accent}">${game.icon}</span><div class="mini-game-card-copy"><span class="game-tag">${gameTag}</span><h3>${game.title}</h3><p>${game.description}</p><small>${played ? "✓ Đã nhận sao hôm nay" : `🎁 Hoàn thành nhận ${game.reward} sao`}</small></div><button class="btn btn-mint btn-small" data-mini-game-start="${id}">Chơi ngay →</button></article>`;
           }).join("");
-          body = `<div class="game-welcome"><span>🌟</span><div><h2>Chơi vui, luyện trí mỗi ngày!</h2><p>Mỗi trò chỉ mất vài phút. Bé có thể thử lại thoải mái; mỗi trò thưởng sao một lần trong ngày.</p></div></div><div class="game-grid">${cards}</div>`;
+          body = `<div class="game-welcome"><span>🌟</span><div><h2>Chơi vui, luyện trí mỗi ngày!</h2><p>Cùng bé luyện trí nhớ, quan sát, suy luận, giải quyết vấn đề và gọi tên cảm xúc. Mỗi trò chỉ mất vài phút, có thể chơi lại thoải mái.</p></div></div><div class="game-grid">${cards}</div>`;
         }
-        $("#routeView").innerHTML = pageShell("games", "Chọn một trò chơi ngắn để luyện trí nhớ, quan sát và hiểu cảm xúc. Không có thi đấu trực tuyến hay thu thập thông tin trẻ.", body, "CHƠI & KHÁM PHÁ");
+        $("#routeView").innerHTML = pageShell("games", "Chọn một trò chơi ngắn để luyện tư duy và thư giãn sau giờ học. Không có thi đấu trực tuyến hay thu thập thông tin trẻ.", body, "CHƠI & KHÁM PHÁ");
       };
 
       const renderQuestPage = () => {
@@ -1118,8 +1226,6 @@
               ${renderSceneActor("quizHeroActor", "Hero", true)}
               ${renderSceneActor("quizFriendActor", scene.friend.name, false, scene.friend)}
             </div>
-            <div class="scene-status" id="quizSceneStatus" aria-live="polite">🎬 <span><strong>Hoạt cảnh tương tác:</strong> <span id="quizSceneStory">${escapeHtml(lesson.story)}</span></span></div>
-            <div class="scene-video-controls"><button id="quizSceneReplay" type="button">▶ Xem hoạt cảnh</button><div class="scene-video-track" aria-hidden="true"><i></i></div><span>0:03</span></div>
           </article>
           <div class="story-box">${escapeHtml(lesson.story)}</div><button class="btn btn-light btn-small" id="quizPageSpeak">♫ Nghe đề bài và các phương án</button><h3 style="font-size:15px">Bé sẽ chọn cách nào?</h3>
           <div class="lesson-choices">${lesson.answers.map((answer, index) => `<button class="lesson-choice ${quizPageChoice === index ? (index === lesson.correct ? "correct" : "incorrect") : ""}" data-quiz-page="${index}" ${quizPageChoice !== null ? "disabled" : ""}><span class="choice-letter">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(answer)}</span></button>`).join("")}</div>
@@ -1128,27 +1234,28 @@
           <div class="page-actions"><button class="btn btn-mint btn-small" id="nextQuiz" ${quizPageChoice === null ? "disabled" : ""}>Câu tiếp theo →</button>${routeLink("achievements", "Xem thành tích", "🏅")}</div></article>
         `, "ÔN TẬP QUA TÌNH HUỐNG");
         $("#quizPageSpeak").addEventListener("click", () => speak(`${lesson.title}. ${lesson.story} Các phương án. ${lesson.answers.map((answer, index) => `Phương án ${index + 1}: ${answer}`).join(". ")}`));
-        $("#quizSceneReplay").addEventListener("click", () => {
-          if (quizPageChoice === null) {
-            playSceneAnimation("quizScene", ["quizHeroActor", "quizFriendActor"], "quizSceneStatus", "Hero và bạn cùng quan sát tình huống.");
-            return;
-          }
-          animateSceneChoice("quizScene", "quizHeroActor", "quizFriendActor", "quizSceneProp", "quizSceneStory", lesson.answers[quizPageChoice], lesson, quizPageChoice === lesson.correct);
-        });
-        if (quizPageChoice !== null) {
-          animateSceneChoice("quizScene", "quizHeroActor", "quizFriendActor", "quizSceneProp", "quizSceneStory", lesson.answers[quizPageChoice], lesson, quizPageChoice === lesson.correct);
-        }
       };
 
       const renderAchievementsPage = () => {
         const badges = [
-          ["🌱", "Bước đầu tiên", "Hoàn thành bài học đầu tiên", completedCount() >= 1],
-          ["🔥", "Ngày chăm chỉ", "Học xong bài trong một ngày", streak() >= 1],
-          ["🧠", "Người suy nghĩ", "Hoàn thành một bài kiểm tra", state.quiz >= 1],
-          ["🤝", "Người bạn tốt", "Xác nhận một thử thách ngoài đời", state.challenges.length >= 1],
-          ["🏝️", "Nhà khám phá", "Hoàn thành ba chủ đề", completedCount() >= 3],
-          ["⭐", "Ngôi sao nhỏ", "Tích lũy 50 sao", state.xp >= 50]
-        ].map(([icon, name, detail, unlocked]) => `<article class="achievement-card"><span class="badge-icon">${icon}</span><h3 style="margin:7px 0 4px;font-size:13px">${name} ${unlocked ? "✓" : "🔒"}</h3><p class="note">${detail}</p></article>`).join("");
+          { icon: "🌱", name: "Bước đầu tiên", detail: "Hoàn thành bài học đầu tiên", progress: completedCount(), goal: 1 },
+          { icon: "🔥", name: "Ngày chăm chỉ", detail: "Học xong bài trong một ngày", progress: streak(), goal: 1 },
+          { icon: "🧠", name: "Người suy nghĩ", detail: "Hoàn thành một bài kiểm tra", progress: state.quiz, goal: 1 },
+          { icon: "🤝", name: "Người bạn tốt", detail: "Xác nhận một thử thách ngoài đời", progress: state.challenges.length, goal: 1 },
+          { icon: "🏝️", name: "Nhà khám phá", detail: "Hoàn thành ba chủ đề", progress: completedCount(), goal: 3 },
+          { icon: "⭐", name: "Ngôi sao nhỏ", detail: "Tích lũy 50 sao", progress: state.xp, goal: 50 }
+        ].map(({ icon, name, detail, progress, goal }) => {
+          const unlocked = progress >= goal;
+          const percent = Math.min(100, Math.round(progress / goal * 100));
+          return `<article class="achievement-card ${unlocked ? "is-unlocked" : "is-locked"}">
+            <div class="achievement-card-top"><span class="badge-icon" aria-hidden="true">${icon}</span><span class="achievement-status">${unlocked ? "✓ Đã mở khóa" : "Đang cố gắng"}</span></div>
+            <h3>${name}</h3><p class="note">${detail}</p>
+            <div class="achievement-progress" role="progressbar" aria-label="Tiến độ ${name}" aria-valuemin="0" aria-valuemax="${goal}" aria-valuenow="${Math.min(progress, goal)}">
+              <span style="width:${percent}%"></span>
+            </div>
+            <small class="achievement-count">${Math.min(progress, goal)} / ${goal} ${goal === 1 ? "lần" : "mốc"}</small>
+          </article>`;
+        }).join("");
         $("#routeView").innerHTML = pageShell("achievements", `Bé đã khám phá ${completedCount()} bài, tích lũy ${state.xp} sao và có chuỗi ${streak()} ngày.`, `<div class="achievement-grid">${badges}</div>`, "GHI NHẬN NỖ LỰC");
       };
 
@@ -1167,7 +1274,7 @@
           const reactions = post.reactionCounts || {};
           const totalReactions = Object.values(reactions).reduce((sum, value) => sum + Number(value || 0), 0);
           return `<article class="social-post" data-post-id="${escapeHtml(id)}">
-            <div class="social-post-head"><span class="social-avatar" aria-hidden="true">🦸</span><div><strong>${escapeHtml(post.author || "Gia đình Little Hero")}${post.repostOf ? " · đã đăng lại" : ""}</strong><small>${escapeHtml(post.date || currentDay())} · Cộng đồng Little Hero · lưu trên thiết bị</small></div></div>
+            <div class="social-post-head"><span class="social-avatar" aria-hidden="true">🦸</span><div><strong>${escapeHtml(post.author || "Gia đình Little Hero")}${post.repostOf ? " · đã đăng lại" : ""}</strong><small>${post.isSample ? "Bài mẫu · Cộng đồng Little Hero" : `${escapeHtml(post.date || currentDay())} · Lưu trên thiết bị`}</small></div></div>
             ${post.repostOf ? `<p class="note">Đăng lại từ ${escapeHtml(post.repostOf)}</p>` : ""}
             <p class="social-post-body">${escapeHtml(post.body || "")}</p><div class="social-media-preview">${media}</div>
             <div class="social-post-meta"><span>💚 ${totalReactions} cảm xúc</span><span>💬 ${(post.comments || []).length} bình luận · ↗ ${post.shares || 0} lượt chia sẻ</span></div>
@@ -1184,7 +1291,7 @@
             <form class="social-comment-form" data-comment-post="${escapeHtml(id)}"><input name="comment" required maxlength="240" aria-label="Viết bình luận" placeholder="Viết bình luận tử tế…"><button class="btn btn-light btn-small">Gửi</button></form>
           </article>`;
         }).join("");
-        $("#routeView").innerHTML = pageShell("forum", "Bảng tin chia sẻ trạng thái, ảnh, video, cảm xúc, bình luận và đăng lại. Nội dung được lưu trên thiết bị, không phát tán ra cộng đồng trực tuyến.", `
+        $("#routeView").innerHTML = pageShell("forum", "Bảng tin chia sẻ trạng thái, ảnh, video, cảm xúc, bình luận và đăng lại. Bài mẫu được đánh dấu; bài đăng mới chỉ lưu trên thiết bị này.", `
           <div class="social-layout">
             <div class="social-column">
               <form class="social-composer" id="forumForm">
@@ -1287,11 +1394,12 @@
       const renderFaqPage = () => {
         const questions = [
           ["Little Hero phù hợp với độ tuổi nào?", "Nội dung hướng đến trẻ 4–8 tuổi. Phụ huynh nên đồng hành và điều chỉnh hoạt động theo khả năng của mỗi bé."],
-          ["Làm sao để lưu tiến độ?", "Tiến độ được lưu trong trình duyệt trên thiết bị hiện tại; chưa có tài khoản máy chủ hoặc đồng bộ."],
+          ["Làm sao để lưu tiến độ?", "Tiến độ học được lưu trong trình duyệt trên thiết bị hiện tại; tài khoản đăng nhập lưu ở máy chủ nhưng tiến độ chưa đồng bộ giữa các thiết bị."],
+            ["Làm sao để khôi phục mật khẩu?", "Tại trang đăng nhập, chọn “Quên mật khẩu?” rồi nhận mã xác minh qua email hoặc số điện thoại đã đăng ký. Máy chủ cần được cấu hình dịch vụ gửi email hoặc SMS."],
           ["Các tình huống có thay thế tư vấn chuyên gia không?", "Không. Nội dung là gợi ý giáo dục tổng quát, không thay thế tư vấn của chuyên gia giáo dục, tâm lý hoặc y tế."],
           ["Đăng nhập Google đã hoạt động chưa?", "Chưa. Cần tạo Google OAuth Client ID và dịch vụ máy chủ xác thực token trước khi đưa đăng nhập thật vào sử dụng."],
           ["Thanh toán Premium có thể chuyển khoản chưa?", "Thông tin thanh toán chưa được cấu hình và hệ thống chưa xác nhận giao dịch. Không chuyển khoản qua trang này."],
-          ["Ứng dụng thu thập thông tin của trẻ không?", "Dữ liệu hiện được lưu trên thiết bị và chưa gửi lên máy chủ. Không nhập thông tin nhạy cảm của trẻ."]
+          ["Ứng dụng lưu những thông tin nào?", "Họ tên phụ huynh, email và số điện thoại được lưu trong cơ sở dữ liệu máy chủ để đăng nhập và khôi phục tài khoản. Hồ sơ, tiến độ và nhật ký học của bé vẫn lưu cục bộ trên trình duyệt; không nhập thông tin nhạy cảm của trẻ."]
         ];
         $("#routeView").innerHTML = pageShell("faq", "Một số câu hỏi thường gặp về cách sử dụng Little Hero.", `<div class="faq-grid">${questions.map(([question, answer]) => `<details class="faq-card"><summary>${question}</summary><p>${answer}</p></details>`).join("")}</div>`, "HỖ TRỢ GIA ĐÌNH");
       };
@@ -1306,24 +1414,25 @@
         }).join("");
         const reviews = saved.slice().reverse().map((review, index) => {
           const reviewId = review.id || `review-${index}`;
-          return `<article class="store-review">
+          return `<article class="store-review ${review.isSample ? "is-sample" : ""}">
             <span class="review-stars" aria-label="${Number(review.stars)} trên 5 sao">${"★".repeat(Number(review.stars) || 0)}${"☆".repeat(5 - (Number(review.stars) || 0))}</span>
+            ${review.isSample ? '<span class="review-sample-label">ĐÁNH GIÁ MẪU</span>' : ""}
             <h3>${escapeHtml(review.title || "Đánh giá Little Hero")}</h3>
             <p>${escapeHtml(review.body)}</p>
-            <small>${escapeHtml(review.author || "Người dùng trên thiết bị")} · ${escapeHtml(review.date || "Ngày gửi không rõ")} · lưu trên thiết bị</small>
+            <small>${escapeHtml(review.author || "Người dùng trên thiết bị")} · ${escapeHtml(review.date || "Ngày gửi không rõ")}${review.isSample ? "" : " · lưu trên thiết bị"}</small>
             <div class="page-actions"><button class="btn btn-light btn-small" type="button" data-review-helpful="${escapeHtml(reviewId)}">👍 Hữu ích (${Number(review.helpful) || 0})</button></div>
           </article>`;
         }).join("");
         $("#routeView").innerHTML = pageShell("reviews", "Giao diện đánh giá tham khảo cửa hàng ứng dụng. Không có đánh giá Google Play/App Store được nhập hoặc xác minh; các bài dưới đây chỉ là phản hồi do người dùng nhập trên thiết bị này.", `
           <div class="social-column">
             <section class="store-rating" aria-label="Tổng quan đánh giá">
-              <div class="store-rating-score"><strong>${saved.length ? average.toFixed(1) : "—"}</strong><span>${saved.length ? `${saved.length} đánh giá cục bộ` : "Chưa có đánh giá xác thực"}</span><div class="review-stars">${saved.length ? "★".repeat(Math.round(average)) + "☆".repeat(5 - Math.round(average)) : "☆☆☆☆☆"}</div></div>
-              <div>${ratingBreakdown}<p class="note" style="margin:8px 0 0">Số liệu chỉ tổng hợp đánh giá trên thiết bị này, không phải xếp hạng chính thức trên kho ứng dụng.</p></div>
+              <div class="store-rating-score"><strong>${saved.length ? average.toFixed(1) : "—"}</strong><span>${saved.length ? `${saved.length} bài đánh giá (có mẫu)` : "Chưa có đánh giá"}</span><div class="review-stars">${saved.length ? "★".repeat(Math.round(average)) + "☆".repeat(5 - Math.round(average)) : "☆☆☆☆☆"}</div></div>
+              <div>${ratingBreakdown}<p class="note" style="margin:8px 0 0">Có ${saved.filter((review) => review.isSample).length} đánh giá minh họa được ghi nhãn “Đánh giá mẫu”. Số liệu không phải xếp hạng chính thức trên kho ứng dụng.</p></div>
             </section>
             <div class="social-layout">
               <div class="social-column">
                 <h2 style="margin:0;font-size:17px">Đánh giá của người dùng</h2>
-                <div class="social-feed">${reviews || '<article class="store-review"><span class="kicker">CHƯA CÓ ĐÁNH GIÁ ĐÃ XÁC MINH</span><p>Chưa có phản hồi người dùng thật được cung cấp để hiển thị. Không hiển thị nhận xét mẫu hoặc đánh giá tự tạo.</p></article>'}</div>
+                <div class="social-feed">${reviews || '<article class="store-review"><p>Chưa có đánh giá nào.</p></article>'}</div>
               </div>
               <form class="review-form" id="reviewForm"><h3 style="font-size:14px">Viết đánh giá</h3>
                 <label class="form-label">Tên hiển thị<input name="author" maxlength="50" value="${escapeHtml(state.childName || "")}" placeholder="Tên hiển thị (không bắt buộc)"></label>
@@ -1502,35 +1611,20 @@
                 ${renderSceneActor("arenaHeroActor", "Hero", true)}
                 ${renderSceneActor("arenaFriendActor", opponent.name, false, { gender: /Hân|Linh|Nhiên|An/.test(opponent.name) ? "girl" : "boy" })}
               </div>
-              <div class="scene-status" id="arenaSceneStatus" aria-live="polite">🎬 <span><strong>Phim hoạt cảnh tương tác:</strong> ${escapeHtml(lesson.story)}</span></div>
-              <div class="scene-video-controls"><button id="arenaVideoPlay" type="button">▶ Xem phim tình huống</button><div class="scene-video-track" aria-hidden="true"><i></i></div><span>0:03</span></div>
             </article>
             <h3 style="font-size:15px">${escapeHtml(lesson.title)} — Bé chọn cách nào?</h3>
             <div class="lesson-choices" id="arenaMatchChoices">${lesson.answers.map((answer, index) =>
               `<button class="lesson-choice" data-arena-choice="${index}" ${arenaMatchChoice !== null ? "disabled" : ""}><span class="choice-letter">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(answer)}</span></button>`
             ).join("")}</div>
-            <p class="lesson-feedback" id="arenaMatchFeedback" aria-live="polite">${arenaMatchChoice === null ? "Quan sát hoạt cảnh rồi chọn một phương án." : "Lựa chọn đã khóa."}</p>
+            <p class="lesson-feedback" id="arenaMatchFeedback" aria-live="polite">${arenaMatchChoice === null ? "Đọc tình huống rồi chọn một phương án phù hợp." : "Lựa chọn đã khóa."}</p>
             <button class="btn btn-light btn-small" id="leaveArenaMatch">← Về đấu trường</button>
           </article>`, "TRẬN ĐẤU 1 CÂU");
-        $("#arenaVideoPlay").addEventListener("click", () => playSceneAnimation("arenaScene", ["arenaHeroActor", "arenaFriendActor"], "arenaSceneStatus", `${lesson.title}: ${lesson.story}`));
         $("#arenaMatchChoices").addEventListener("click", (event) => {
           const button = event.target.closest("[data-arena-choice]");
           if (!button || arenaMatchChoice !== null) return;
           arenaMatchChoice = Number(button.dataset.arenaChoice);
           const success = arenaMatchChoice === lesson.correct;
-          const hero = $("#arenaHeroActor");
-          const friend = $("#arenaFriendActor");
-          [hero, friend].forEach((actor) => {
-            actor.classList.remove("action-wave", "action-help", "action-calm", "action-unsafe", "action-approach", "action-celebrate", "action-walk", "action-run", "action-jump", "action-pickup", "action-receive");
-            void actor.offsetWidth;
-          });
-          playSceneEnvironment("arenaScene");
-          hero.classList.add(movementForChoice(lesson.answers[arenaMatchChoice], success));
-          friend.classList.add(success ? "action-wave" : "action-unsafe");
-          $("#arenaSceneProp").textContent = success ? "🤝" : "⚡";
-          $("#arenaSceneStatus").textContent = success
-            ? `🎬 Kết quả thành công: Hero và ${opponent.name} cùng chọn cách an toàn.`
-            : "🎬 Kết quả chưa thành công: Hero nhận ra cần tìm cách an toàn hơn.";
+          animateSceneChoice("arenaScene", "arenaHeroActor", "arenaFriendActor", "arenaSceneProp", lesson.answers[arenaMatchChoice], lesson, success);
           $("#arenaMatchChoices").querySelectorAll("button").forEach((choice) => { choice.disabled = true; });
           button.classList.add(success ? "correct" : "incorrect");
           $("#arenaMatchFeedback").textContent = success
@@ -1553,37 +1647,63 @@
           <div class="auth-layout"><article class="settings-card auth-card">
             <section id="loginPanel">
               <h3 style="font-size:17px">Đăng nhập Little Hero</h3>
-              <form class="simple-form" id="loginForm" autocomplete="on">
-                <label class="form-label">Tài khoản dùng thử<input name="email" type="email" autocomplete="username" required value="${DEMO_ACCOUNT.email}"></label>
-                <label class="form-label">Mật khẩu dùng thử<input name="password" type="password" autocomplete="current-password" required value="${DEMO_ACCOUNT.password}"></label>
+              <form class="simple-form" id="loginForm" autocomplete="on" novalidate>
+                <label class="form-label">Email đã đăng ký<input name="email" type="email" autocomplete="username" required maxlength="254" placeholder="ten@example.com"></label>
+                <label class="form-label">Mật khẩu<input name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="Nhập mật khẩu đã tạo"></label>
                 <button class="btn btn-mint btn-small" type="submit">Đăng nhập</button>
               </form>
-              <p class="note">Tài khoản mẫu chỉ lưu dữ liệu trên trình duyệt này; không dùng chung tiến độ với khách khác. Muốn đăng nhập tài khoản thật, hãy thay bằng Gmail và mật khẩu của bạn.</p>
+              <p id="loginError" class="auth-form-error" role="alert" aria-live="polite" hidden></p>
+              <p><button class="auth-switch" type="button" data-auth-toggle="recover">Quên mật khẩu?</button></p>
+              <p class="note">Dùng email và mật khẩu bạn đã đăng ký. Nếu chưa có tài khoản, hãy chọn “Đăng ký” bên dưới. Không chia sẻ mật khẩu cho người khác.</p>
+              <button class="btn btn-light btn-small" id="demoAccountLogin" type="button">Vào với tài khoản trải nghiệm</button>
+              <p class="note">Tài khoản trải nghiệm lưu tiến độ riêng trên trình duyệt này.</p>
               <p><button class="auth-switch" type="button" data-auth-toggle="register">Chưa có tài khoản? Đăng ký</button></p>
             </section>
             <section id="registrationPanel" hidden>
-              <h3 style="font-size:17px">Đăng ký tài khoản</h3>
+              <h3 style="font-size:17px">Đăng ký tài khoản phụ huynh</h3>
+              <p class="note">Các trường có dấu * là bắt buộc. Mỗi email và số điện thoại chỉ dùng cho một tài khoản.</p>
               <form class="simple-form" id="registrationForm" autocomplete="on" novalidate>
-                <label class="form-label">Họ và tên<input name="fullName" autocomplete="name" required maxlength="80" placeholder="Họ và tên của bạn"></label>
-                <label class="form-label">Gmail<input name="email" type="email" autocomplete="email" required placeholder="@gmail.com"></label>
-                <label class="form-label">Số điện thoại<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="16" placeholder="+84"></label>
-                <label class="form-label">Mật khẩu<input name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="Ít nhất 8 ký tự"></label>
-                <label class="form-label">Xác nhận mật khẩu<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Nhập lại mật khẩu"></label>
-                <button class="btn btn-mint btn-small" type="submit">Tạo tài khoản</button>
+                <label class="form-label">Họ và tên phụ huynh *<input name="fullName" autocomplete="name" required minlength="2" maxlength="80" placeholder="Ví dụ: Nguyễn Minh An"></label>
+                <label class="form-label">Email *<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="ten@example.com"></label>
+                <label class="form-label">Số điện thoại *<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="16" placeholder="+84901234567"></label>
+                <label class="form-label">Mật khẩu *<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Từ 8 đến 128 ký tự"></label>
+                <label class="form-label">Nhập lại mật khẩu *<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Nhập lại chính xác mật khẩu"></label>
+                <button class="btn btn-mint btn-small" type="submit">Đăng ký tài khoản</button>
               </form>
               <p id="registrationError" class="auth-form-error" role="alert" aria-live="polite" hidden></p>
-              <button class="btn btn-light btn-small" id="demoAccountLogin" type="button">Vào với tài khoản trải nghiệm</button>
-              <p class="note">Tài khoản trải nghiệm không cần đăng ký và chỉ lưu dữ liệu trên trình duyệt này.</p>
+              <p class="note">Mật khẩu được xử lý ở máy chủ; Little Hero không lưu mật khẩu dưới dạng văn bản thường.</p>
               <p><button class="auth-switch" type="button" data-auth-toggle="login">Đã có tài khoản? Đăng nhập</button></p>
+            </section>
+            <section id="recoveryPanel" hidden>
+              <h3 style="font-size:17px">Khôi phục mật khẩu</h3>
+              <p class="note">Nhận mã xác minh qua email hoặc số điện thoại đã đăng ký để đặt mật khẩu mới.</p>
+              <form class="simple-form" id="recoveryRequestForm" novalidate>
+                <label class="form-label">Nhận mã qua
+                  <select name="channel" required><option value="email">Email</option><option value="phone">Số điện thoại</option></select>
+                </label>
+                <label class="form-label">Thông tin đã đăng ký<input name="identifier" type="text" autocomplete="email" required maxlength="254" placeholder="ten@example.com"></label>
+                <button class="btn btn-mint btn-small" type="submit">Gửi mã xác minh</button>
+              </form>
+              <p id="recoveryMessage" class="auth-form-error" role="status" aria-live="polite" hidden></p>
+              <form class="simple-form" id="recoveryCompleteForm" autocomplete="off" novalidate hidden>
+                <label class="form-label">Mã xác minh<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" required maxlength="6" placeholder="Nhập mã 6 chữ số"></label>
+                <label class="form-label">Mật khẩu mới<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Từ 8 đến 128 ký tự"></label>
+                <label class="form-label">Nhập lại mật khẩu mới<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Nhập lại mật khẩu"></label>
+                <button class="btn btn-mint btn-small" type="submit">Đặt mật khẩu mới</button>
+              </form>
+              <p><button class="auth-switch" type="button" data-auth-toggle="login">Quay lại đăng nhập</button></p>
             </section>
           </article></div>`, "TÀI KHOẢN");
         const showAuthPanel = (panel) => {
           const register = panel === "register";
-          $("#loginPanel").hidden = register;
-          $("#registrationPanel").hidden = !register;
+          $("#loginPanel").hidden = panel !== "login";
+          $("#registrationPanel").hidden = panel !== "register";
+          $("#recoveryPanel").hidden = panel !== "recover";
           $("#routeView .page-heading p").textContent = register
-            ? "Nhập họ tên, Gmail, số điện thoại và tạo mật khẩu để đăng ký tài khoản."
-            : "Đăng nhập để tiếp tục hành trình; nếu chưa có tài khoản, chọn đăng ký bên dưới.";
+            ? "Nhập họ tên, email, số điện thoại và tạo mật khẩu để đăng ký tài khoản."
+            : panel === "recover"
+              ? "Xác minh email hoặc số điện thoại đã đăng ký để đặt lại mật khẩu."
+              : "Đăng nhập để tiếp tục hành trình; nếu chưa có tài khoản, chọn đăng ký bên dưới.";
         };
         $("#routeView").querySelectorAll("[data-auth-toggle]").forEach((button) => {
           button.addEventListener("click", () => showAuthPanel(button.dataset.authToggle));
@@ -1604,14 +1724,148 @@
         };
         $("#demoAccountLogin").addEventListener("click", enterDemoAccount);
         const registrationError = $("#registrationError");
+        const loginError = $("#loginError");
         const showRegistrationError = (message, field) => {
           registrationError.textContent = message;
           registrationError.hidden = false;
           if (field) $(`#registrationForm [name="${field}"]`).focus();
         };
+        const showLoginError = (message, field) => {
+          loginError.textContent = message;
+          loginError.hidden = false;
+          if (field) $(`#loginForm [name="${field}"]`).focus();
+        };
+        $("#loginForm").addEventListener("input", () => {
+          loginError.textContent = "";
+          loginError.hidden = true;
+        });
         $("#registrationForm").addEventListener("input", () => {
           registrationError.textContent = "";
           registrationError.hidden = true;
+        });
+        const recoveryMessage = $("#recoveryMessage");
+        let recoveryChallengeId = "";
+        let recoveryChannel = "email";
+        let recoveryContact = "";
+        const recoveryRequestForm = $("#recoveryRequestForm");
+        const recoveryCompleteForm = $("#recoveryCompleteForm");
+        const recoveryChannelSelect = recoveryRequestForm.elements.channel;
+        const recoveryIdentifier = recoveryRequestForm.elements.identifier;
+        recoveryChannelSelect.addEventListener("change", () => {
+          recoveryChannel = recoveryChannelSelect.value;
+          recoveryIdentifier.value = "";
+          recoveryIdentifier.autocomplete = recoveryChannel === "email" ? "email" : "tel";
+          recoveryIdentifier.inputMode = recoveryChannel === "email" ? "email" : "tel";
+          recoveryIdentifier.placeholder = recoveryChannel === "email" ? "ten@example.com" : "+84901234567";
+          recoveryIdentifier.maxLength = recoveryChannel === "email" ? 254 : 16;
+        });
+        recoveryRequestForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const identifier = String(new FormData(recoveryRequestForm).get("identifier") || "").trim();
+          const normalizedPhone = identifier.replace(/[ ()-]/g, "");
+          if (recoveryChannel === "email" && (identifier.length > 254 || !validEmail(identifier))) {
+            recoveryMessage.textContent = "Hãy nhập đúng email đã đăng ký.";
+            recoveryMessage.hidden = false;
+            recoveryIdentifier.focus();
+            return;
+          }
+          if (recoveryChannel === "phone" && !/^\+84\d{9,10}$/.test(normalizedPhone)) {
+            recoveryMessage.textContent = "Hãy nhập số điện thoại Việt Nam bắt đầu bằng +84.";
+            recoveryMessage.hidden = false;
+            recoveryIdentifier.focus();
+            return;
+          }
+          const submitButton = recoveryRequestForm.querySelector('button[type="submit"]');
+          submitButton.disabled = true;
+          recoveryMessage.hidden = true;
+          try {
+            const response = await fetch(apiUrl("/api/auth/recovery/request"), {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ channel: recoveryChannel, identifier: recoveryChannel === "phone" ? normalizedPhone : identifier.toLowerCase() })
+            });
+            const result = await response.json();
+            if (!response.ok) {
+              recoveryMessage.textContent = result.error || "Không thể gửi mã xác minh. Vui lòng thử lại.";
+              recoveryMessage.hidden = false;
+              return;
+            }
+            recoveryChallengeId = result.challengeId;
+            recoveryContact = recoveryChannel === "phone" ? normalizedPhone : identifier.toLowerCase();
+            recoveryMessage.textContent = `${result.message} Nếu chưa nhận được mã, hãy kiểm tra lại thông tin hoặc thử lại sau.`;
+            recoveryMessage.hidden = false;
+            recoveryRequestForm.hidden = true;
+            recoveryCompleteForm.hidden = false;
+          } catch (error) {
+            console.error("Không thể kết nối máy chủ khôi phục mật khẩu.", error);
+            recoveryMessage.textContent = "Không kết nối được máy chủ. Hãy kiểm tra kết nối mạng rồi thử lại.";
+            recoveryMessage.hidden = false;
+          } finally {
+            submitButton.disabled = false;
+          }
+        });
+        recoveryCompleteForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const data = new FormData(recoveryCompleteForm);
+          const code = String(data.get("code") || "").trim();
+          const password = String(data.get("password") || "");
+          const confirmPassword = String(data.get("confirmPassword") || "");
+          if (!/^\d{6}$/.test(code)) {
+            recoveryMessage.textContent = "Mã xác minh gồm 6 chữ số.";
+            recoveryMessage.hidden = false;
+            recoveryCompleteForm.elements.code.focus();
+            return;
+          }
+          if (password.length < 8 || password.length > 128) {
+            recoveryMessage.textContent = "Mật khẩu phải có từ 8 đến 128 ký tự.";
+            recoveryMessage.hidden = false;
+            recoveryCompleteForm.elements.password.focus();
+            return;
+          }
+          if (password !== confirmPassword) {
+            recoveryMessage.textContent = "Hai mật khẩu mới chưa khớp.";
+            recoveryMessage.hidden = false;
+            recoveryCompleteForm.elements.confirmPassword.focus();
+            return;
+          }
+          const submitButton = recoveryCompleteForm.querySelector('button[type="submit"]');
+          submitButton.disabled = true;
+          recoveryMessage.hidden = true;
+          try {
+            const response = await fetch(apiUrl("/api/auth/recovery/reset"), {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ challengeId: recoveryChallengeId, code, password })
+            });
+            const result = await response.json();
+            if (!response.ok) {
+              recoveryMessage.textContent = result.error || "Không thể đổi mật khẩu. Vui lòng thử lại.";
+              recoveryMessage.hidden = false;
+              return;
+            }
+            const recoveredEmail = recoveryChannel === "email" ? recoveryContact : "";
+            recoveryChallengeId = "";
+            recoveryRequestForm.reset();
+            recoveryCompleteForm.reset();
+            recoveryRequestForm.hidden = false;
+            recoveryCompleteForm.hidden = true;
+            recoveryChannel = "email";
+            recoveryContact = "";
+            recoveryIdentifier.autocomplete = "email";
+            recoveryIdentifier.inputMode = "email";
+            recoveryIdentifier.placeholder = "ten@example.com";
+            recoveryIdentifier.maxLength = 254;
+            recoveryMessage.hidden = true;
+            showAuthPanel("login");
+            if (recoveredEmail) $("#loginForm [name=email]").value = recoveredEmail;
+            toast(result.message);
+          } catch (error) {
+            console.error("Không thể kết nối máy chủ đổi mật khẩu.", error);
+            recoveryMessage.textContent = "Không kết nối được máy chủ. Hãy kiểm tra kết nối mạng rồi thử lại.";
+            recoveryMessage.hidden = false;
+          } finally {
+            submitButton.disabled = false;
+          }
         });
         $("#loginForm").addEventListener("submit", async (event) => {
           event.preventDefault();
@@ -1619,14 +1873,21 @@
           const data = new FormData(form);
           const email = String(data.get("email") || "").trim().toLowerCase();
           const password = String(data.get("password") || "");
+          loginError.textContent = "";
+          loginError.hidden = true;
           if (email === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password) {
             enterDemoAccount();
             return;
           }
           if (email === DEMO_ACCOUNT.email) {
-            toast("Mật khẩu tài khoản trải nghiệm chưa đúng.");
+            showLoginError("Mật khẩu tài khoản trải nghiệm chưa chính xác. Hãy thử lại hoặc dùng nút tài khoản trải nghiệm.", "password");
             return;
           }
+          if (email.length > 254 || !validEmail(email)) { showLoginError("Hãy nhập đúng email đã dùng khi đăng ký, ví dụ ten@example.com.", "email"); return; }
+          if (!password) { showLoginError("Vui lòng nhập mật khẩu.", "password"); return; }
+          if (password.length > 128) { showLoginError("Mật khẩu không được dài quá 128 ký tự.", "password"); return; }
+          const submitButton = form.querySelector('button[type="submit"]');
+          submitButton.disabled = true;
           try {
             const response = await fetch(apiUrl("/api/auth/login"), {
               method: "POST",
@@ -1634,7 +1895,7 @@
               body: JSON.stringify({ email, password })
             });
             const result = await response.json();
-            if (!response.ok) { toast(result.error || "Không thể đăng nhập. Vui lòng thử lại."); return; }
+            if (!response.ok) { showLoginError(result.error || "Email hoặc mật khẩu chưa chính xác. Hãy kiểm tra lại hoặc đăng ký tài khoản mới."); return; }
             persist();
             loadAccountProgress(result.user.email, result.user.name);
             const nextRoute = pendingAuthRoute || "home";
@@ -1644,7 +1905,9 @@
             toast(`Chào mừng ${result.user.name} trở lại Little Hero!`);
           } catch (error) {
             console.error("Không thể kết nối tới máy chủ đăng nhập.", error);
-            toast("Hiện chưa thể đăng nhập. Vui lòng thử lại sau nhé.");
+            showLoginError("Không kết nối được máy chủ. Hãy kiểm tra kết nối mạng rồi thử lại.");
+          } finally {
+            submitButton.disabled = false;
           }
         });
         $("#registrationForm").addEventListener("submit", async (event) => {
@@ -1658,8 +1921,8 @@
           const confirmPassword = String(data.get("confirmPassword") || "");
           registrationError.textContent = "";
           registrationError.hidden = true;
-          if (!fullName || fullName.length > 80) { showRegistrationError("Vui lòng nhập họ và tên (tối đa 80 ký tự).", "fullName"); return; }
-          if (!/^[^\s@]+@gmail\.com$/i.test(email)) { showRegistrationError("Email chưa đúng định dạng. Hãy nhập địa chỉ Gmail hợp lệ, ví dụ ten@gmail.com.", "email"); return; }
+          if (fullName.length < 2 || fullName.length > 80) { showRegistrationError("Họ và tên phải có từ 2 đến 80 ký tự.", "fullName"); return; }
+          if (email.length > 254 || !validEmail(email)) { showRegistrationError("Email chưa đúng định dạng. Ví dụ: ten@example.com.", "email"); return; }
           if (!/^\+84(?:[ ()-]?\d){9,10}$/.test(phone)) { showRegistrationError("Số điện thoại chưa đúng định dạng. Hãy nhập +84 và 9–10 chữ số tiếp theo.", "phone"); return; }
           if (password.length < 8 || password.length > 128) { showRegistrationError("Mật khẩu phải có ít nhất 8 ký tự (tối đa 128 ký tự).", "password"); return; }
           if (password !== confirmPassword) { showRegistrationError("Hai mật khẩu chưa khớp. Hãy kiểm tra lại nhé.", "confirmPassword"); return; }
@@ -1681,10 +1944,10 @@
             registrationError.hidden = true;
             showAuthPanel("login");
             $("#loginForm [name=email]").value = email;
-            toast("Tạo tài khoản thành công. Hãy đăng nhập bằng Gmail và mật khẩu vừa đăng ký.");
+            toast("Tạo tài khoản thành công. Hãy đăng nhập bằng email và mật khẩu vừa đăng ký.");
           } catch (error) {
             console.error("Không thể kết nối tới máy chủ đăng ký.", error);
-            showRegistrationError("Tính năng tạo tài khoản hiện chưa sẵn sàng. Vui lòng thử lại sau nhé.");
+            showRegistrationError("Không kết nối được máy chủ đăng ký. Hãy kiểm tra kết nối mạng rồi thử lại.");
           } finally {
             submitButton.disabled = false;
           }
@@ -1809,11 +2072,12 @@
         }
         container.append(message);
         container.scrollTop = container.scrollHeight;
+        return message;
       };
       const renderTutorPage = () => {
         $("#routeView").innerHTML = pageShell("tutor", "Hỏi về tính năng và nội dung Little Hero, hoặc yêu cầu Hero mở trang liên quan.", `
           <section class="chat-shell" aria-label="Trò chuyện với trợ lý Little Hero">
-            <header class="chat-top"><span class="chat-avatar" aria-hidden="true">✦</span><div><h2>Hỏi Hero</h2><p>Trợ lý AI · Gemini</p></div><span class="chat-status" id="assistantStatus">ĐANG KẾT NỐI</span></header>
+            <header class="chat-top"><span class="chat-avatar" aria-hidden="true">✦</span><div><h2>Hỏi Hero</h2><p>Trợ lý AI · Gemini</p></div><button class="chat-voice-mode" id="assistantVoiceMode" type="button" aria-pressed="false" title="Bật hội thoại rảnh tay">🎧 Hội thoại rảnh tay</button><span class="chat-status" id="assistantStatus">ĐANG KẾT NỐI</span></header>
             <div class="chat-messages" id="assistantMessages" aria-live="polite" aria-label="Tin nhắn trò chuyện">
               <article class="chat-message assistant">Chào bạn! Mình có thể hướng dẫn các mục trong Little Hero và mở trang phù hợp. Bạn muốn tìm hiểu điều gì?</article>
             </div>
@@ -1824,7 +2088,7 @@
               <button type="button" data-assistant-prompt="Có những bài học nào?">📚 Kho bài học</button>
             </div>
             <form class="chat-compose" id="assistantChatForm">
-              <textarea name="message" maxlength="500" aria-label="Nhập câu hỏi" placeholder="Hỏi về Little Hero hoặc bất kỳ chủ đề nào…"></textarea>
+              <textarea name="message" maxlength="2000" aria-label="Nhập câu hỏi" placeholder="Hỏi về Little Hero hoặc bất kỳ chủ đề nào…"></textarea>
               <input id="assistantFileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/mpeg,video/quicktime,video/mov,video/avi,video/x-msvideo,video/x-flv,video/mpg,video/webm,video/wmv,video/3gpp,application/pdf,text/plain,text/csv" multiple hidden>
               <button class="chat-attach-btn" id="assistantAttachButton" type="button" aria-label="Đính kèm ảnh, video hoặc tệp" title="Đính kèm ảnh, video hoặc tệp">📎</button>
               <button class="chat-voice-btn" id="assistantVoiceButton" type="button" aria-label="Hỏi Hero bằng giọng nói" aria-pressed="false" title="Bật micro, nói câu hỏi rồi nhấn lần nữa để gửi">🎙️</button>
@@ -1832,10 +2096,11 @@
             </form>
             <div class="chat-attachments" id="assistantAttachments" aria-live="polite"></div>
           </section>
-          <p class="parent-notice" style="max-width:900px;margin:12px auto 0">Hero có thể trả lời nhiều chủ đề, gợi ý mục phù hợp trên Little Hero, nhận câu hỏi bằng giọng nói và đọc câu trả lời. Để hỏi bằng giọng nói, nhấn micro, nói câu hỏi rồi nhấn lại để gửi. Có thể đính kèm tối đa 3 ảnh, video hoặc tài liệu (tối đa 10 MB mỗi tệp, 12 MB mỗi lượt). Tệp và câu hỏi được gửi tới Gemini qua backend; không gửi mật khẩu, địa chỉ hoặc thông tin riêng tư của trẻ.</p>`, "HỎI ĐÁP");
+          <p class="parent-notice" style="max-width:900px;margin:12px auto 0">Hero có thể trao đổi về nhiều chủ đề, trả lời dựa trên nội dung bạn gửi và gợi ý mục phù hợp trong ứng dụng. Nhấn micro để hỏi bằng giọng nói; bật “Hội thoại rảnh tay” để Hero tự nghe câu hỏi, trả lời bằng giọng nói rồi chờ lượt tiếp theo. Cần cấp quyền micro và dùng HTTPS hoặc localhost. Có thể đính kèm tối đa 3 ảnh, video hoặc tài liệu (tối đa 10 MB mỗi tệp, 12 MB mỗi lượt). Câu hỏi và tệp được gửi tới Gemini qua backend; không gửi mật khẩu hoặc thông tin riêng tư của trẻ. AI có thể trả lời sai và không thay thế chuyên gia hay người lớn đáng tin cậy.</p>`, "HỎI ĐÁP");
         const form = $("#assistantChatForm");
         const input = form.elements.message;
         const voiceButton = $("#assistantVoiceButton");
+        const voiceModeButton = $("#assistantVoiceMode");
         const fileInput = $("#assistantFileInput");
         const attachButton = $("#assistantAttachButton");
         const attachmentsView = $("#assistantAttachments");
@@ -1844,9 +2109,12 @@
         let recognition = null;
         let voiceListening = false;
         let voiceRestartTimer = null;
+        let voiceSilenceTimer = null;
         let voiceTranscript = "";
+        let handsFreeMode = false;
         let speakVoiceReply = false;
         let sending = false;
+        let activeChatController = null;
         let assistantReady = false;
         let assistantIdleStatus = "CẦN CHẠY BACKEND";
         const conversation = [];
@@ -1914,7 +2182,7 @@
             .catch(() => { assistantReady = false; assistantIdleStatus = "AI CHƯA KẾT NỐI"; assistantStatus.textContent = assistantIdleStatus; });
         }
         const sendQuestion = async (value) => {
-          const question = String(value || "").trim().slice(0, 500);
+          const question = String(value || "").trim().slice(0, 2000);
           if (sending || (!question && !selectedFiles.length)) { speakVoiceReply = false; return; }
           sending = true;
           const messages = $("#assistantMessages");
@@ -1936,6 +2204,7 @@
             const response = await fetch(apiUrl("/api/chat"), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
+              signal: (activeChatController = new AbortController()).signal,
               body: JSON.stringify({
                 messages: conversation.slice(-8),
                 attachments: await Promise.all(selectedFiles.map(encodeAttachment))
@@ -1995,7 +2264,14 @@
             conversation.push({ role: "assistant", content: answer });
             if (conversation.length > 8) conversation.splice(0, conversation.length - 8);
             assistantStatus.textContent = "AI SẴN SÀNG";
-            if (speakVoiceReply) speak(answer);
+            if (speakVoiceReply || handsFreeMode) {
+              speak(answer, () => {
+                if (!handsFreeMode || sending) return;
+                voiceListening = true;
+                assistantStatus.textContent = "ĐANG KẾT NỐI MICRO...";
+                startVoiceRecognition();
+              });
+            }
             form.reset();
             selectedFiles = [];
             updateAttachmentList();
@@ -2004,6 +2280,7 @@
             assistantReady = false;
             streamingMessage?.remove();
             conversation.pop();
+            if (error.name === "AbortError") return;
             const detail = error instanceof TypeError
               ? "Không kết nối được backend. Hãy chạy máy chủ Little Hero và mở trang qua địa chỉ localhost."
               : error.message;
@@ -2012,10 +2289,18 @@
             const fallback = answerAssistantQuestion(question);
             const fallbackText = `AI trực tuyến chưa khả dụng (${detail}). Hero vẫn có thể hướng dẫn cơ bản: ${fallback.text}`;
             appendChatMessage(messages, "assistant", fallbackText, fallback.route === "faq" && fallback.label === "Xem hướng dẫn sử dụng" ? null : fallback);
-            if (speakVoiceReply) speak(fallbackText);
+            if (speakVoiceReply || handsFreeMode) {
+              speak(fallbackText, () => {
+                if (!handsFreeMode || sending) return;
+                voiceListening = true;
+                assistantStatus.textContent = "ĐANG KẾT NỐI MICRO...";
+                startVoiceRecognition();
+              });
+            }
             form.reset();
             input.focus();
           } finally {
+            activeChatController = null;
             speakVoiceReply = false;
             sending = false;
             sendButton.disabled = false;
@@ -2032,6 +2317,14 @@
           }
         };
         const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const setHandsFreeMode = (enabled) => {
+          handsFreeMode = enabled;
+          voiceModeButton.setAttribute("aria-pressed", String(enabled));
+          voiceModeButton.textContent = enabled ? "🎧 Đang trò chuyện" : "🎧 Hội thoại rảnh tay";
+          voiceModeButton.title = enabled
+            ? "Tắt hội thoại rảnh tay"
+            : "Hero sẽ tự nghe lại sau khi đọc xong câu trả lời";
+        };
         const startVoiceRecognition = () => {
           if (!voiceListening || !Recognition) return;
           recognition = new Recognition();
@@ -2056,16 +2349,35 @@
             }
             input.value = [voiceTranscript, interim].filter(Boolean).join(" ");
             if (voiceTranscript) assistantStatus.textContent = "ĐANG NHẬN DIỆN...";
+            if (handsFreeMode && voiceTranscript) {
+              window.clearTimeout(voiceSilenceTimer);
+              voiceSilenceTimer = window.setTimeout(() => {
+                if (!handsFreeMode || !voiceListening || sending) return;
+                voiceListening = false;
+                window.clearTimeout(voiceRestartTimer);
+                if (recognition) recognition.stop();
+                else {
+                  input.value = voiceTranscript;
+                  speakVoiceReply = true;
+                  form.requestSubmit();
+                  voiceTranscript = "";
+                }
+              }, 1200);
+            }
           };
           activeRecognition.onerror = (event) => {
             if (event.error === "no-speech" || event.error === "aborted") return;
             voiceListening = false;
+            window.clearTimeout(voiceSilenceTimer);
             if (event.error === "not-allowed" || event.error === "service-not-allowed") {
               toast("Micro chưa được cấp quyền. Hãy cho phép truy cập micro trong trình duyệt rồi thử lại.");
             } else if (event.error === "network") {
               toast("Dịch vụ nhận diện giọng nói không kết nối được. Kiểm tra Internet hoặc nhập câu hỏi bằng bàn phím.");
             } else {
               toast("Không nhận diện được giọng nói. Bạn có thể thử lại hoặc nhập câu hỏi.");
+            }
+            if (handsFreeMode && (event.error === "not-allowed" || event.error === "service-not-allowed")) {
+              setHandsFreeMode(false);
             }
           };
           activeRecognition.onend = () => {
@@ -2094,14 +2406,45 @@
             toast("Không thể bật micro. Hãy kiểm tra quyền micro và thử lại.");
           }
         };
+        voiceModeButton.addEventListener("click", () => {
+          if (!Recognition) {
+            toast("Trình duyệt này chưa hỗ trợ nhận diện giọng nói. Hãy dùng Chrome hoặc Edge.");
+            return;
+          }
+          if (!window.isSecureContext) {
+            toast("Hãy mở Little Hero bằng HTTPS hoặc localhost để cấp quyền micro.");
+            return;
+          }
+          if (handsFreeMode) {
+            setHandsFreeMode(false);
+            voiceListening = false;
+            voiceTranscript = "";
+            window.clearTimeout(voiceRestartTimer);
+            window.clearTimeout(voiceSilenceTimer);
+            recognition?.stop();
+            if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+            resetVoiceButton();
+            return;
+          }
+          setHandsFreeMode(true);
+          voiceTranscript = "";
+          voiceListening = true;
+          assistantStatus.textContent = "ĐANG KẾT NỐI MICRO...";
+          startVoiceRecognition();
+        });
         voiceButton.addEventListener("click", () => {
           if (!Recognition) {
             toast("Trình duyệt chưa hỗ trợ nhận diện giọng nói. Hãy dùng Chrome hoặc Edge, hoặc nhập câu hỏi bằng bàn phím.");
             return;
           }
+          if (!window.isSecureContext) {
+            toast("Hãy mở Little Hero bằng HTTPS hoặc localhost để cấp quyền micro.");
+            return;
+          }
           if (voiceListening) {
             voiceListening = false;
             window.clearTimeout(voiceRestartTimer);
+            window.clearTimeout(voiceSilenceTimer);
             if (recognition) recognition.stop();
             else if (voiceTranscript) {
               input.value = voiceTranscript;
@@ -2134,6 +2477,17 @@
         $("#routeView").querySelectorAll("[data-assistant-prompt]").forEach((button) => {
           button.addEventListener("click", () => sendQuestion(button.dataset.assistantPrompt));
         });
+        cleanupTutorSession = () => {
+          setHandsFreeMode(false);
+          voiceListening = false;
+          voiceTranscript = "";
+          speakVoiceReply = false;
+          window.clearTimeout(voiceRestartTimer);
+          window.clearTimeout(voiceSilenceTimer);
+          recognition?.stop();
+          activeChatController?.abort();
+          if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        };
         input.focus();
       };
 
@@ -2540,7 +2894,7 @@
         const miniGameAnswer = event.target.closest("[data-mini-game-answer]");
         if (miniGameAnswer && miniGameRun && miniGameRun.id !== "memory" && miniGameRun.selected === null) {
           const run = miniGameRun;
-          const rounds = run.id === "pattern" ? patternRounds : feelingsRounds;
+          const rounds = miniGameRounds(run.id);
           const answer = Number(miniGameAnswer.dataset.miniGameAnswer);
           const round = rounds[run.round];
           if (!round || !Number.isInteger(answer) || answer < 0 || answer >= round.options.length) return;
@@ -2549,14 +2903,14 @@
             run.correct += 1;
             run.feedback = "Chính xác! Bé quan sát thật tinh ý! ✨";
           } else {
-            run.feedback = `${run.id === "pattern" ? round.hint : "Mỗi người có thể cảm thấy khác nhau. Hãy suy nghĩ thêm về tình huống nhé."} Bé thử lại nha!`;
+            run.feedback = `${run.id === "feelings" ? "Mỗi người có thể cảm thấy khác nhau." : round.hint} Bé thử lại nha!`;
           }
           renderGamesPage();
           return;
         }
         if (event.target.closest("[data-mini-game-next]") && miniGameRun && miniGameRun.id !== "memory" && miniGameRun.selected !== null) {
           const run = miniGameRun;
-          const rounds = run.id === "pattern" ? patternRounds : feelingsRounds;
+          const rounds = miniGameRounds(run.id);
           run.round += 1;
           run.selected = null;
           run.feedback = "";
@@ -2612,6 +2966,7 @@
           }
           persist();
           renderQuizPage();
+          animateSceneChoice("quizScene", "quizHeroActor", "quizFriendActor", "quizSceneProp", quizPageLesson.answers[quizPageChoice], quizPageLesson, quizPageChoice === quizPageLesson.correct);
           return;
         }
         if (event.target.closest("#nextQuiz")) {
@@ -2662,6 +3017,19 @@
       $("#premiumBtn").addEventListener("click", () => setRoute("payment"));
       $("#freePlanBtn").addEventListener("click", () => setRoute("map"));
       $("#accountBtn").addEventListener("click", () => setRoute("auth"));
+      $("#logoutBtn").addEventListener("click", () => {
+        const preferences = { darkMode: state.darkMode, sound: state.sound, language: state.language };
+        state = freshState();
+        Object.assign(state, preferences);
+        pendingAuthRoute = "";
+        miniGameRun = null;
+        quizPageChoice = null;
+        applyTheme();
+        persist();
+        setRoute("home");
+        renderStats();
+        toast("Đã đăng xuất. Tiến độ của tài khoản được giữ lại để đăng nhập lần sau.");
+      });
       $("#soundBtn").addEventListener("click", openSound);
       $("#themeBtn").addEventListener("click", () => {
         state.darkMode = !state.darkMode;

@@ -1,9 +1,10 @@
 const express = require('express');
 const crypto = require('crypto');
-const fs = require('fs/promises');
+const fsSync = require('fs');
 const os = require('os');
 const path = require('path');
 const { GoogleGenAI } = require('@google/genai');
+const { DatabaseSync } = require('node:sqlite');
 const { promisify } = require('util');
 
 const app = express();
@@ -64,33 +65,72 @@ const chatFileTypes = new Set([
     'video/x-ms-wmv',
     'video/3gpp'
 ]);
-const authFile = process.env.LITTLE_HERO_AUTH_FILE
+const legacyAuthFile = process.env.LITTLE_HERO_AUTH_FILE
     || path.join(os.homedir(), '.little-hero', 'accounts.json');
+const databaseFile = process.env.LITTLE_HERO_DATABASE_FILE
+    || path.join(path.dirname(legacyAuthFile), 'accounts.sqlite');
+fsSync.mkdirSync(path.dirname(databaseFile), { recursive: true });
+const databaseDescriptor = fsSync.openSync(databaseFile, 'a', 0o600);
+fsSync.closeSync(databaseDescriptor);
+fsSync.chmodSync(databaseFile, 0o600);
+const accountDatabase = new DatabaseSync(databaseFile);
+accountDatabase.exec(`
+    PRAGMA journal_mode = WAL;
+    PRAGMA synchronous = FULL;
+    CREATE TABLE IF NOT EXISTS accounts (
+        email TEXT PRIMARY KEY COLLATE NOCASE,
+        name TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        salt TEXT NOT NULL,
+        password_hash TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS accounts_phone_idx ON accounts (phone);
+`);
 const scrypt = promisify(crypto.scrypt);
+const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 let authQueue = Promise.resolve();
+const passwordRecoveryChallenges = new Map();
+const passwordRecoveryRequests = new Map();
 
 const withAuthUsers = (operation) => {
     const result = authQueue.then(async () => {
-        let users;
-        try {
-            users = JSON.parse(await fs.readFile(authFile, 'utf8'));
-        } catch (error) {
-            if (error.code !== 'ENOENT') throw error;
-            users = [];
-        }
-        if (!Array.isArray(users)) throw new Error('Invalid account store.');
+        const users = accountDatabase.prepare(`
+            SELECT email, name, phone, salt, password_hash AS passwordHash
+            FROM accounts
+        `).all();
         return operation(users);
     });
     authQueue = result.then(() => undefined, () => undefined);
     return result;
 };
 
-const saveAuthUsers = async (users) => {
-    await fs.mkdir(path.dirname(authFile), { recursive: true });
-    const temporaryFile = `${authFile}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
-    await fs.writeFile(temporaryFile, JSON.stringify(users), { mode: 0o600 });
-    await fs.rename(temporaryFile, authFile);
+const saveAuthUsers = (users) => {
+    const upsertAccount = accountDatabase.prepare(`
+        INSERT INTO accounts (email, name, phone, salt, password_hash)
+        VALUES (@email, @name, @phone, @salt, @passwordHash)
+        ON CONFLICT(email) DO UPDATE SET
+            name = excluded.name,
+            phone = excluded.phone,
+            salt = excluded.salt,
+            password_hash = excluded.password_hash
+    `);
+    accountDatabase.exec('BEGIN IMMEDIATE');
+    try {
+        users.forEach((account) => upsertAccount.run(account));
+        accountDatabase.exec('COMMIT');
+    } catch (error) {
+        accountDatabase.exec('ROLLBACK');
+        throw error;
+    }
 };
+
+if (fsSync.existsSync(legacyAuthFile) && path.resolve(legacyAuthFile) !== path.resolve(databaseFile)
+    && accountDatabase.prepare('SELECT COUNT(*) AS count FROM accounts').get().count === 0) {
+    const legacyUsers = JSON.parse(fsSync.readFileSync(legacyAuthFile, 'utf8'));
+    if (!Array.isArray(legacyUsers)) throw new Error('Invalid legacy account store.');
+    saveAuthUsers(legacyUsers);
+    console.log(`Migrated ${legacyUsers.length} Little Hero accounts to SQLite.`);
+}
 
 const normalizePhone = (phone) => phone.replace(/[ ()-]/g, '');
 
@@ -99,8 +139,8 @@ const validAccountDetails = (body) => {
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
     const password = typeof body.password === 'string' ? body.password : '';
-    if (!name || name.length > 80) return { error: 'Hãy nhập họ và tên (tối đa 80 ký tự).', code: 'INVALID_NAME', field: 'fullName' };
-    if (!/^[^\s@]+@gmail\.com$/i.test(email)) return { error: 'Email chưa đúng định dạng. Hãy nhập địa chỉ Gmail hợp lệ, ví dụ ten@gmail.com.', code: 'INVALID_EMAIL', field: 'email' };
+    if (name.length < 2 || name.length > 80) return { error: 'Hãy nhập họ và tên (từ 2 đến 80 ký tự).', code: 'INVALID_NAME', field: 'fullName' };
+    if (email.length > 254 || !validEmail(email)) return { error: 'Email chưa đúng định dạng. Hãy nhập địa chỉ email hợp lệ.', code: 'INVALID_EMAIL', field: 'email' };
     if (!/^\+84\d{9,10}$/.test(normalizePhone(phone))) return { error: 'Số điện thoại chưa đúng định dạng. Hãy nhập +84 và 9–10 chữ số tiếp theo.', code: 'INVALID_PHONE', field: 'phone' };
     if (password.length < 8 || password.length > 128) return { error: 'Mật khẩu phải có ít nhất 8 ký tự (tối đa 128 ký tự).', code: 'INVALID_PASSWORD', field: 'password' };
     return { name, email, phone: normalizePhone(phone), password };
@@ -143,8 +183,8 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
     const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
     const password = typeof req.body?.password === 'string' ? req.body.password : '';
-    if (!/^[^\s@]+@gmail\.com$/i.test(email) || !password || password.length > 128) {
-        return res.status(400).json({ error: 'Hãy nhập Gmail và mật khẩu hợp lệ.' });
+    if (email.length > 254 || !validEmail(email) || !password || password.length > 128) {
+        return res.status(400).json({ error: 'Hãy nhập email và mật khẩu hợp lệ.' });
     }
     try {
         const user = await withAuthUsers(async (users) => {
@@ -160,11 +200,167 @@ app.post('/api/auth/login', async (req, res) => {
             }
             return { name: account.name, email: account.email, phone: account.phone };
         });
-        if (!user) return res.status(401).json({ error: 'Gmail hoặc mật khẩu không chính xác.' });
+        if (!user) return res.status(401).json({ error: 'Email hoặc mật khẩu không chính xác.' });
         res.json({ user });
     } catch (error) {
         console.error('Lỗi đăng nhập Little Hero:', error);
         res.status(500).json({ error: 'Không thể đăng nhập lúc này. Vui lòng thử lại.' });
+    }
+});
+
+const recoveryChannelConfigured = (channel) => channel === 'email'
+    ? Boolean(process.env.RESEND_API_KEY && process.env.LITTLE_HERO_EMAIL_FROM)
+    : Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER);
+
+const sendRecoveryCode = async (channel, destination, code) => {
+    if (channel === 'email') {
+        const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                from: process.env.LITTLE_HERO_EMAIL_FROM,
+                to: [destination],
+                subject: 'Mã khôi phục mật khẩu Little Hero',
+                text: `Mã xác minh của bạn là ${code}. Mã có hiệu lực trong 10 phút. Nếu bạn không yêu cầu khôi phục mật khẩu, hãy bỏ qua email này.`
+            })
+        });
+        if (!response.ok) throw new Error(`Email delivery failed with status ${response.status}.`);
+        return;
+    }
+
+    const body = new URLSearchParams({
+        To: destination,
+        From: process.env.TWILIO_PHONE_NUMBER,
+        Body: `Ma xac minh Little Hero: ${code}. Ma co hieu luc trong 10 phut.`
+    });
+    const credentials = Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64');
+    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(process.env.TWILIO_ACCOUNT_SID)}/Messages.json`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Basic ${credentials}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body
+    });
+    if (!response.ok) throw new Error(`SMS delivery failed with status ${response.status}.`);
+};
+
+app.post('/api/auth/recovery/request', async (req, res) => {
+    const channel = req.body?.channel;
+    const identifier = typeof req.body?.identifier === 'string' ? req.body.identifier.trim() : '';
+    const email = channel === 'email' ? identifier.toLowerCase() : '';
+    const phone = channel === 'phone' ? normalizePhone(identifier) : '';
+    if (!['email', 'phone'].includes(channel)
+        || (channel === 'email' && (email.length > 254 || !validEmail(email)))
+        || (channel === 'phone' && !/^\+84\d{9,10}$/.test(phone))) {
+        return res.status(400).json({ error: 'Hãy nhập email hoặc số điện thoại đã đăng ký hợp lệ.' });
+    }
+    if (!recoveryChannelConfigured(channel)) {
+        return res.status(503).json({
+            error: channel === 'email'
+                ? 'Máy chủ chưa cấu hình dịch vụ gửi email khôi phục.'
+                : 'Máy chủ chưa cấu hình dịch vụ gửi SMS khôi phục.'
+        });
+    }
+
+    const destination = channel === 'email' ? email : phone;
+    const now = Date.now();
+    for (const [key, requestTime] of passwordRecoveryRequests) {
+        if (now - requestTime >= 60_000) passwordRecoveryRequests.delete(key);
+    }
+    for (const [challengeId, challenge] of passwordRecoveryChallenges) {
+        if (challenge.expiresAt <= now) passwordRecoveryChallenges.delete(challengeId);
+    }
+    if (passwordRecoveryChallenges.size >= 10_000) {
+        return res.status(503).json({ error: 'Dịch vụ khôi phục đang bận. Vui lòng thử lại sau.' });
+    }
+    const lastRequest = passwordRecoveryRequests.get(`${channel}:${destination}`);
+    if (lastRequest && now - lastRequest < 60_000) {
+        return res.status(429).json({ error: 'Vui lòng đợi một phút trước khi yêu cầu mã mới.' });
+    }
+    passwordRecoveryRequests.set(`${channel}:${destination}`, now);
+
+    try {
+        const account = await withAuthUsers((users) => users.find((entry) =>
+            channel === 'email'
+                ? entry.email?.toLowerCase() === email
+                : typeof entry.phone === 'string' && normalizePhone(entry.phone) === phone
+        ));
+        const challengeId = crypto.randomBytes(24).toString('hex');
+        const code = String(crypto.randomInt(0, 1_000_000)).padStart(6, '0');
+        const secret = crypto.randomBytes(32).toString('hex');
+        const codeHash = crypto.createHmac('sha256', secret).update(code).digest();
+        passwordRecoveryChallenges.set(challengeId, {
+            email: account?.email || '',
+            secret,
+            codeHash,
+            expiresAt: now + 10 * 60_000,
+            attempts: 0
+        });
+        if (account) {
+            try {
+                await sendRecoveryCode(channel, destination, code);
+            } catch (error) {
+                passwordRecoveryChallenges.delete(challengeId);
+                console.error('Không thể gửi mã khôi phục Little Hero:', error.message);
+                return res.status(502).json({ error: 'Không thể gửi mã xác minh lúc này. Vui lòng thử lại sau.' });
+            }
+        }
+        res.json({
+            challengeId,
+            message: 'Nếu thông tin này thuộc tài khoản Little Hero, mã xác minh sẽ được gửi trong ít phút.'
+        });
+    } catch (error) {
+        console.error('Lỗi yêu cầu khôi phục mật khẩu Little Hero:', error);
+        res.status(500).json({ error: 'Không thể yêu cầu mã khôi phục lúc này. Vui lòng thử lại.' });
+    }
+});
+
+app.post('/api/auth/recovery/reset', async (req, res) => {
+    const challengeId = typeof req.body?.challengeId === 'string' ? req.body.challengeId : '';
+    const code = typeof req.body?.code === 'string' ? req.body.code.trim() : '';
+    const password = typeof req.body?.password === 'string' ? req.body.password : '';
+    if (!/^[a-f0-9]{48}$/.test(challengeId) || !/^\d{6}$/.test(code)) {
+        return res.status(400).json({ error: 'Mã xác minh hoặc yêu cầu khôi phục không hợp lệ.' });
+    }
+    if (password.length < 8 || password.length > 128) {
+        return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 8 ký tự (tối đa 128 ký tự).' });
+    }
+
+    const challenge = passwordRecoveryChallenges.get(challengeId);
+    if (!challenge || challenge.expiresAt < Date.now() || !challenge.email) {
+        passwordRecoveryChallenges.delete(challengeId);
+        return res.status(400).json({ error: 'Mã xác minh đã hết hạn hoặc không hợp lệ. Hãy yêu cầu mã mới.' });
+    }
+    challenge.attempts += 1;
+    const submittedHash = crypto.createHmac('sha256', challenge.secret).update(code).digest();
+    if (challenge.attempts > 5 || !crypto.timingSafeEqual(submittedHash, challenge.codeHash)) {
+        if (challenge.attempts >= 5) passwordRecoveryChallenges.delete(challengeId);
+        return res.status(400).json({ error: 'Mã xác minh không chính xác hoặc đã hết lượt thử.' });
+    }
+
+    try {
+        const updated = await withAuthUsers(async (users) => {
+            const account = users.find((entry) => entry.email === challenge.email);
+            if (!account) return false;
+            const salt = crypto.randomBytes(16).toString('hex');
+            const passwordHash = await scrypt(password, salt, 64, {
+                N: 16384, r: 8, p: 1, maxmem: 32 * 1024 * 1024
+            });
+            account.salt = salt;
+            account.passwordHash = passwordHash.toString('hex');
+            await saveAuthUsers(users);
+            return true;
+        });
+        passwordRecoveryChallenges.delete(challengeId);
+        if (!updated) return res.status(400).json({ error: 'Không tìm thấy tài khoản cần khôi phục.' });
+        res.json({ message: 'Đã đổi mật khẩu. Bạn có thể đăng nhập bằng mật khẩu mới.' });
+    } catch (error) {
+        console.error('Lỗi đặt lại mật khẩu Little Hero:', error);
+        res.status(500).json({ error: 'Không thể đổi mật khẩu lúc này. Vui lòng thử lại.' });
     }
 });
 
@@ -219,8 +415,8 @@ app.post('/api/chat', async (req, res) => {
             model: 'gemini-3.8-flash',
             contents,
             config: {
-                systemInstruction: `Bạn là Hero, trợ lý thân thiện trong ứng dụng Little Hero dành cho gia đình và trẻ em. Mặc định luôn trả lời bằng tiếng Việt tự nhiên, rõ ràng và ngắn gọn; chỉ dùng ngôn ngữ khác khi người dùng yêu cầu rõ ràng. Có thể trả lời chủ đề ngoài ứng dụng. Khi phù hợp, hướng dẫn tới tính năng liên quan: bản đồ (#/map), bài học (#/lessons), truyện (#/stories), trò chơi (#/games), nhiệm vụ (#/quests), thành tích (#/achievements), tủ đồ (#/wardrobe), phụ huynh (#/parents), gói dịch vụ (#/pricing), tài khoản (#/auth), hỗ trợ (#/faq). Không khẳng định có thể thực hiện thanh toán hoặc thay thế người lớn đáng tin cậy.`,
-                maxOutputTokens: 512,
+                systemInstruction: `Bạn là Hero, trợ lý AI thân thiện trong ứng dụng Little Hero dành cho gia đình và trẻ em. Hỗ trợ câu hỏi tổng quát trên nhiều chủ đề và câu hỏi về Little Hero; trả lời tự nhiên bằng tiếng Việt trừ khi người dùng yêu cầu ngôn ngữ khác. Đọc kỹ toàn bộ ngữ cảnh hội thoại và nội dung tệp đính kèm trước khi trả lời. Đưa ra câu trả lời hữu ích, có cấu trúc và đủ chi tiết; hỏi lại khi thiếu thông tin quan trọng. Phân biệt điều đã biết với suy đoán, nói rõ khi không chắc hoặc cần thông tin cập nhật; không bịa dữ kiện, không tuyên bố đã tìm kiếm Internet hay thực hiện hành động bên ngoài. Khi phù hợp, hướng dẫn tới tính năng liên quan: bản đồ (#/map), bài học (#/lessons), truyện (#/stories), trò chơi (#/games), nhiệm vụ (#/quests), thành tích (#/achievements), tủ đồ (#/wardrobe), phụ huynh (#/parents), gói dịch vụ (#/pricing), tài khoản (#/auth), hỗ trợ (#/faq). Không yêu cầu người dùng gửi mật khẩu, mã xác minh, địa chỉ nhà hoặc dữ liệu riêng tư của trẻ; không khẳng định có thể thực hiện thanh toán, chẩn đoán y tế hay thay thế chuyên gia/người lớn đáng tin cậy. Nếu ai đó có thể đang gặp nguy hiểm, hướng dẫn họ tìm người lớn đáng tin cậy hoặc dịch vụ khẩn cấp tại nơi họ sống.`,
+                maxOutputTokens: 1024,
                 temperature: 0.4
             }
         });

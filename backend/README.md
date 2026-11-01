@@ -4,7 +4,7 @@ Máy chủ Node.js phục vụ website, xác thực tài khoản và chuyển c�
 
 ## Chạy trên Windows
 
-1. Cài Node.js phiên bản 18 trở lên và cài dependency ở thư mục gốc bằng `npm install`.
+1. Cài Node.js phiên bản 22.13 trở lên và cài dependency ở thư mục gốc bằng `npm install`.
 2. Trong PowerShell, nhập API key mới tại dấu nhắc ẩn để dùng trong cửa sổ hiện tại:
 
    ```powershell
@@ -17,7 +17,7 @@ Máy chủ Node.js phục vụ website, xác thực tài khoản và chuyển c�
 
 3. Mở `http://127.0.0.1:31377/`. Backend Node.js sẽ phục vụ website cùng API Gemini và tài khoản.
 
-Cổng mặc định là `3000`; đặt `PORT=31377` trong PowerShell trước khi chạy để dùng địa chỉ trên. API gồm `GET /api/health`, `POST /api/chat`, `POST /api/auth/register` và `POST /api/auth/login`.
+Cổng mặc định là `3000`; đặt `PORT=31377` trong PowerShell trước khi chạy để dùng địa chỉ trên. API gồm `GET /api/health`, `POST /api/chat`, `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/recovery/request` và `POST /api/auth/recovery/reset`.
 
 ### Dùng giao diện qua VS Code Live Server ở cổng 5500
 
@@ -36,12 +36,23 @@ Không đổi bản ghi của domain gốc `littlehero.id.vn`; domain đó tiế
 
 ## Hỏi Hero AI
 
-Hỏi Hero sử dụng `gemini-3.8-flash` theo dạng streaming để hiển thị câu trả lời ngay khi model tạo từng phần; câu trả lời mặc định bằng tiếng Việt. Những từ khóa liên quan tới trang/tính năng trong ứng dụng sẽ kèm nút mở khu vực phù hợp. Trợ lý hỗ trợ nhập văn bản, nhận diện giọng nói và đọc câu trả lời bằng tính năng của trình duyệt; khả năng dùng micro tùy thiết bị, quyền truy cập và hỗ trợ trình duyệt. Khi bật micro, nói câu hỏi rồi bấm nút dừng để gửi; nếu trình duyệt tạm kết thúc phiên nhận diện, ứng dụng sẽ tự kết nối lại trong khi nút vẫn đang bật.
+Hỏi Hero gửi câu hỏi tới Gemini bằng API key chỉ có trên backend, sau đó truyền nội dung trả lời theo dạng streaming. Đặt biến môi trường `GEMINI_API_KEY` cho tiến trình backend (hoặc mục Environment của Render) để bật AI; `GET /api/health` báo `configured: false` nếu chưa có key. Hero có thể trả lời chủ đề tổng quát và hướng dẫn các tính năng Little Hero, nhưng không có khả năng tra cứu web trực tiếp hay đảm bảo mọi câu trả lời luôn chính xác. Những câu hỏi liên quan tới ứng dụng có thể kèm nút mở khu vực phù hợp.
+
+Trên trình duyệt hỗ trợ Web Speech, người dùng có thể nhấn nút micro, nói câu hỏi rồi nhấn lại để gửi; Hero sẽ đọc câu trả lời. Nút “Hội thoại rảnh tay” bật chế độ nhận diện tiếng Việt liên tục: sau khoảng lặng, câu hỏi được gửi tới Gemini, câu trả lời được đọc thành tiếng rồi micro tự nghe lượt tiếp theo. Cần cấp quyền micro, dùng HTTPS hoặc localhost; có thể tắt chế độ bất cứ lúc nào. Nhận diện và đọc giọng nói do trình duyệt/hệ điều hành cung cấp, nên khả năng và giọng tiếng Việt tùy thiết bị.
 
 Có thể đính kèm tối đa 3 ảnh, video MP4/MPEG/MOV/AVI/FLV/MPG/WebM/WMV/3GPP hoặc tệp PDF/TXT/CSV. Giới hạn là 10 MB mỗi tệp và 12 MB tổng dung lượng mỗi lượt. Tệp và nội dung trò chuyện được gửi tới Google Gemini để xử lý; ứng dụng không lưu lịch sử chat vào máy chủ. Không gửi mật khẩu, địa chỉ hoặc thông tin riêng tư của trẻ.
 
 ## Tài khoản và dữ liệu
 
-Tài khoản được lưu ngoài thư mục website tại `~/.little-hero/accounts.json` trên máy chạy backend. Có thể đặt `LITTLE_HERO_AUTH_FILE` để chọn đường dẫn khác. Mật khẩu được băm bằng scrypt, không lưu dạng văn bản. API tài khoản chấp nhận Gmail và số điện thoại Việt Nam bắt đầu bằng `+84`.
+Tài khoản được lưu trong cơ sở dữ liệu SQLite ngoài thư mục website tại `~/.little-hero/accounts.sqlite` trên máy chạy backend. Đặt `LITTLE_HERO_DATABASE_FILE` để chọn đường dẫn khác. Nếu tìm thấy `accounts.json` cũ (hoặc đường dẫn `LITTLE_HERO_AUTH_FILE` cũ) và cơ sở dữ liệu mới chưa có tài khoản, backend tự nhập dữ liệu đó vào SQLite. Mật khẩu được băm bằng scrypt, không lưu dạng văn bản; tệp cơ sở dữ liệu được giới hạn quyền đọc trên hệ điều hành hỗ trợ. API tài khoản chấp nhận email và số điện thoại Việt Nam bắt đầu bằng `+84`.
 
-Tiến độ học, thời gian sử dụng, cấp độ, nhật ký và hồ sơ bé lưu riêng trong trình duyệt theo Gmail đã đăng nhập; hiện không đồng bộ giữa các thiết bị. Cần chạy backend và truy cập trang qua localhost để sử dụng AI hoặc xác thực.
+### Cấu hình gửi mã khôi phục mật khẩu
+
+Khôi phục mật khẩu xác minh quyền truy cập email hoặc số điện thoại trước khi đổi mật khẩu. Máy chủ không gửi mã nếu nhà cung cấp của kênh đang dùng chưa được cấu hình:
+
+- Email: đặt `RESEND_API_KEY` và `LITTLE_HERO_EMAIL_FROM` (địa chỉ gửi đã xác minh với Resend).
+- SMS: đặt `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` và `TWILIO_PHONE_NUMBER` (số gửi được Twilio cấp).
+
+Các biến môi trường phải được cấu hình riêng trong terminal hoặc bảng điều khiển của nhà cung cấp hosting; không đưa thông tin xác thực vào Git. Mã xác minh có hiệu lực 10 phút, giới hạn 5 lần nhập và mỗi kênh/địa chỉ chỉ gửi một mã mỗi phút. Mã và phiên khôi phục nằm trong bộ nhớ của máy chủ; nếu máy chủ khởi động lại, người dùng cần yêu cầu mã mới.
+
+Tiến độ học, thời gian sử dụng, cấp độ, nhật ký và hồ sơ bé lưu riêng trong trình duyệt theo email đã đăng nhập; hiện không đồng bộ giữa các thiết bị. Cần chạy backend và truy cập trang qua localhost để sử dụng AI hoặc xác thực.
