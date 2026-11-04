@@ -1681,6 +1681,9 @@
     }
     .onboarding-dialog { display: grid; gap: 12px; }
     .onboarding-dialog form { display: grid; gap: 12px; }
+    .onboarding-dialog .dialog-head { align-items: flex-start; }
+    .onboarding-dismiss { flex: none; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted); font: inherit; font-size: 11px; font-weight: 750; cursor: pointer; }
+    .onboarding-dismiss:hover { border-color: #9dcab4; background: #f3fbf6; color: #287e69; }
     .onboarding-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; border: 0; }
     .onboarding-group legend { grid-column: 1 / -1; margin-bottom: 4px; font-size: 12px; font-weight: 850; }
     .onboarding-group legend span { color: var(--muted); font-size: 10px; font-weight: 600; }

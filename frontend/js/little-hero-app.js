@@ -248,7 +248,8 @@
         ];
         showDialog(`<div class="dialog-inner onboarding-dialog">
           <div class="dialog-head"><div><span class="kicker">BẮT ĐẦU HÀNH TRÌNH</span><h2 id="dialogTitle">Cùng Hero chọn hành trình cho bé</h2>
-            <p>Thông tin này giúp gợi ý bài học và ghép nhóm đấu trường phù hợp với độ tuổi.</p></div></div>
+            <p>Thông tin này giúp gợi ý bài học và ghép nhóm đấu trường phù hợp với độ tuổi.</p></div>
+            <button class="onboarding-dismiss" id="dismissChildOnboarding" type="button" aria-label="Để thiết lập độ tuổi sau">Để sau</button></div>
           <form id="childOnboardingForm">
             <fieldset class="onboarding-group"><legend>Bé thuộc nhóm tuổi nào?</legend>
               <label class="onboarding-age-option"><input type="radio" name="ageGroup" value="3-6" ${ageGroup === "3-6" ? "checked" : ""}><span><strong>3–6 tuổi</strong><small>Bài học gần gũi, từng bước</small></span></label>
@@ -267,6 +268,12 @@
         dialog.dataset.childOnboarding = "true";
         const form = $("#childOnboardingForm", dialog);
         const ageSelect = $("#onboardingAge", form);
+        $("#dismissChildOnboarding", dialog).addEventListener("click", () => {
+          state.onboardingComplete = true;
+          dialog.dataset.childOnboarding = "false";
+          persist();
+          closeDialog();
+        });
         form.querySelectorAll('input[name="ageGroup"]').forEach((input) => input.addEventListener("change", () => {
           ageSelect.innerHTML = renderAgeOptions(input.value, input.value === "3-6" ? 6 : 7);
           updateInterestOptions(input.value);
