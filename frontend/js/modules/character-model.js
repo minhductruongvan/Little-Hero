@@ -25,6 +25,15 @@
       const closet = safeWardrobe(outfit);
       const skin = options.skin || "#f2c39e";
       const adult = Boolean(options.adult);
+      const referenceCloset = freshState().closet;
+      if (!options.civilian && !adult && Object.keys(referenceCloset).every((key) => closet[key] === referenceCloset[key])) {
+        return `<svg class="hero-character-svg hero-character-reference" viewBox="0 0 300 450" role="img" aria-label="${escapeHtml(options.ariaLabel || "Nhân vật Hero")}">
+          <circle cx="150" cy="200" r="120" fill="#E8F7F2"/>
+          <circle cx="150" cy="200" r="120" fill="none" stroke="#A2D2C2" stroke-width="2" stroke-dasharray="5 5"/>
+          <ellipse cx="150" cy="410" rx="60" ry="8" fill="rgba(0,0,0,.12)"/>
+          <image href="./frontend/assets/hero-character.png" x="20" y="20" width="260" height="390" preserveAspectRatio="xMidYMid meet"/>
+        </svg>`;
+      }
       const hairColor = closet.hairColor;
       const hairBack = ["long", "ponytail", "braids"].includes(closet.hair)
         ? `<path d="M57 64Q58 25 100 24Q143 25 143 68L138 125Q131 143 123 111L78 111Q73 143 62 128Z" fill="${hairColor}"/>`

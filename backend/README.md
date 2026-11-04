@@ -25,12 +25,14 @@ Chạy backend với API key Gemini và `PORT=31377`. Trong terminal khác, dùn
 
 ## Triển khai API cho website GitHub Pages
 
-GitHub Pages chỉ phục vụ file tĩnh, không chạy được API Node.js. Repository có `render.yaml` để tạo dịch vụ API trên Render với ổ lưu trữ bền vững cho tài khoản:
+GitHub Pages chỉ phục vụ file tĩnh, không chạy được API Node.js. Repository có `render.yaml` để tạo dịch vụ API miễn phí trên Render:
 
-1. Tạo Web Service từ repository này trên Render và chọn dùng Blueprint (`render.yaml`). Dịch vụ dùng gói Starter và ổ đĩa 1 GB; kiểm tra giá hiện hành trên Render trước khi xác nhận vì có thể phát sinh phí.
-2. Trong Render, thêm custom domain `api.littlehero.id.vn` cho dịch vụ. Tại nhà cung cấp DNS, tạo bản ghi CNAME cho `api` trỏ tới hostname Render hiển thị, rồi chờ Render xác nhận DNS và cấp HTTPS.
-3. Website dùng `https://api.littlehero.id.vn` trong `frontend/js/config.js`. Backend chỉ nhận yêu cầu trình duyệt từ `https://littlehero.id.vn` và `https://www.littlehero.id.vn`.
-4. Sau khi DNS/HTTPS sẵn sàng và dịch vụ Render báo Healthy, thử đăng ký trên website. Có thể kiểm tra API tại `https://api.littlehero.id.vn/api/health`.
+1. Tạo Web Service từ repository này trên Render và chọn dùng Blueprint (`render.yaml`).
+2. Chờ Render triển khai dịch vụ và báo Healthy. Render cấp URL HTTPS dạng `https://<tên-dịch-vụ>.onrender.com`; Blueprint hiện đặt tên là `little-hero-api`.
+3. Frontend dùng `https://little-hero-api.onrender.com` trong `frontend/js/config.js`. Nếu Render cấp hostname khác, thay URL ở tệp đó bằng URL đang hiển thị trong trang dịch vụ Render. Backend cho phép yêu cầu từ `https://littlehero.id.vn` và `https://www.littlehero.id.vn`.
+4. Kiểm tra URL API bằng cách mở `<URL-Render>/api/health`, rồi thử đăng ký trên website. Có thể cấu hình custom domain `api.littlehero.id.vn` sau; khi đó cần cập nhật DNS CNAME và URL trong `frontend/js/config.js`.
+
+Gói miễn phí tự dừng khi không có lưu lượng trong một thời gian và dùng filesystem tạm. Tài khoản được lưu trong SQLite cục bộ để đăng ký rồi đăng nhập khi dịch vụ đang chạy, nhưng tài khoản có thể mất khi dịch vụ ngủ, khởi động lại hoặc triển khai lại. Không dùng cấu hình này nếu cần giữ tài khoản ổn định lâu dài; việc đó cần một nơi lưu dữ liệu bền vững.
 
 Không đổi bản ghi của domain gốc `littlehero.id.vn`; domain đó tiếp tục phục vụ GitHub Pages. Không triển khai API trên gói không có ổ lưu trữ bền vững, vì dữ liệu tài khoản có thể mất khi dịch vụ khởi động lại. Nếu cần dùng Gemini, cấu hình `GEMINI_API_KEY` riêng trong Render Environment; không đưa key vào repository.
 

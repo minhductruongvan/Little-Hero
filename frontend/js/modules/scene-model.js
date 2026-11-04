@@ -30,6 +30,9 @@ const getScene = (lesson) => {
   };
 
   const renderSceneBackdrop = (scene) => {
+    if (scene.variant === "lost") {
+      return `<img class="scene-illustration" src="./frontend/assets/safety-supermarket.png" alt="Hero trò chuyện với nhân viên tại quầy thông tin trong siêu thị">`;
+    }
     const room = scene.type === "class"
       ? `<rect width="1000" height="408" fill="#fff0d9"/><rect y="408" width="1000" height="152" fill="#dfb880"/><path d="M0 415H1000M0 467H1000M0 519H1000M120 408v152m180-152v152m180-152v152m180-152v152m180-152v152" stroke="#bb895d" stroke-width="5" opacity=".56"/>
         <rect x="285" y="62" width="342" height="226" rx="9" fill="#91c8d2" stroke="#a67751" stroke-width="14"/><path d="M456 68v211m-164-105h327" stroke="#fff4d8" stroke-width="13"/><path d="M270 70h34v230h-34zm333 0h34v230h-34z" fill="#72b8c6"/><path d="M259 58h390m-390 12 20 28m370-28-20 28" stroke="#b77f58" stroke-width="9"/>

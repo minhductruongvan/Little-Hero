@@ -53,15 +53,13 @@
           shares: 3
         }
       ];
-      const sampleReviews = [
-        { id: "sample-review-family", stars: 5, title: "Cùng con học kỹ năng mỗi ngày", body: "Các tình huống gần gũi giúp gia đình có thêm chủ đề để trò chuyện và thực hành cùng bé.", author: "Đánh giá mẫu · Gia đình Mây", date: "Minh họa", helpful: 12, isSample: true },
-        { id: "sample-review-stories", stars: 5, title: "Truyện tương tác dễ hiểu", body: "Bé thích được tự chọn cách xử lý trong truyện. Giao diện nhiều màu sắc và dễ sử dụng.", author: "Đánh giá mẫu · Nhà Thỏ", date: "Minh họa", helpful: 8, isSample: true },
-        { id: "sample-review-progress", stars: 4, title: "Hoạt động vui cho cả nhà", body: "Các trò chơi ngắn giúp việc ôn lại bài học nhẹ nhàng hơn. Mong có thêm nhiều chủ đề mới.", author: "Đánh giá mẫu · Gia đình Cầu Vồng", date: "Minh họa", helpful: 6, isSample: true },
-        { id: "sample-review-hero", stars: 5, title: "Một người bạn nhỏ đáng yêu", body: "Hero đồng hành trong các tình huống về cảm xúc, giao tiếp và an toàn rất gần gũi với bé.", author: "Đánh giá mẫu · Gia đình Nắng", date: "Minh họa", helpful: 4, isSample: true }
-      ];
       const { categories, lessons, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
       const freshState = () => ({
         childName: "",
+        age: 6,
+        ageGroup: "3-6",
+        interests: [],
+        onboardingComplete: false,
         xp: 0,
         rp: 0,
         completed: [],
@@ -87,7 +85,7 @@
         dailyReviews: [],
         lastRoute: "",
         lastHomeScroll: 0,
-        reviews: sampleReviews.map((review) => ({ ...review })),
+        reviews: [],
         forumPosts: sampleForumPosts.map((post) => ({
           ...post,
           reactionCounts: { ...post.reactionCounts },
@@ -99,7 +97,7 @@
         dailyUsage: {},
         dailyStudy: {},
         parentControls: { dailyLimit: 60, blockPurchases: true, safeContent: true, notifyLearning: true, notifyPractice: true },
-        closet: { gender: "boy", hair: "curly", hairColor: "#624337", shirt: "#53b99d", pants: "#536f92", shoes: "#e98257", accessory: "cape", outfit: "classic" }
+        closet: { gender: "boy", hair: "curly", hairColor: "#624337", shirt: "#4ba6c5", pants: "#386b83", shoes: "#de6549", accessory: "cape", outfit: "classic" }
       });
       let state = freshState();
       const forumMediaUrls = new Map();
@@ -110,7 +108,7 @@
         console.warn("Không thể đọc tiến độ Little Hero từ thiết bị.", error);
       }
 
-      const childProgressFields = ["childName", "xp", "rp", "completed", "completedDays", "challenges", "gameRewards", "quiz", "sessionSeconds", "studySeconds", "dailyLessons", "dailyQuiz", "lessonMistakes", "sessionDay", "questClaims", "closet", "learningHistory", "dailyUsage", "dailyStudy"];
+      const childProgressFields = ["childName", "age", "ageGroup", "interests", "onboardingComplete", "xp", "rp", "completed", "completedDays", "challenges", "gameRewards", "quiz", "sessionSeconds", "studySeconds", "dailyLessons", "dailyQuiz", "lessonMistakes", "sessionDay", "questClaims", "closet", "learningHistory", "dailyUsage", "dailyStudy"];
       const accountProgressFields = [...childProgressFields, "children", "activeChildId", "premium", "parentControls", "reviews", "forumPosts", "dailyReviews"];
       const accountStorageKey = (email) => `${STORAGE_KEY}:account:${email}`;
       const normalizeProgressState = () => {
@@ -119,6 +117,9 @@
           state.children = [{ id: childId, name: state.childName || "Bé", age: 6, ...Object.fromEntries(childProgressFields.map((key) => [key, state[key]])) }];
           state.activeChildId = childId;
         }
+        state.children.forEach((child) => {
+          child.age = Math.max(3, Math.min(10, Number(child.age) || 6));
+        });
         state.activeChildId = state.children.some((child) => child.id === state.activeChildId) ? state.activeChildId : state.children[0].id;
         const activeChild = state.children.find((child) => child.id === state.activeChildId);
         childProgressFields.forEach((key) => {
@@ -127,6 +128,12 @@
         state.childName = activeChild.name || state.childName;
         state.learningHistory = Array.isArray(state.learningHistory) ? state.learningHistory : [];
         state.gameRewards = Array.isArray(state.gameRewards) ? state.gameRewards : [];
+        state.age = Math.max(3, Math.min(10, Number(state.age) || 6));
+        state.ageGroup = state.age <= 6 ? "3-6" : "7-10";
+        state.interests = Array.isArray(state.interests)
+          ? state.interests.filter((id) => ["emotion", "social", "safety", "health", "thinking", "care", "creative", "community"].includes(id))
+          : [];
+        state.onboardingComplete = state.onboardingComplete === true;
         state.dailyUsage = state.dailyUsage && typeof state.dailyUsage === "object" ? state.dailyUsage : {};
         state.dailyStudy = state.dailyStudy && typeof state.dailyStudy === "object" ? state.dailyStudy : {};
         state.studySeconds = Number(state.studySeconds) || 0;
@@ -166,8 +173,16 @@
         state.demoAccount = false;
         normalizeProgressState();
       }
-      const seededReviewIds = new Set((state.reviews || []).map((review) => review.id));
-      state.reviews = [...sampleReviews.filter((review) => !seededReviewIds.has(review.id)), ...(state.reviews || [])];
+      state.reviews = (state.reviews || []).filter((review) => {
+        const author = String(review.author || "").trim();
+        const normalizedAuthor = author.toLocaleLowerCase();
+        return author
+          && normalizedAuthor !== "người dùng trên thiết bị"
+          && normalizedAuthor !== "gia đình little hero"
+          && !review.isSample
+          && !String(review.id || "").startsWith("sample-review-")
+          && !author.startsWith("Đánh giá mẫu");
+      });
       const seededPostIds = new Set((state.forumPosts || []).map((post) => post.id));
       state.forumPosts = [...sampleForumPosts.filter((post) => !seededPostIds.has(post.id)), ...(state.forumPosts || [])];
 
@@ -176,6 +191,7 @@
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       })[char]);
       const { safeWardrobe, renderHeroCharacterSvg, setCharacterExpression } = window.createLittleHeroCharacterModel({ freshState, escapeHtml });
+      const previousHeroCloset = { gender: "boy", hair: "curly", hairColor: "#624337", shirt: "#53b99d", pants: "#536f92", shoes: "#e98257", accessory: "cape", outfit: "classic" };
       const persist = () => {
         const child = state.children.find((entry) => entry.id === state.activeChildId);
         if (child) {
@@ -203,8 +219,97 @@
       const showDialog = (content) => {
         const dialog = $("#appDialog");
         dialog.dataset.parentConfirmation = "false";
+        dialog.dataset.childOnboarding = "false";
         $("#dialogContent").innerHTML = content;
         if (!dialog.open) dialog.showModal();
+      };
+      const openChildOnboarding = () => {
+        const dialog = $("#appDialog");
+        const ageGroup = state.age <= 6 ? "3-6" : "7-10";
+        const updateInterestOptions = (group) => {
+          const allowed = ageCategories[group];
+          form.querySelectorAll('input[name="interest"]').forEach((input) => {
+            const available = allowed.includes(input.value);
+            input.disabled = !available;
+            input.closest("label").hidden = !available;
+            if (!available) input.checked = false;
+          });
+        };
+        const groupOptions = (group) => group === "3-6"
+          ? [3, 4, 5, 6]
+          : [7, 8, 9, 10];
+        const renderAgeOptions = (group, selectedAge) => groupOptions(group).map((age) =>
+          `<option value="${age}" ${age === selectedAge ? "selected" : ""}>${age} tuổi</option>`
+        ).join("");
+        const interestOptions = [
+          ["emotion", "Cảm xúc & tự tin"], ["social", "Kết bạn & giao tiếp"], ["safety", "An toàn & tự bảo vệ"],
+          ["health", "Sức khỏe & tự lập"], ["thinking", "Tư duy & quyết định"], ["care", "Trách nhiệm & môi trường"],
+          ["creative", "Sáng tạo & khám phá"], ["community", "Cộng đồng & an toàn mạng"]
+        ];
+        showDialog(`<div class="dialog-inner onboarding-dialog">
+          <div class="dialog-head"><div><span class="kicker">BẮT ĐẦU HÀNH TRÌNH</span><h2 id="dialogTitle">Cùng Hero chọn hành trình cho bé</h2>
+            <p>Thông tin này giúp gợi ý bài học và ghép nhóm đấu trường phù hợp với độ tuổi.</p></div></div>
+          <form id="childOnboardingForm">
+            <fieldset class="onboarding-group"><legend>Bé thuộc nhóm tuổi nào?</legend>
+              <label class="onboarding-age-option"><input type="radio" name="ageGroup" value="3-6" ${ageGroup === "3-6" ? "checked" : ""}><span><strong>3–6 tuổi</strong><small>Bài học gần gũi, từng bước</small></span></label>
+              <label class="onboarding-age-option"><input type="radio" name="ageGroup" value="7-10" ${ageGroup === "7-10" ? "checked" : ""}><span><strong>7–10 tuổi</strong><small>Tình huống và thử thách đa dạng</small></span></label>
+            </fieldset>
+            <label class="form-label" for="onboardingAge">Độ tuổi của bé
+              <select id="onboardingAge" name="age" required>${renderAgeOptions(ageGroup, Math.max(ageGroup === "3-6" ? 3 : 7, Math.min(ageGroup === "3-6" ? 6 : 10, state.age)))}</select>
+            </label>
+            <fieldset class="onboarding-group"><legend>Bé quan tâm đến chủ đề nào? <span>(chọn một hoặc nhiều)</span></legend>
+              <div class="onboarding-interests">${interestOptions.map(([id, label]) => `<label><input type="checkbox" name="interest" value="${id}" ${state.interests.includes(id) ? "checked" : ""}><span>${label}</span></label>`).join("")}</div>
+            </fieldset>
+            <p class="onboarding-error" id="onboardingError" role="alert" hidden></p>
+            <button class="btn btn-mint" type="submit">Lưu lựa chọn & bắt đầu học →</button>
+          </form>
+        </div>`);
+        dialog.dataset.childOnboarding = "true";
+        const form = $("#childOnboardingForm", dialog);
+        const ageSelect = $("#onboardingAge", form);
+        form.querySelectorAll('input[name="ageGroup"]').forEach((input) => input.addEventListener("change", () => {
+          ageSelect.innerHTML = renderAgeOptions(input.value, input.value === "3-6" ? 6 : 7);
+          updateInterestOptions(input.value);
+        }));
+        updateInterestOptions(ageGroup);
+        ageSelect.addEventListener("change", () => {
+          const group = Number(ageSelect.value) <= 6 ? "3-6" : "7-10";
+          const radio = form.querySelector(`input[name="ageGroup"][value="${group}"]`);
+          if (radio) radio.checked = true;
+        });
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const selectedInterests = [...form.querySelectorAll('input[name="interest"]:checked')].map((input) => input.value);
+          const age = Number(ageSelect.value);
+          if (!selectedInterests.length) {
+            const error = $("#onboardingError", form);
+            error.textContent = "Hãy chọn ít nhất một chủ đề bé yêu thích nhé.";
+            error.hidden = false;
+            return;
+          }
+          if (!Number.isInteger(age) || age < 3 || age > 10) return;
+          const child = state.children.find((entry) => entry.id === state.activeChildId);
+          state.age = age;
+          state.ageGroup = age <= 6 ? "3-6" : "7-10";
+          state.interests = selectedInterests;
+          state.onboardingComplete = true;
+          if (child) {
+            child.age = age;
+            childProgressFields.forEach((key) => { child[key] = state[key]; });
+          }
+          dialog.dataset.childOnboarding = "false";
+          closeDialog();
+          persist();
+          renderDropdown();
+          renderIslands();
+          renderFeatured();
+          renderStories();
+          setRoute(route, { restore: true, pop: true });
+          toast(`Đã lưu hành trình cho bé ${age} tuổi.`);
+        });
+      };
+      const showOnboardingIfNeeded = () => {
+        if (state.authenticated && !state.onboardingComplete) openChildOnboarding();
       };
       const speak = (text, onComplete) => {
         if (!("speechSynthesis" in window)) {
@@ -232,7 +337,10 @@
         window.speechSynthesis.speak(utterance);
         return true;
       };
-      const closeDialog = () => $("#appDialog").close();
+      const closeDialog = () => {
+        if ($("#appDialog").dataset.childOnboarding === "true") return;
+        $("#appDialog").close();
+      };
       const closeParentConfirmation = () => {
         const dialog = $("#appDialog");
         if (dialog.dataset.parentConfirmation !== "true") { closeDialog(); return; }
@@ -241,10 +349,24 @@
         if (route === "parents") setRoute("home");
       };
       const closeOpenDialog = () => {
+        if ($("#appDialog").dataset.childOnboarding === "true") return;
         if ($("#appDialog").dataset.parentConfirmation === "true") closeParentConfirmation();
         else closeDialog();
       };
       const lessonById = (id) => lessons.find((lesson) => lesson.id === id);
+      const ageCategories = {
+        "3-6": ["emotion", "social", "safety", "health", "care", "creative"],
+        "7-10": ["emotion", "social", "safety", "thinking", "care", "creative", "community"]
+      };
+      const currentAgeGroup = () => state.age <= 6 ? "3-6" : "7-10";
+      const currentAgeLabel = () => currentAgeGroup() === "3-6" ? "3–6 tuổi" : "7–10 tuổi";
+      const ageAppropriateCategories = () => categories.filter((category) => ageCategories[currentAgeGroup()].includes(category.id));
+      const ageAppropriateLessons = () => {
+        const available = lessons
+          .filter((lesson) => ageCategories[currentAgeGroup()].includes(lesson.category))
+          .map((lesson) => ({ ...lesson, age: currentAgeLabel() }));
+        return available.sort((a, b) => Number(state.interests.includes(b.category)) - Number(state.interests.includes(a.category)));
+      };
       const completedCount = () => state.completed.length;
       const currentDay = () => new Date().toLocaleDateString("sv-SE");
       const recordLearningAttempt = (lesson, choice, questionIndex = 0, correctIndex = lesson.correct) => {
@@ -316,21 +438,22 @@
         $("#journalLessons").textContent = completedCount();
         $("#journalStars").textContent = `${state.xp} ⭐`;
         $("#journalDays").textContent = state.completedDays.length;
-        const savedReviews = state.reviews || [];
-        const testimonialColors = [["#f2faf5", "#39a454", "👩🏻"], ["#fff9ed", "#ff9d22", "👩🏻‍🦰"], ["#f1f9ff", "#1684e8", "👨🏻"], ["#f8f1ff", "#9138e8", "👩🏽"]];
+        const savedReviews = (state.reviews || []).filter((review) => !review.isSample);
+        const testimonialColors = [["#f2faf5", "#39a454"], ["#fff9ed", "#ff9d22"], ["#f1f9ff", "#1684e8"], ["#f8f1ff", "#9138e8"]];
         $("#homeTestimonials").innerHTML = savedReviews.length
           ? [...savedReviews].slice(-4).reverse().map((review, index) => {
-            const [background, color, avatar] = testimonialColors[index];
+            const [background, color] = testimonialColors[index % testimonialColors.length];
             const stars = Math.max(1, Math.min(5, Number(review.stars) || 0));
+            const author = String(review.author).trim();
             return `<article class="testimonial-card" style="--testimonial-bg:${background};--testimonial-color:${color}">
-              <div class="testimonial-person"><span class="testimonial-avatar" aria-hidden="true">${avatar}</span><span><span class="kicker">PHẢN HỒI TRÊN THIẾT BỊ</span><span class="review-stars" aria-label="${stars} trên 5 sao">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></span></div>
+              <div class="testimonial-person"><span class="testimonial-avatar" aria-hidden="true">${escapeHtml(Array.from(author)[0] || "L")}</span><span><span class="review-stars" aria-label="${stars} trên 5 sao">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></span></div>
               <blockquote class="testimonial-quote">“${escapeHtml(review.body)}”</blockquote>
-              <div><div class="testimonial-name">${escapeHtml(review.author || "Phụ huynh")} · chưa xác minh</div><small class="note">Đánh giá lưu cục bộ · ${escapeHtml(review.date || "")}</small></div>
+              <div class="testimonial-name">${escapeHtml(author)}</div>
             </article>`;
           }).join("")
-          : `<article class="testimonial-card" style="grid-column:1/-1;min-height:170px;align-items:center;text-align:center">
-              <div class="testimonial-avatar" aria-hidden="true">💬</div><div><strong>Chưa có phản hồi trên thiết bị này</strong><p class="note">Mời ba mẹ chia sẻ trải nghiệm thật để câu chuyện của gia đình mình xuất hiện tại đây.</p></div>
-              <a class="btn btn-light btn-small" href="#/reviews" data-route="reviews">Viết đánh giá đầu tiên</a>
+          : `<article class="testimonial-card testimonial-empty">
+              <div class="testimonial-avatar" aria-hidden="true">💬</div><div><strong>Chưa có phản hồi từ gia đình</strong><p class="note">Ba mẹ có thể là người đầu tiên chia sẻ trải nghiệm.</p></div>
+              <a class="btn btn-light btn-small" href="#/reviews" data-route="reviews">Chia sẻ trải nghiệm</a>
             </article>`;
         $("#journalTip").textContent = completedCount()
           ? "Cùng bé thử hoạt động ngoài đời trong bài vừa học, rồi khen nỗ lực của con."
@@ -341,8 +464,8 @@
       };
 
       const renderDropdown = () => {
-        $("#lessonDropdown").innerHTML = categories.map((category) =>
-          `<a href="#/lesson/${category.lesson}" data-route="lesson/${category.lesson}">${category.icon} &nbsp; ${category.name}</a>`
+        $("#lessonDropdown").innerHTML = ageAppropriateCategories().map((category) =>
+          `<a href="#/lessons/${category.id}" data-route="lessons/${category.id}">${category.icon} &nbsp; ${category.name}</a>`
         ).join("");
       };
       const renderJourneyMap = (container, detailed = false) => {
@@ -352,14 +475,14 @@
           [76, 62], [49, 68], [18, 83], [48, 89]
         ];
         const path = "M 160 117 C 225 57 305 55 380 90 S 570 96 666 152 S 820 208 893 270 S 828 357 761 388 S 620 433 486 421 S 300 427 182 516 S 330 580 475 551";
-        const stopMarkup = categories.map((category, index) => {
+        const stopMarkup = ageAppropriateCategories().map((category) => {
+          const index = categories.findIndex((item) => item.id === category.id);
           const lesson = lessonById(category.lesson);
           const done = Boolean(lesson && state.completed.includes(lesson.id));
           const [left, top] = stops[index];
-          return `<button class="journey-stop" style="left:${left}%;top:${top}%;--island-left:${left}%;--island-top:${top}%;--island-color:${islandColors[index]}" data-lesson="${category.lesson}" title="${escapeHtml(lesson?.title || category.name)}" aria-label="Bài ${String(index + 1)}: ${escapeHtml(lesson?.title || category.name)}">
+          return `<button class="journey-stop" style="left:${left}%;top:${top}%;--island-left:${left}%;--island-top:${top}%;--island-color:${islandColors[index]}" data-lesson="${category.lesson}" data-category="${category.id}" title="${escapeHtml(lesson?.title || category.name)}" aria-label="${escapeHtml(category.name)}: ${escapeHtml(lesson?.title || category.name)}">
             <span class="number">ĐIỂM ${String(index + 1).padStart(2, "0")}</span><span class="island-icon" aria-hidden="true">${category.icon}</span>
             <h3>${escapeHtml(lesson?.title || category.name)}</h3><p>${escapeHtml(category.name)}</p>
-            <span class="island-hover-title" aria-hidden="true">${escapeHtml(category.name)}<br><strong>${escapeHtml(lesson?.title || category.name)}</strong><br>${done ? "✓ Đã hoàn thành" : "▶ Bắt đầu bài học"}</span>
             <span class="count">${done ? "✓ Đã hoàn thành" : "▶ Bắt đầu bài học"}</span>
           </button>`;
         }).join("");
@@ -399,34 +522,22 @@
           <g fill="none" stroke="#e8fbff" stroke-width="3"><path d="M840 108h38l-17 13h-19Z"/><path d="M859 105v-30l18 30Z" fill="#fff"/><path d="M127 283h39l-17 13h-20Z"/><path d="M148 280v-29l18 29Z" fill="#fff"/></g>
           <g fill="#ffd967"><circle cx="42" cy="480" r="5"/><circle cx="55" cy="492" r="5"/><circle cx="30" cy="500" r="5"/><circle cx="926" cy="504" r="5"/><circle cx="943" cy="491" r="5"/><circle cx="955" cy="508" r="5"/></g>
         </svg><svg class="journey-path" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true"><path d="${path}" fill="none" stroke="#eaffdb" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/><path d="${path}" fill="none" stroke="#7cbb83" stroke-width="7" stroke-dasharray="1 17" stroke-linecap="round"/></svg>${stopMarkup}`;
-        if (detailed) {
-          const setStopEmphasis = (button, active) => {
-            const isMobile = window.matchMedia("(max-width: 760px)").matches;
-            button.style.zIndex = active ? "4" : "";
-            button.style.transform = active ? isMobile ? "translate(-50%, calc(-50% - 4px)) scale(1.04)" : "translate(-50%, calc(-50% - 7px)) scale(1.08)" : "";
-            button.style.boxShadow = active ? "0 15px 30px #244b4b55" : "";
-            button.style.borderRadius = active ? "24px" : "";
-            button.querySelector(".island-hover-title").style.display = active && !isMobile ? "block" : "";
-          };
-          container.querySelectorAll(".journey-stop").forEach((button) => {
-            button.addEventListener("pointerenter", () => setStopEmphasis(button, true));
-            button.addEventListener("pointerleave", () => setStopEmphasis(button, button.matches(":focus-visible")));
-            button.addEventListener("focus", () => setStopEmphasis(button, true));
-            button.addEventListener("blur", () => setStopEmphasis(button, false));
-          });
-        }
       };
       const renderIslands = () => {
         renderJourneyMap($("#islandGrid"));
       };
-      const renderFeatured = (lesson = lessons.find((item) => !state.completed.includes(item.id)) || lessons[0]) => {
+      const renderFeatured = (lesson) => {
+        const available = ageAppropriateLessons();
+        if (!available.some((item) => item.id === lesson?.id)) {
+          lesson = available.find((item) => !state.completed.includes(item.id)) || available[0];
+        }
         const category = categories.find((item) => item.id === lesson.category);
         $("#featuredLesson").innerHTML = `<div class="lesson-art" style="background:linear-gradient(145deg,${category.color},#ffffff)">
           <span class="lesson-emoji">${lesson.icon}</span><span class="lesson-note">✦ TÌNH HUỐNG GẦN GŨI</span>
         </div><div class="lesson-copy"><span class="tag">${category.icon} ${escapeHtml(category.name)}</span>
           <h3>${escapeHtml(lesson.title)}</h3><p>${escapeHtml(lesson.goal)}</p>
           <div class="lesson-meta"><span>♧ ${lesson.age}</span><span>◷ ${lesson.duration}</span><span>⭐ +${lesson.reward}</span></div>
-          <button class="btn btn-mint btn-small" data-route="lesson/${lesson.id}">${state.completed.includes(lesson.id) ? "↻ Học lại bài này" : "Bắt đầu câu chuyện →"}</button>
+          <button class="btn btn-mint btn-small" data-route="lessons/${category.id}">${state.completed.includes(lesson.id) ? "Xem lại chủ đề →" : "Khám phá chủ đề →"}</button>
         </div>`;
       };
       const renderStories = () => {
@@ -465,12 +576,15 @@
         class: [["🥇", "Quang Huy", 180], ["🥈", "Bảo An", 160], ["🥉", "Minh Khang", 145], ["4", "Gia Hân", 130], ["5", "An Nhiên", 115]]
       };
       const renderLeaderboard = (root = document, mode = arenaMode) => {
-        const leaders = leaderboardByMode[mode] || leaderboardByMode.duel;
+        const baseLeaders = leaderboardByMode[mode] || leaderboardByMode.duel;
+        const leaders = currentAgeGroup() === "3-6"
+          ? baseLeaders.map(([medal, , points], index) => [medal, ["Bé Mây", "Bé Sóc", "Bé Na", "Bé Cún", "Bé Thỏ"][index], points])
+          : baseLeaders;
         $("#leaderboard", root).innerHTML = leaders.map(([medal, name, points]) =>
-          `<div class="leader-row"><span class="medal">${medal}</span><span><span class="leader-name">${name}</span><br><span class="leader-sub">Luyện tập chăm chỉ</span></span><span class="leader-score">${points} RP</span></div>`
+          `<div class="leader-row"><span class="medal">${medal}</span><span><span class="leader-name">${name}</span><br><span class="leader-sub">Nhóm ${currentAgeGroup().replace("-", "–")} tuổi · Luyện tập</span></span><span class="leader-score">${points} RP</span></div>`
         ).join("");
         const rank = Math.max(6, 2000 - Math.floor(state.rp / 10));
-        $("#leaderYou", root).innerHTML = `<div class="leader-row"><span class="medal">🌟</span><span><span class="leader-name">${escapeHtml(state.childName || "Bé (bạn)")}</span><br><span class="leader-sub">Điểm của bé · ${state.rp} RP</span></span><span class="leader-score">#${rank.toLocaleString("vi-VN")}</span></div>`;
+        $("#leaderYou", root).innerHTML = `<div class="leader-row"><span class="medal">🌟</span><span><span class="leader-name">${escapeHtml(state.childName || "Bé (bạn)")}</span><br><span class="leader-sub">Nhóm ${currentAgeGroup().replace("-", "–")} tuổi · ${state.rp} RP</span></span><span class="leader-score">#${rank.toLocaleString("vi-VN")}</span></div>`;
       };
 
       const renderChallengeList = () => {
@@ -637,31 +751,32 @@
       let arenaMatchLesson = null;
       let arenaMatchChoice = null;
       const openQuiz = () => {
-        const lesson = lessons[Math.floor(Math.random() * lessons.length)];
+        const available = ageAppropriateLessons();
+        const lesson = available[Math.floor(Math.random() * available.length)];
         showDialog(`<div class="dialog-head"><div><span class="kicker">THỬ THÁCH TÌNH HUỐNG</span><h2 id="dialogTitle">Một câu hỏi cùng Hero</h2><p>${lesson.age} · Tình huống: ${lesson.title}</p></div><button class="close-btn" data-close aria-label="Đóng">×</button></div>
-          <div class="story-box">${lesson.story}</div><button class="btn btn-light btn-small" id="quizSpeak">♫ Nghe đề bài và các phương án</button><div class="answer-list">${lesson.answers.map((answer, index) => `<button class="answer" data-quiz-answer="${index}">${String.fromCharCode(65 + index)}. ${answer}</button>`).join("")}</div>
-          <div class="feedback" id="quizFeedback" aria-live="polite"></div><p class="quiz-lock-note" id="quizLockNote" hidden>Câu trả lời đã được ghi nhận. Không thể chọn lại; hãy chuyển sang câu tiếp theo.</p><p class="note">Mỗi câu chỉ được chọn một lần.</p>`);
+          <div class="story-box">${lesson.story}</div><button class="btn btn-light btn-small" id="quizSpeak">♫ Nghe đề bài và các phương án</button><div class="answer-list">${lesson.answers.map((answer, index) => `<button class="answer" data-quiz-answer="${index}">${answer}</button>`).join("")}</div>
+          <div class="feedback" id="quizFeedback" aria-live="polite"></div><p class="quiz-lock-note" id="quizLockNote" hidden>Con có thể suy nghĩ lại và chọn phương án khác.</p>`);
         $("#quizSpeak").addEventListener("click", () => speak(`${lesson.title}. ${lesson.story} Các phương án. ${lesson.answers.map((answer, index) => `Phương án ${index + 1}: ${answer}`).join(". ")}`));
         $("#dialogContent").querySelectorAll("[data-quiz-answer]").forEach((button) => button.addEventListener("click", () => {
           const index = Number(button.dataset.quizAnswer);
           const buttons = [...$("#dialogContent").querySelectorAll("[data-quiz-answer]")];
-          buttons.forEach((item) => { item.disabled = true; });
-          state.quiz += 1;
-          state.dailyQuiz += 1;
           if (index === lesson.correct) {
+            buttons.forEach((item) => { item.disabled = true; });
+            state.quiz += 1;
+            state.dailyQuiz += 1;
             button.classList.add("correct");
             state.xp += 5;
             state.rp += 25;
             $("#quizFeedback").textContent = "Kết quả thành công! Bé chọn cách an toàn. +5 sao · +25 RP 🌟";
-            speak(`Kết quả thành công! ${lesson.prompts[2]}`);
+            speak(`Tuyệt vời! Con đã chọn cách phù hợp. ${lesson.prompts[2] || lesson.goal}`);
           } else {
             button.classList.add("try-again");
-            state.xp = Math.max(0, state.xp - 3);
-            state.rp = Math.max(0, state.rp - 5);
-            $("#quizFeedback").textContent = "Kết quả chưa thành công. Câu này đã khóa; bé không thể đổi đáp án. Hãy xem gợi ý rồi sang câu tiếp theo.";
-            speak(`Kết quả chưa thành công. ${lesson.prompts[1]} Hãy nhớ chọn cách an toàn và tìm người lớn đáng tin cậy.`);
+            button.disabled = true;
+            $("#quizFeedback").textContent = `Không sao, bé thử lại nhé. ${lesson.prompts[1] || lesson.goal}`;
+            speak(`Không sao, con thử lại nhé. ${lesson.prompts[1] || lesson.goal}`);
+            window.setTimeout(() => { if (button.isConnected) button.disabled = false; }, 250);
           }
-          $("#quizLockNote").hidden = false;
+          $("#quizLockNote").hidden = index === lesson.correct;
           persist();
           $("#rankPoints").textContent = `${state.rp} RP`;
           $("#leaderYou").innerHTML = `<div class="leader-row"><span class="medal">🌟</span><span><span class="leader-name">${escapeHtml(state.childName || "Bé (bạn)")}</span><br><span class="leader-sub">Điểm của bé · ${state.rp} RP</span></span><span class="leader-score">#${Math.max(6, 2000 - Math.floor(state.rp / 10)).toLocaleString("vi-VN")}</span></div>`;
@@ -672,33 +787,126 @@
       let pendingNewsFocus = "";
       let pendingAuthRoute = "";
       let cleanupTutorSession = null;
-      const accountRequiredRoutes = new Set(["map", "lesson", "quiz", "games", "quests", "achievements", "parents", "arena", "arena-match", "payment", "premium-success", "wardrobe"]);
+      const accountFeatureRoutes = new Set(["map", "lesson", "quiz", "games", "quests", "achievements", "parents", "arena", "arena-match", "payment", "premium-success", "wardrobe"]);
+      const previewRoutes = new Set([...accountFeatureRoutes, "forum", "reviews", "language"]);
+      const guestActionSelector = [
+        "#dialogContent [data-answer]",
+        "#dialogContent [data-quiz-answer]",
+        "[data-parent]",
+        "#lessonChoices [data-choice]",
+        "#lessonSpeak",
+        "#quizSpeak",
+        "#quizPageSpeak",
+        "#voicePreview",
+        "#routeView [data-quiz-start]",
+        "#routeView [data-quiz-answer]",
+        "#routeView [data-match-category]",
+        "#routeView [data-match-goal]",
+        "#routeView [data-order-move]",
+        "#checkQuizOrder",
+        "#nextQuiz",
+        "[data-quiz-reset]",
+        "[data-arena-choice]",
+        "[data-memory-card]",
+        "[data-mini-game-answer]",
+        "[data-mini-game-next]",
+        "[data-mini-game-replay]",
+        "[data-claim-quest]",
+        "#claimQuests",
+        "[data-challenge]",
+        "[data-wardrobe]",
+        "[data-language]",
+        "[data-like-post]",
+        "[data-react]",
+        "[data-share-post]",
+        "[data-repost]",
+        "[data-review-helpful]",
+        "[data-star]",
+        "[data-assistant-prompt]",
+        "#arenaStart",
+        "#arenaFindOpponent",
+        "#startArenaMatch",
+        "#assistantVoiceMode",
+        "#assistantVoiceButton",
+        "#assistantAttachButton",
+        "#forumForm button",
+        ".social-comment-form button",
+        "#reviewForm button",
+        "#paymentConfirmForm button",
+        "#profileDetailsForm button",
+        "#profileAddForm button",
+        "#assistantChatForm button",
+        "#saveName",
+        "#clearProgress",
+        "#confirmClear"
+      ].join(",");
+      const guestActionFormSelector = [
+        "#forumForm",
+        ".social-comment-form",
+        "#reviewForm",
+        "#paymentConfirmForm",
+        "#profileDetailsForm",
+        "#profileAddForm",
+        "#assistantChatForm"
+      ].join(",");
+      const guestPreferenceSelector = [
+        "#parentProfileSelect",
+        "#parentDailyLimit",
+        "#parentBlockPurchases",
+        "#parentSafeContent",
+        "#parentNotifyLearning",
+        "#parentNotifyPractice",
+        "#forumMedia",
+        "#assistantFileInput"
+      ].join(",");
       let activeViewTransition = false;
       let pendingViewUpdate = null;
-      let quizPageLesson = null;
-      let quizPageChoice = null;
+      let quizRun = null;
       let selectedStars = 5;
       let miniGameRun = null;
       const localizedTitles = {
-        vi: { home: "Trang chủ", map: "Bản đồ ốc đảo", lessons: "Kho bài học", stories: "Truyện tranh", storybook: "Sách truyện", games: "Trò chơi", quests: "Nhiệm vụ hằng ngày", quiz: "Bài kiểm tra", achievements: "Tường thành tích", reviews: "Đánh giá ứng dụng", forum: "Diễn đàn", faq: "Câu hỏi thường gặp", wardrobe: "Tủ đồ của Hero", language: "Ngôn ngữ", parents: "Góc phụ huynh", "parent-news": "Tin tức & LITTLE HERO", auth: "Tài khoản", pricing: "Gói Premium", payment: "Thanh toán Premium", arena: "Đấu trường", tutor: "Hỏi Hero AI" },
-        en: { home: "Home", map: "Island map", lessons: "Lessons", stories: "Stories", storybook: "Storybook", games: "Games", quests: "Daily quests", quiz: "Quiz", achievements: "Achievements", reviews: "App reviews", forum: "Community", faq: "FAQs", wardrobe: "Hero wardrobe", language: "Language", parents: "Parent corner", "parent-news": "News & LITTLE HERO", auth: "Account", pricing: "Premium plans", payment: "Premium payment", arena: "Challenge arena", tutor: "Ask Hero" }
+        vi: { home: "Trang chủ", map: "Bản đồ ốc đảo", lessons: "Kho bài học", stories: "Truyện tranh", storybook: "Sách truyện", games: "Trò chơi", quests: "Nhiệm vụ hằng ngày", quiz: "Bài ôn tập", achievements: "Tường thành tích", reviews: "Đánh giá ứng dụng", forum: "Diễn đàn", faq: "Câu hỏi thường gặp", wardrobe: "Tủ đồ của Hero", language: "Ngôn ngữ", tutor: "Hỏi Hero", parents: "Góc phụ huynh", "parent-news": "Tin tức & LITTLE HERO", auth: "Tài khoản", pricing: "Gói Premium", payment: "Thanh toán Premium", arena: "Đấu trường" },
+        en: { home: "Home", map: "Island map", lessons: "Lessons", stories: "Stories", storybook: "Storybook", games: "Games", quests: "Daily quests", quiz: "Review activities", achievements: "Achievements", reviews: "App reviews", forum: "Community", faq: "FAQs", wardrobe: "Hero wardrobe", language: "Language", tutor: "Ask Hero", parents: "Parent corner", "parent-news": "News & LITTLE HERO", auth: "Account", pricing: "Premium plans", payment: "Premium payment", arena: "Challenge arena" }
       };
       const pageTitle = (name) => localizedTitles[state.language === "en" ? "en" : "vi"][name] || localizedTitles.vi[name] || name;
       const routeLink = (name, label, icon = "") => `<a class="btn btn-light btn-small" href="#/${name}" data-route="${name}">${icon}${label}</a>`;
       const pageShell = (name, description, body, icon = "✦") => `
         <button class="route-back" data-route="home">← ${pageTitle("home")}</button>
         <div class="page-heading"><span class="kicker">LITTLE HERO · ${icon}</span><h1>${escapeHtml(pageTitle(name))}</h1><p>${description}</p></div>${body}`;
+      const ensureGuestPreviewBanner = () => {
+        const routeName = route.split("/")[0];
+        const routeView = $("#routeView");
+        if (state.authenticated || !previewRoutes.has(routeName) || !routeView || routeView.querySelector(".guest-preview-banner")) return;
+        routeView.insertAdjacentHTML("afterbegin", `<aside class="guest-preview-banner" role="note"><span><strong>Chế độ xem trước</strong><small>Bạn có thể khám phá nội dung; đăng nhập để sử dụng chức năng và lưu tiến độ.</small></span><a class="btn btn-primary btn-small" href="#/auth" data-route="auth" data-preview-login>Đăng nhập / đăng ký</a></aside>`);
+      };
+      const guestPreviewObserver = new MutationObserver(ensureGuestPreviewBanner);
+      guestPreviewObserver.observe($("#routeView"), { childList: true });
+      const requestLoginForAction = (event) => {
+        if (state.authenticated) return false;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        pendingAuthRoute = route;
+        setRoute("auth");
+        toast("Đây là chế độ xem trước. Đăng nhập để sử dụng chức năng này, rồi thử lại nhé.");
+        return true;
+      };
+      document.addEventListener("click", (event) => {
+        if (!(event.target instanceof Element) || !event.target.closest(guestActionSelector)) return;
+        requestLoginForAction(event);
+      }, true);
+      document.addEventListener("submit", (event) => {
+        if (!(event.target instanceof HTMLFormElement) || !event.target.matches(guestActionFormSelector)) return;
+        requestLoginForAction(event);
+      }, true);
+      document.addEventListener("change", (event) => {
+        if (!(event.target instanceof Element) || !event.target.matches(guestPreferenceSelector)) return;
+        requestLoginForAction(event);
+      }, true);
       const setRoute = (nextRoute, options = {}) => {
         const targetRoute = String(nextRoute || "home").split("/")[0];
         if (cleanupTutorSession && (targetRoute !== "tutor" || route.split("/")[0] === "tutor")) {
           cleanupTutorSession();
           cleanupTutorSession = null;
-        }
-        if (!state.authenticated && accountRequiredRoutes.has(targetRoute)) {
-          pendingAuthRoute = nextRoute;
-          if (route !== "auth") setRoute("auth", { pop: options.pop });
-          toast("Vui lòng đăng nhập để xem dữ liệu tài khoản và tiếp tục chức năng này.");
-          return;
         }
         if (targetRoute === "home" && route === "auth") pendingAuthRoute = "";
         if (!options.restore && route === "home") state.lastHomeScroll = window.scrollY;
@@ -722,6 +930,9 @@
           });
           $("#routeView").innerHTML = "";
           if (route !== "home") renderRoute();
+          ensureGuestPreviewBanner();
+          if (route === "home") window.LittleHeroMotion?.enterHome();
+          else window.LittleHeroMotion?.enterRoute();
           renderStats();
           if (route === "home" && options.restore) window.scrollTo(0, Math.max(0, state.lastHomeScroll));
           else window.scrollTo(0, 0);
@@ -774,7 +985,9 @@
 
       const renderLessonCatalog = () => {
         const selectedCategory = route.split("/")[1] || "";
-        const available = lessons.filter((lesson) => !selectedCategory || lesson.category === selectedCategory);
+        const allowedCategories = ageAppropriateCategories();
+        const available = ageAppropriateLessons().filter((lesson) => !selectedCategory || lesson.category === selectedCategory);
+        const unavailableCategory = selectedCategory && !allowedCategories.some((category) => category.id === selectedCategory);
         const cards = available.map((lesson) => {
           const category = categories.find((item) => item.id === lesson.category);
           return `<article class="catalog-card"><span class="catalog-icon" style="--tile:${category.color}">${lesson.icon}</span>
@@ -782,8 +995,9 @@
               <p>${escapeHtml(lesson.goal)}<br>${lesson.age} · ${lesson.duration}${state.completed.includes(lesson.id) ? " · ⭐ Đã hoàn thành" : ""}</p>
             </div><button class="btn btn-mint btn-small" data-route="lesson/${lesson.id}">${state.completed.includes(lesson.id) ? "Học lại" : "Bắt đầu bài học"} →</button></article>`;
         }).join("");
-        const chips = categories.map((category) => routeLink(`lessons/${category.id}`, `${category.icon} ${category.name}`)).join("");
-        $("#routeView").innerHTML = pageShell("lessons", "Chọn một bài học để bắt đầu. Cần đăng nhập; khách có thể dùng tài khoản trải nghiệm ở trang đăng nhập.", `<div class="page-actions">${routeLink("lessons", "Tất cả chủ đề", "🏝️")}${chips}</div><div class="lesson-catalog">${cards}</div>`, "KHO BÀI HỌC");
+        const chips = allowedCategories.map((category) => routeLink(`lessons/${category.id}`, `${category.icon} ${category.name}`)).join("");
+        const message = unavailableCategory ? "Chủ đề này chưa nằm trong nhóm tuổi của bé. Đây là các nội dung phù hợp hơn:" : "Chọn bài học phù hợp với độ tuổi và chủ đề bé quan tâm.";
+        $("#routeView").innerHTML = pageShell("lessons", message, `<div class="page-actions">${routeLink("lessons", "Tất cả chủ đề", "🏝️")}${chips}</div><div class="lesson-catalog">${cards}</div>`, "KHO BÀI HỌC");
       };
 
       const { getScene, renderSceneBackdrop, renderSceneActor } = window.createLittleHeroSceneModel({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, state });
@@ -814,6 +1028,17 @@
         return lesson.category === "emotion" ? "💬" : lesson.category === "social" ? "🤝" : "✨";
       };
       const animateSceneChoice = (sceneId, heroId, friendId, propId, answer, lesson, correct) => {
+        const scene = $(`#${sceneId}`);
+        if (!scene) return;
+        if (lesson.id === "safety" && scene.querySelector(".scene-illustration")) {
+          scene.classList.remove("safety-helping");
+          playSceneEnvironment(sceneId);
+          if (correct) {
+            scene.classList.add("safety-helping");
+            window.setTimeout(() => { if (scene.isConnected) scene.classList.remove("safety-helping"); }, 3400);
+          }
+          return;
+        }
         const hero = $(`#${heroId}`);
         const friend = $(`#${friendId}`);
         if (!hero || !friend) return;
@@ -822,17 +1047,35 @@
           void actor.offsetWidth;
         });
         playSceneEnvironment(sceneId);
+        const safetyHelp = lesson.id === "safety" && correct;
+        if (scene) {
+          scene.classList.remove("safety-helping");
+          if (safetyHelp) {
+            scene.classList.add("safety-helping");
+            window.setTimeout(() => { if (scene.isConnected) scene.classList.remove("safety-helping"); }, 3400);
+          }
+        }
         const movement = movementForChoice(answer, correct);
-        hero.classList.add(movement);
-        friend.classList.add(correct ? (movement === "action-pickup" ? "action-receive" : "action-wave") : "action-unsafe");
+        if (safetyHelp) {
+          hero.classList.add("action-safety-ask");
+          friend.classList.add("action-safety-guide");
+        } else {
+          hero.classList.add(movement);
+          friend.classList.add(correct ? (movement === "action-pickup" ? "action-receive" : "action-wave") : "action-unsafe");
+        }
         setCharacterExpression(hero, correct ? "happy" : "sad");
         setCharacterExpression(friend, correct ? "happy" : (friend.classList.contains("adult-actor") ? "angry" : "sad"));
         $(`#${propId}`).textContent = correct ? propForChoice(answer, lesson) : "⚡";
       };
 
       const renderLessonRoute = (lessonId) => {
-        const lesson = lessonById(lessonId);
-        if (!lesson) { $("#routeView").innerHTML = pageShell("lessons", "Không tìm thấy bài học này.", routeLink("lessons", "Xem kho bài học", "🏝️")); return; }
+        const sourceLesson = lessonById(lessonId);
+        if (sourceLesson && !ageCategories[currentAgeGroup()].includes(sourceLesson.category)) {
+          $("#routeView").innerHTML = pageShell("lessons", "Bài học này dành cho nhóm tuổi khác. Hero đã chọn sẵn các bài phù hợp với bé.", routeLink("lessons", "Xem bài học phù hợp", "🏝️"));
+          return;
+        }
+        if (!sourceLesson) { $("#routeView").innerHTML = pageShell("lessons", "Không tìm thấy bài học này.", routeLink("lessons", "Xem kho bài học", "🏝️")); return; }
+        const lesson = { ...sourceLesson, age: currentAgeLabel() };
         const category = categories.find((item) => item.id === lesson.category);
         const scene = getScene(lesson);
         const questions = [
@@ -847,36 +1090,44 @@
             <div>
               <div class="lesson-progress"><span>📖 Mạch câu chuyện</span><span id="questionProgress">Câu hỏi 1/3${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}</span></div>
               <article class="scene-card">
-                <div class="scene ${scene.type}" id="lessonScene">
+                <div class="scene ${scene.type} scene-${scene.variant}" id="lessonScene">
                   ${renderSceneBackdrop(scene)}
-                  <span class="scene-kicker">📍 ${scene.place}</span><span class="scene-prop" id="sceneProp">${scene.prop}</span>
-                  ${renderSceneActor("heroActor", "Hero", true)}
-                  ${renderSceneActor("friendActor", scene.friend.name, false, scene.friend)}
+                  ${scene.variant === "lost" ? "" : `
+                    <span class="scene-kicker">📍 ${scene.place}</span><span class="scene-prop" id="sceneProp">${scene.prop}</span>
+                    ${renderSceneActor("heroActor", "Hero", true)}
+                    ${renderSceneActor("friendActor", scene.friend.name, false, scene.friend)}
+                  `}
                 </div>
               </article>
-              <div class="score-card" style="margin-top:14px">
-                <div class="lesson-progress"><span><strong>${escapeHtml(lesson.title)}</strong></span><span>⭐ +3 mỗi câu đúng · lần đầu hoàn thành +${lesson.reward} · sai −3</span></div>
-                <p id="questionStory" style="margin:5px 0 11px;color:#687789;font-size:11px"></p>
-                <p id="questionPrompt" style="margin:5px 0 11px;font-size:12px;font-weight:800"></p>
-                <div class="page-actions"><button class="btn btn-light btn-small" id="lessonSpeak">♫ Nghe đề bài và 3 phương án</button></div>
+            </div>
+            <section class="lesson-question-panel">
+              <div class="score-card lesson-question-card">
+                <div class="lesson-progress"><span><strong>${escapeHtml(lesson.title)}</strong></span><span>⭐ +3 mỗi câu đúng · lần đầu hoàn thành +${lesson.reward}</span></div>
+                <p id="questionStory" class="lesson-story"></p>
+                <p id="questionPrompt" class="lesson-prompt"></p>
+                <div class="page-actions"><button class="btn btn-light btn-small" id="lessonSpeak">♫ Nghe đề bài và các phương án</button></div>
                 <div class="lesson-choices" id="lessonChoices"></div>
                 <p class="lesson-feedback" id="lessonRouteFeedback" aria-live="polite">${prior ? `Bé đã thử ${prior} lựa chọn chưa phù hợp. Hãy bình tĩnh suy nghĩ lại nhé.` : "Bé hãy chọn phương án mình nghĩ là phù hợp."}</p>
+                <details class="lesson-hint">
+                  <summary>💡 Gợi ý để bé suy nghĩ</summary>
+                  <div>${lesson.prompts.slice(0, 2).map((prompt) => `<p>${escapeHtml(prompt)}</p>`).join("")}</div>
+                </details>
+                <p class="lesson-safety-note">Nếu tình huống xảy ra ngoài đời và bé cảm thấy không an toàn, hãy rời đi và báo ngay người lớn đáng tin cậy.</p>
+                <button class="btn btn-light btn-small" data-route="lessons/${category.id}">← Quay lại chủ đề</button>
               </div>
-            </div>
-            <aside>
-              <div class="score-card"><span class="kicker">HỌC QUA TRẢI NGHIỆM</span><h3 style="margin:6px 0;font-size:16px">${escapeHtml(lesson.goal)}</h3>
-                <div class="lesson-meta"><span>♧ ${lesson.age}</span><span>◷ ${lesson.duration}</span></div>
-                <div class="thinking-prompts"><strong style="font-size:11px">Gợi ý để bé suy nghĩ</strong>${lesson.prompts.slice(0, 2).map((prompt) => `<div>${escapeHtml(prompt)}</div>`).join("")}</div>
-                <p class="note">Nếu tình huống xảy ra ngoài đời và bé cảm thấy không an toàn, hãy rời đi và báo ngay người lớn đáng tin cậy.</p>
-                <button class="btn btn-light btn-small" data-route="lessons">← Quay lại kho bài học</button>
-              </div>
-              <div class="score-card" style="margin-top:12px"><strong>🌱 Thử thách ngoài đời</strong><p style="margin:6px 0;color:#6c7988;font-size:10px">${escapeHtml(lesson.activity)}</p></div>
-            </aside>
+            </section>
+          </div>
+          <div class="lesson-context"><span class="kicker">HỌC QUA TRẢI NGHIỆM</span><h3>${escapeHtml(lesson.goal)}</h3>
+            <div class="lesson-meta"><span>♧ ${lesson.age}</span><span>◷ ${lesson.duration}</span></div>
+            <strong>🌱 Thử thách ngoài đời</strong><p>${escapeHtml(lesson.activity)}</p>
           </div>
         `, "BÀI HỌC TƯƠNG TÁC");
-        $("#heroActor").style.setProperty("--hero-shirt", safeWardrobe(state.closet).shirt);
-        $("#heroActor").style.setProperty("--hero-pants", safeWardrobe(state.closet).pants);
-        $("#heroActor").style.setProperty("--hero-shoes", safeWardrobe(state.closet).shoes);
+        const lessonHero = $("#heroActor");
+        if (lessonHero) {
+          lessonHero.style.setProperty("--hero-shirt", safeWardrobe(state.closet).shirt);
+          lessonHero.style.setProperty("--hero-pants", safeWardrobe(state.closet).pants);
+          lessonHero.style.setProperty("--hero-shoes", safeWardrobe(state.closet).shoes);
+        }
         const renderQuestion = () => {
           const question = questions[questionIndex];
           $("#questionProgress").textContent = `Câu hỏi ${questionIndex + 1}/${questions.length}${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}`;
@@ -891,30 +1142,29 @@
             const choice = Number(button.dataset.choice);
             const correct = choice === question.correct;
             recordLearningAttempt(lesson, choice, questionIndex, question.correct);
-            button.disabled = true;
+            const choices = [...$("#lessonChoices").querySelectorAll("[data-choice]")];
+            choices.forEach((option) => { option.disabled = true; });
             const selectedAnswer = question.answers[choice];
             animateSceneChoice("lessonScene", "heroActor", "friendActor", "sceneProp", selectedAnswer, lesson, correct);
             speak(correct
-              ? `Kết quả thành công! ${question.prompt}`
-              : `Mình cùng nghĩ lại nhé. ${question.story} Hãy thử một phương án khác.`);
+              ? `Tuyệt vời! Con đã chọn cách phù hợp: ${question.answers[question.correct]}. ${lesson.prompts[2] || lesson.goal}`
+              : `Không sao, con hãy thử lại nhé. Cách "${selectedAnswer}" chưa phù hợp vì ${lesson.prompts[1] || lesson.goal} Con có thể chọn một cách khác an toàn hơn.`);
             window.setTimeout(() => {
               if (!button.isConnected) return;
               if (!correct) {
                 button.classList.add("incorrect");
-                state.xp = Math.max(0, state.xp - 3);
-                state.rp = Math.max(0, state.rp - 5);
                 state.lessonMistakes = state.lessonMistakes || {};
                 state.lessonMistakes[lesson.id] = (state.lessonMistakes[lesson.id] || 0) + 1;
                 persist();
-                $("#lessonRouteFeedback").textContent = "Chưa phải lựa chọn phù hợp (−3 sao). Bé có thể bình tĩnh suy nghĩ và thử lại nhé.";
-                window.setTimeout(() => { if (button.isConnected) button.disabled = false; }, 120);
+                $("#lessonRouteFeedback").textContent = `Chưa phù hợp, mình thử lại nhé. ${lesson.prompts[1] || "Bé hãy suy nghĩ lại và thử một lựa chọn khác nhé."}`;
+                choices.forEach((option) => { option.disabled = false; });
                 return;
               }
               button.classList.add("correct");
               state.xp += 3;
               $("#lessonChoices").querySelectorAll("[data-choice]").forEach((option) => { option.disabled = true; });
               if (questionIndex < questions.length - 1) {
-                $("#lessonRouteFeedback").textContent = "Đúng rồi! +3 sao 🌟 Câu chuyện tiếp tục…";
+                $("#lessonRouteFeedback").textContent = `Đúng rồi! ${lesson.prompts[2] || "Con đã chọn cách phù hợp."} +3 sao 🌟`;
                 const nextQuestion = document.createElement("button");
                 nextQuestion.className = "btn btn-mint btn-small";
                 nextQuestion.id = "nextQuestion";
@@ -944,14 +1194,20 @@
               $("#lessonRouteFeedback").textContent = firstCompletion
                 ? `Hoàn thành cả 3 câu chuyện! Bé nhận thêm +${lesson.reward} ⭐ và +25 RP.`
                 : "Hoàn thành lượt luyện tập cả 3 câu chuyện! Bé đã nhận sao cho từng câu trả lời đúng.";
+              speak(`Chúc mừng con đã hoàn thành bài học ${lesson.title}! Con đã nhận thêm ${firstCompletion ? lesson.reward : 0} sao. ${lesson.goal}`);
               const nextLesson = lessons[lessons.indexOf(lesson) + 1];
               const continueButton = document.createElement("button");
               continueButton.className = "btn btn-mint btn-small";
               continueButton.id = "finishLesson";
               continueButton.style.marginTop = "9px";
-              continueButton.textContent = nextLesson ? `Câu chuyện tiếp theo: ${nextLesson.title} →` : "Xem kho bài học →";
-              continueButton.addEventListener("click", () => setRoute(nextLesson ? `lesson/${nextLesson.id}` : "lessons"));
+              continueButton.textContent = nextLesson ? "Chọn bài học tiếp theo →" : "Xem kho bài học →";
+              continueButton.addEventListener("click", () => setRoute(nextLesson ? `lessons/${nextLesson.category}` : "lessons"));
               $("#lessonChoices").insertAdjacentElement("afterend", continueButton);
+              const recommendation = document.createElement("section");
+              recommendation.className = "lesson-story-recommendation";
+              recommendation.innerHTML = `<div><span class="kicker">HERO GỢI Ý</span><strong>Con có muốn đọc truyện liên quan để hiểu bài học hơn không?</strong></div><div class="page-actions"><button class="btn btn-mint btn-small" type="button" data-route="storybook/${lesson.id}">📖 Có, đọc truyện nhé</button><button class="btn btn-light btn-small" type="button" data-dismiss-recommendation>Để sau</button></div>`;
+              $("#lessonChoices").insertAdjacentElement("afterend", recommendation);
+              recommendation.querySelector("[data-dismiss-recommendation]").addEventListener("click", () => recommendation.remove());
             }, 620);
           }));
         };
@@ -977,7 +1233,7 @@
           const [photo, alt] = storyImages[categoryId] || storyImages.creative;
           return { src: `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=1100&q=85`, alt };
         };
-        const stories = lessons.map((lesson) => {
+        const stories = ageAppropriateLessons().map((lesson) => {
           const category = categories.find((item) => item.id === lesson.category);
           const image = storyImageUrl(lesson.category);
           return `<article class="storybook-card">
@@ -991,11 +1247,12 @@
       const storybookPages = new Map();
       const storybookTurnDirections = new Map();
       const renderStorybookPage = (lessonId) => {
-        const lesson = lessonById(lessonId);
-        if (!lesson) {
+        const sourceLesson = lessonById(lessonId);
+        if (!sourceLesson || !ageCategories[currentAgeGroup()].includes(sourceLesson.category)) {
           $("#routeView").innerHTML = pageShell("stories", "Không tìm thấy câu chuyện này.", routeLink("stories", "← Về thư viện truyện"));
           return;
         }
+        const lesson = { ...sourceLesson, age: currentAgeLabel() };
         const category = categories.find((item) => item.id === lesson.category);
         const imageIds = {
           emotion: "photo-1503454537195-1dcabb73ffb9",
@@ -1205,35 +1462,114 @@
           const claimed = state.questClaims.includes(`${currentDay()}:${quest.id}`);
           return `<article class="score-card"><span class="catalog-icon" style="--tile:#fff2d7">${quest.icon}</span><h3 style="margin:10px 0 4px;font-size:14px">${quest.label}</h3>
             <p class="note">Tiến độ: ${value}/${quest.target} · Thưởng ${quest.reward} ⭐</p><div class="progress"><i style="width:${Math.round(value / quest.target * 100)}%"></i></div>
-            <button class="btn btn-small ${claimed ? "btn-light" : "btn-mint"}" style="margin-top:12px" data-claim-quest="${quest.id}" ${claimed || value < quest.target ? "disabled" : ""}>${claimed ? "Đã nhận" : "Nhận thưởng"}</button></article>`;
+            <button class="btn btn-small ${claimed ? "btn-light" : "btn-mint"}" style="margin-top:12px" data-claim-quest="${quest.id}" ${state.authenticated && (claimed || value < quest.target) ? "disabled" : ""}>${claimed ? "Đã nhận" : "Nhận thưởng"}</button></article>`;
         }).join("");
         $("#routeView").innerHTML = pageShell("quests", "Nhiệm vụ và tiến độ được lưu trên thiết bị hiện tại.", `<div class="page-actions"><span class="stat-pill">🎮 ${state.dailyLessons}/3 bài</span><span class="stat-pill">⏱ ${Math.floor(state.sessionSeconds / 60)}/10 phút</span><span class="stat-pill">📝 ${state.dailyQuiz}/1 bài kiểm tra</span></div><div class="lesson-catalog">${rows}</div>`, "MỖI NGÀY MỘT CHÚT");
       };
 
+      const quizFormats = [
+        { id: "choice", icon: "🧭", title: "Chọn cách phù hợp", description: "Đọc tình huống, chọn cách xử lý an toàn. Có thể thử lại." },
+        { id: "matching", icon: "🔗", title: "Nối chủ đề với điều đã học", description: "Ghép các chủ đề kỹ năng với mục tiêu phù hợp." },
+        { id: "ordering", icon: "🔢", title: "Sắp xếp các bước", description: "Sắp xếp hành động theo thứ tự hợp lý." }
+      ];
+      const shuffleItems = (items) => items.slice().sort(() => Math.random() - 0.5);
+      const orderedSteps = {
+        emotion: ["Nhận ra mình đang có cảm xúc gì", "Nói cảm xúc bằng lời", "Nhờ người lớn đáng tin cậy hỗ trợ"],
+        social: ["Chào và lắng nghe bạn", "Hỏi bạn có muốn cùng chơi không", "Tôn trọng câu trả lời của bạn"],
+        safety: ["Dừng lại ở nơi an toàn", "Tìm nhân viên hoặc người lớn có trách nhiệm", "Nhờ họ liên hệ với gia đình"],
+        health: ["Làm ướt tay bằng nước sạch", "Dùng xà phòng và chà kỹ hai bàn tay", "Rửa sạch rồi lau khô tay"],
+        thinking: ["Bình tĩnh quan sát chuyện đã xảy ra", "Nói thật với người lớn đáng tin cậy", "Cùng người lớn khắc phục sự việc"],
+        care: ["Nhìn quanh tìm thùng rác phù hợp", "Bỏ rác vào đúng thùng", "Giữ khu vực chung sạch sẽ"],
+        creative: ["Nói điều mình muốn thử", "Nhờ người lớn đồng hành", "Thử từng bước ở nơi an toàn"],
+        community: ["Dừng lại khi có điều khiến mình không thoải mái", "Không chia sẻ thông tin riêng tư", "Báo người lớn đáng tin cậy"]
+      };
+      const finishQuiz = () => {
+        if (!quizRun || quizRun.completed) return;
+        quizRun.completed = true;
+        state.quiz += 1;
+        state.dailyQuiz += 1;
+        state.xp += 10;
+        state.rp += 25;
+        persist();
+        renderStats();
+      };
+      const startQuiz = (mode) => {
+        const availableLessons = ageAppropriateLessons();
+        const availableCategories = ageAppropriateCategories();
+        if (mode === "choice") {
+          quizRun = { mode, questions: shuffleItems(availableLessons).slice(0, 3), round: 0, selected: null, wrong: null, correct: 0 };
+        } else if (mode === "matching") {
+          const pairs = shuffleItems(availableCategories).slice(0, 3).map((category) => ({
+            id: category.id,
+            name: category.name,
+            goal: lessonById(category.lesson).goal
+          }));
+          quizRun = { mode, pairs, goals: shuffleItems(pairs), matched: [], selected: null, message: "" };
+        } else if (mode === "ordering") {
+          const category = availableCategories[Math.floor(Math.random() * availableCategories.length)];
+          const steps = orderedSteps[category.id];
+          quizRun = { mode, category, steps, items: shuffleItems(steps), message: "" };
+        }
+        renderQuizPage();
+      };
       const renderQuizPage = () => {
-        if (!quizPageLesson) quizPageLesson = lessons[Math.floor(Math.random() * lessons.length)];
-        const lesson = quizPageLesson;
-        const scene = getScene(lesson);
-        const quizDescription = state.demoAccount
-          ? "Đang dùng tài khoản trải nghiệm; tiến độ chỉ lưu trên trình duyệt của thiết bị này."
-          : "Cùng Hero suy nghĩ và chọn cách xử lý phù hợp trong từng tình huống.";
-        $("#routeView").innerHTML = pageShell("quiz", quizDescription, `
-          <article class="score-card quiz-center-card"><div class="lesson-progress"><span>🧠 Tình huống ${state.dailyQuiz + (quizPageChoice === null ? 1 : 0)}</span><span>⭐ ${state.xp} · Lv ${Math.floor(state.xp / 100) + 1}</span></div>
-          <article class="scene-card" style="margin:12px 0">
-            <div class="scene ${scene.type}" id="quizScene">
-              ${renderSceneBackdrop(scene)}
-              <span class="scene-kicker">📍 ${escapeHtml(scene.place)}</span><span class="scene-prop" id="quizSceneProp">${scene.prop}</span>
-              ${renderSceneActor("quizHeroActor", "Hero", true)}
-              ${renderSceneActor("quizFriendActor", scene.friend.name, false, scene.friend)}
-            </div>
-          </article>
-          <div class="story-box">${escapeHtml(lesson.story)}</div><button class="btn btn-light btn-small" id="quizPageSpeak">♫ Nghe đề bài và các phương án</button><h3 style="font-size:15px">Bé sẽ chọn cách nào?</h3>
-          <div class="lesson-choices">${lesson.answers.map((answer, index) => `<button class="lesson-choice ${quizPageChoice === index ? (index === lesson.correct ? "correct" : "incorrect") : ""}" data-quiz-page="${index}" ${quizPageChoice !== null ? "disabled" : ""}><span class="choice-letter">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(answer)}</span></button>`).join("")}</div>
-          <p class="lesson-feedback" id="quizPageFeedback">${quizPageChoice === null ? "Chọn một phương án để xem phản hồi." : quizPageChoice === lesson.correct ? "Kết quả thành công! Bé chọn được cách an toàn. +5 ⭐" : "Kết quả chưa thành công. Câu này đã khóa, không thể chọn lại; hãy chuyển sang câu tiếp theo."}</p>
-          ${quizPageChoice === null ? "" : '<p class="quiz-lock-note">Đáp án đã được ghi nhận và không thể thay đổi.</p>'}
-          <div class="page-actions"><button class="btn btn-mint btn-small" id="nextQuiz" ${quizPageChoice === null ? "disabled" : ""}>Câu tiếp theo →</button>${routeLink("achievements", "Xem thành tích", "🏅")}</div></article>
-        `, "ÔN TẬP QUA TÌNH HUỐNG");
-        $("#quizPageSpeak").addEventListener("click", () => speak(`${lesson.title}. ${lesson.story} Các phương án. ${lesson.answers.map((answer, index) => `Phương án ${index + 1}: ${answer}`).join(". ")}`));
+        const intro = `<div class="quiz-format-grid">${quizFormats.map((format) => `
+          <article class="quiz-format-card"><span class="quiz-format-icon">${format.icon}</span><h2>${format.title}</h2><p>${format.description}</p>
+            <button type="button" class="btn btn-mint btn-small" data-quiz-start="${format.id}">Bắt đầu dạng này →</button>
+          </article>`).join("")}</div><p class="quiz-note">Bài ôn tập không có video hay hoạt cảnh. Mỗi dạng có cách làm riêng và cho phép bé suy nghĩ lại.</p>`;
+        if (!quizRun) {
+          $("#routeView").innerHTML = pageShell("quiz", "Chọn một cách ôn tập phù hợp với bé.", intro, "ÔN TẬP CÙNG HERO");
+          return;
+        }
+        if (quizRun.completed) {
+          $("#routeView").innerHTML = pageShell("quiz", "Bé đã hoàn thành một lượt ôn tập.", `
+            <section class="quiz-result"><span>🏆</span><h2>Con làm tốt lắm!</h2><p>Con nhận thêm 10 sao và 25 điểm RP. Hãy chọn một dạng khác để tiếp tục luyện tập.</p>
+              <button type="button" class="btn btn-mint" data-quiz-reset>Chọn dạng ôn tập khác</button></section>
+          `, "HOÀN THÀNH");
+          return;
+        }
+        if (quizRun.mode === "choice") {
+          const lesson = quizRun.questions[quizRun.round];
+          const answers = lesson.answers.map((answer, index) => `<button type="button" class="lesson-choice quiz-answer ${quizRun.selected === index ? "correct" : ""} ${quizRun.wrong === index ? "incorrect" : ""}" data-quiz-answer="${index}" ${quizRun.selected !== null ? "disabled" : ""}>${escapeHtml(answer)}</button>`).join("");
+          $("#routeView").innerHTML = pageShell("quiz", "Đọc tình huống rồi chọn cách xử lý phù hợp. Bé có thể thử lại nếu chưa đúng.", `
+            <section class="quiz-task score-card">
+              <div class="lesson-progress"><span>🧠 Câu ${quizRun.round + 1}/${quizRun.questions.length}</span><span>⭐ ${state.xp} · Lv ${Math.floor(state.xp / 100) + 1}</span></div>
+              <span class="kicker">${escapeHtml(lesson.title)}</span><p class="quiz-story">${escapeHtml(lesson.story)}</p>
+              <h2 class="quiz-question">Con sẽ chọn cách nào?</h2><div class="quiz-answer-list">${answers}</div>
+              <p class="quiz-feedback" role="status">${quizRun.selected !== null
+                ? `Chính xác! ${lesson.prompts[2] || lesson.goal}`
+                : quizRun.wrong !== null
+                  ? `Chưa phù hợp. ${lesson.prompts[1] || "Con hãy thử suy nghĩ lại nhé."}`
+                  : "Chọn cách con nghĩ là phù hợp nhé."}</p>
+              <div class="page-actions"><button type="button" class="btn btn-light btn-small" id="quizPageSpeak">♫ Nghe tình huống</button>
+                <button type="button" class="btn btn-mint btn-small" id="nextQuiz" ${quizRun.selected === null ? "disabled" : ""}>${quizRun.round + 1 === quizRun.questions.length ? "Hoàn thành →" : "Câu tiếp theo →"}</button></div>
+            </section>`, "CHỌN CÁCH PHÙ HỢP");
+          $("#quizPageSpeak").addEventListener("click", () => speak(`${lesson.title}. ${lesson.story} ${lesson.answers.join(". ")}`));
+          return;
+        }
+        if (quizRun.mode === "matching") {
+          const matched = new Set(quizRun.matched);
+          const left = quizRun.pairs.map((pair) => `<button type="button" class="matching-item ${quizRun.selected === pair.id ? "is-selected" : ""}" data-match-category="${pair.id}" ${matched.has(pair.id) ? "disabled" : ""}>${escapeHtml(pair.name)}</button>`).join("");
+          const right = quizRun.goals.map((pair) => `<button type="button" class="matching-item" data-match-goal="${pair.id}" ${matched.has(pair.id) ? "disabled" : ""}>${escapeHtml(pair.goal)}</button>`).join("");
+          $("#routeView").innerHTML = pageShell("quiz", "Chọn một chủ đề bên trái, rồi nối với mục tiêu học tập phù hợp bên phải.", `
+            <section class="quiz-task score-card"><div class="lesson-progress"><span>🔗 Đã nối ${quizRun.matched.length}/${quizRun.pairs.length} cặp</span><span>Chủ đề ↔ Điều đã học</span></div>
+              <div class="matching-grid"><div><h2>Chủ đề</h2>${left}</div><div><h2>Điều con học được</h2>${right}</div></div>
+              <p class="quiz-feedback" role="status">${escapeHtml(quizRun.message || "Chọn hai thẻ có nội dung liên quan nhé.")}</p>
+            </section>`, "NỐI CẶP");
+          return;
+        }
+        if (quizRun.mode === "ordering") {
+          const items = quizRun.items.map((step, index) => `<li><span>${escapeHtml(step)}</span><span class="order-controls">
+            <button type="button" data-order-move="up" data-order-index="${index}" aria-label="Di chuyển lên" ${index === 0 ? "disabled" : ""}>↑</button>
+            <button type="button" data-order-move="down" data-order-index="${index}" aria-label="Di chuyển xuống" ${index === quizRun.items.length - 1 ? "disabled" : ""}>↓</button>
+          </span></li>`).join("");
+          $("#routeView").innerHTML = pageShell("quiz", `Sắp xếp các bước cho chủ đề ${escapeHtml(quizRun.category.name)} theo thứ tự hợp lý.`, `
+            <section class="quiz-task score-card"><div class="lesson-progress"><span>🔢 Sắp xếp các bước</span><span>${escapeHtml(quizRun.category.name)}</span></div>
+              <ol class="order-list">${items}</ol>
+              <p class="quiz-feedback" role="status">${escapeHtml(quizRun.message || "Dùng mũi tên để đổi vị trí các bước.")}</p>
+              <button type="button" class="btn btn-mint btn-small" id="checkQuizOrder">Kiểm tra thứ tự</button>
+            </section>`, "SẮP XẾP THỨ TỰ");
+        }
       };
 
       const renderAchievementsPage = () => {
@@ -1416,18 +1752,17 @@
           const reviewId = review.id || `review-${index}`;
           return `<article class="store-review ${review.isSample ? "is-sample" : ""}">
             <span class="review-stars" aria-label="${Number(review.stars)} trên 5 sao">${"★".repeat(Number(review.stars) || 0)}${"☆".repeat(5 - (Number(review.stars) || 0))}</span>
-            ${review.isSample ? '<span class="review-sample-label">ĐÁNH GIÁ MẪU</span>' : ""}
             <h3>${escapeHtml(review.title || "Đánh giá Little Hero")}</h3>
             <p>${escapeHtml(review.body)}</p>
-            <small>${escapeHtml(review.author || "Người dùng trên thiết bị")} · ${escapeHtml(review.date || "Ngày gửi không rõ")}${review.isSample ? "" : " · lưu trên thiết bị"}</small>
+            <small>${escapeHtml(review.author)}</small>
             <div class="page-actions"><button class="btn btn-light btn-small" type="button" data-review-helpful="${escapeHtml(reviewId)}">👍 Hữu ích (${Number(review.helpful) || 0})</button></div>
           </article>`;
         }).join("");
-        $("#routeView").innerHTML = pageShell("reviews", "Giao diện đánh giá tham khảo cửa hàng ứng dụng. Không có đánh giá Google Play/App Store được nhập hoặc xác minh; các bài dưới đây chỉ là phản hồi do người dùng nhập trên thiết bị này.", `
+        $("#routeView").innerHTML = pageShell("reviews", "Chia sẻ trải nghiệm thực tế của gia đình với Little Hero.", `
           <div class="social-column">
             <section class="store-rating" aria-label="Tổng quan đánh giá">
-              <div class="store-rating-score"><strong>${saved.length ? average.toFixed(1) : "—"}</strong><span>${saved.length ? `${saved.length} bài đánh giá (có mẫu)` : "Chưa có đánh giá"}</span><div class="review-stars">${saved.length ? "★".repeat(Math.round(average)) + "☆".repeat(5 - Math.round(average)) : "☆☆☆☆☆"}</div></div>
-              <div>${ratingBreakdown}<p class="note" style="margin:8px 0 0">Có ${saved.filter((review) => review.isSample).length} đánh giá minh họa được ghi nhãn “Đánh giá mẫu”. Số liệu không phải xếp hạng chính thức trên kho ứng dụng.</p></div>
+              <div class="store-rating-score"><strong>${saved.length ? average.toFixed(1) : "—"}</strong><span>${saved.length ? `${saved.length} phản hồi từ gia đình` : "Chưa có phản hồi"}</span><div class="review-stars">${saved.length ? "★".repeat(Math.round(average)) + "☆".repeat(5 - Math.round(average)) : "☆☆☆☆☆"}</div></div>
+              <div>${ratingBreakdown}${saved.length ? "" : '<p class="note" style="margin:8px 0 0">Phản hồi sẽ xuất hiện tại đây sau khi được gửi.</p>'}</div>
             </section>
             <div class="social-layout">
               <div class="social-column">
@@ -1435,7 +1770,7 @@
                 <div class="social-feed">${reviews || '<article class="store-review"><p>Chưa có đánh giá nào.</p></article>'}</div>
               </div>
               <form class="review-form" id="reviewForm"><h3 style="font-size:14px">Viết đánh giá</h3>
-                <label class="form-label">Tên hiển thị<input name="author" maxlength="50" value="${escapeHtml(state.childName || "")}" placeholder="Tên hiển thị (không bắt buộc)"></label>
+                <label class="form-label">Tên hiển thị *<input name="author" required maxlength="50" value="${escapeHtml(state.childName || "")}" placeholder="Tên người đánh giá"></label>
                 <label class="form-label">Số sao</label><div class="stars-input" id="starsInput">${[1,2,3,4,5].map((star) => `<button type="button" data-star="${star}" aria-label="${star} sao">${star <= selectedStars ? "★" : "☆"}</button>`).join("")}</div>
                 <label class="form-label">Tiêu đề<input name="title" maxlength="70" placeholder="Tóm tắt trải nghiệm"></label>
                 <label class="form-label">Nhận xét<textarea name="review" required maxlength="400" placeholder="Chia sẻ trải nghiệm thực tế của bạn…"></textarea></label>
@@ -1456,9 +1791,10 @@
           const body = String(formData.get("review") || "").trim();
           const title = String(formData.get("title") || "").trim();
           const author = String(formData.get("author") || "").trim().slice(0, 50);
+          if (!author) { toast("Hãy nhập tên hiển thị để phản hồi được ghi nhận đúng người."); return; }
           if (!body) { toast("Hãy nhập nhận xét trước khi gửi."); return; }
           if (/(\b\d[\s.-]*){8,}|\S+@\S+|https?:\/\/|www\./i.test(`${title} ${body} ${author}`)) { toast("Hãy bỏ thông tin liên hệ riêng tư trước khi gửi nhé."); return; }
-          state.reviews = [...(state.reviews || []), { id: `review-${Date.now()}`, stars: selectedStars, title, body, author: author || "Người dùng trên thiết bị", date: currentDay(), helpful: 0 }];
+          state.reviews = [...(state.reviews || []), { id: `review-${Date.now()}`, stars: selectedStars, title, body, author, date: currentDay(), helpful: 0 }];
           persist(); renderReviewsPage(); toast("Đã lưu đánh giá trên thiết bị; đánh giá chưa được xác minh.");
         });
         $("#routeView").querySelectorAll("[data-review-helpful]").forEach((button) => button.addEventListener("click", () => {
@@ -1524,17 +1860,30 @@
       };
 
       const renderArenaPage = () => {
-        const contestants = {
+        const ageGroup = currentAgeGroup();
+        const contestantsByMode = {
           duel: [{ name: "Minh Khang", level: "Lv 2 · 1v1" }, { name: "Bảo An", level: "Lv 1 · 1v1" }, { name: "Gia Hân", level: "Lv 3 · 1v1" }],
           region: [{ name: "Khánh Linh", level: "Đà Nẵng · Lv 2" }, { name: "Quang Huy", level: "Quảng Nam · Lv 1" }, { name: "An Nhiên", level: "Huế · Lv 3" }],
           city: [{ name: "Gia Hân", level: "Đà Nẵng · Lv 3" }, { name: "Bảo An", level: "Đà Nẵng · Lv 2" }, { name: "Khánh Linh", level: "Đà Nẵng · Lv 2" }],
           nation: [{ name: "Minh Khang", level: "Miền Bắc · Lv 2" }, { name: "Gia Hân", level: "Miền Trung · Lv 3" }, { name: "Bảo An", level: "Miền Nam · Lv 1" }],
         };
+        const youngerOpponentNames = {
+          duel: ["Bé Mây", "Bé Sóc", "Bé Na"], region: ["Bé Cún", "Bé Thỏ", "Bé Bông"],
+          city: ["Bé Gấu", "Bé Mít", "Bé Nấm"], nation: ["Bé Cáo", "Bé Kem", "Bé Mơ"]
+        };
+        const contestants = Object.fromEntries(Object.entries(contestantsByMode).map(([mode, players]) => [
+          mode,
+          players.map((player, index) => ({
+            ...player,
+            name: ageGroup === "3-6" ? youngerOpponentNames[mode][index] : player.name,
+            level: `Nhóm ${ageGroup.replace("-", "–")} tuổi · ${player.level}`
+          }))
+        ]));
         const modes = [["duel", "Đấu 1v1"], ["region", "Khu vực"], ["city", "Thành phố"], ["nation", "Toàn quốc"]];
-        $("#routeView").innerHTML = pageShell("arena", "Chọn phạm vi thi đấu và cùng các bạn luyện tập qua tình huống kỹ năng.", `
+        $("#routeView").innerHTML = pageShell("arena", `Đấu trường nhóm ${ageGroup.replace("-", "–")} tuổi · nội dung và câu hỏi được chọn theo độ tuổi của bé.`, `
           <div class="arena-grid">
             <article class="arena-card">
-              <span class="kicker">HERO ARENA</span><h3>Thi đấu qua tình huống kỹ năng</h3>
+              <span class="kicker">HERO ARENA · NHÓM ${ageGroup.replace("-", "–")} TUỔI</span><h3>Thi đấu qua tình huống kỹ năng</h3>
               <p>Mỗi lượt có một tình huống, hoạt cảnh nhân vật 2D và một lần chọn đáp án. Chọn sai thì câu đấu sẽ khóa.</p>
               <div class="arena-tabs" id="arenaPageTabs">${modes.map(([id, label]) => `<button class="arena-tab ${arenaMode === id ? "active" : ""}" data-mode="${id}" aria-pressed="${arenaMode === id}">${label}</button>`).join("")}</div>
               <h4 style="margin:16px 0 5px;font-size:12px">Các bạn cùng thử thách</h4>
@@ -1590,14 +1939,18 @@
         });
         $("#routeView").addEventListener("click", (event) => {
           if (!event.target.closest("#startArenaMatch")) return;
-          arenaMatchLesson = lessons[Math.floor(Math.random() * lessons.length)];
+          const availableLessons = ageAppropriateLessons();
+          arenaMatchLesson = availableLessons[Math.floor(Math.random() * availableLessons.length)];
           arenaMatchChoice = null;
           setRoute("arena-match");
         });
       };
 
       const renderArenaMatchPage = () => {
-        const lesson = arenaMatchLesson || lessons[Math.floor(Math.random() * lessons.length)];
+        const availableLessons = ageAppropriateLessons();
+        const lesson = arenaMatchLesson && ageCategories[currentAgeGroup()].includes(arenaMatchLesson.category)
+          ? arenaMatchLesson
+          : availableLessons[Math.floor(Math.random() * availableLessons.length)];
         arenaMatchLesson = lesson;
         const scene = getScene(lesson);
         const opponent = arenaOpponent || { name: "Bạn đồng hành", level: "Cùng luyện tập" };
@@ -1720,6 +2073,7 @@
           pendingAuthRoute = "";
           persist();
           setRoute(nextRoute);
+          showOnboardingIfNeeded();
           toast("Đã vào tài khoản trải nghiệm. Tiến độ chỉ lưu trên trình duyệt này.");
         };
         $("#demoAccountLogin").addEventListener("click", enterDemoAccount);
@@ -1902,6 +2256,7 @@
             pendingAuthRoute = "";
             persist();
             setRoute(nextRoute);
+            showOnboardingIfNeeded();
             toast(`Chào mừng ${result.user.name} trở lại Little Hero!`);
           } catch (error) {
             console.error("Không thể kết nối tới máy chủ đăng nhập.", error);
@@ -2511,20 +2866,30 @@
           wardrobe: renderWardrobePage,
           language: renderLanguagePage,
           auth: renderAuthPage,
-          pricing: () => { $("#routeView").innerHTML = pageShell("pricing", "So sánh gói Free và Premium. Hệ thống chưa xác minh giao dịch ngân hàng tự động.", `
+          pricing: () => { $("#routeView").innerHTML = pageShell("pricing", "Tìm hiểu các lựa chọn đồng hành cùng hành trình học tập của bé. Hệ thống chưa xác minh giao dịch ngân hàng tự động.", `
             <div class="pricing-grid">
               <article class="plan-card"><h3>🌱 Free</h3><p>Dành cho gia đình muốn bắt đầu.</p><div class="price">0đ <span>/ mãi mãi</span></div><ul class="features"><li>Bài học kỹ năng cơ bản</li><li>Truyện và hoạt cảnh tương tác</li><li>Tiến độ lưu trên thiết bị</li><li>Nhiệm vụ và sao thưởng</li></ul><button class="btn btn-light btn-small" data-route="lessons">Xem bài học</button></article>
               <article class="plan-card premium"><span class="popular">GÓI DỰ KIẾN</span><h3>♛ Đồng hành Premium</h3><p>Thông tin dự kiến theo đề án.</p><div class="price">99.000đ <span>/ tháng</span></div><ul class="features"><li>Thư viện hướng tới 80 bài học</li><li>Truyện và hoạt động bổ sung</li><li>Nhật ký học tập mở rộng</li></ul><button class="btn btn-primary btn-small" data-route="payment">Tiếp tục đến thông tin thanh toán →</button></article>
-            </div>
-            <div class="table-scroll"><table class="pricing-compare" aria-label="So sánh Free và Premium"><thead><tr><th>Tính năng</th><th>Free</th><th>Premium</th></tr></thead><tbody>
-              <tr><td>Bài học và hoạt cảnh cơ bản</td><td>✓</td><td>✓</td></tr><tr><td>Truyện tương tác</td><td>✓</td><td>✓</td></tr><tr><td>Nhiệm vụ hằng ngày</td><td>✓</td><td>✓</td></tr><tr><td>Thư viện bài học mở rộng</td><td>—</td><td>✓ Theo gói</td></tr><tr><td>Nhật ký nâng cao</td><td>—</td><td>✓ Theo gói</td></tr><tr><td>Chi phí</td><td>Miễn phí</td><td>99.000đ/tháng</td></tr>
-            </tbody></table></div>`, "GÓI HỌC"); },
+            </div>`, "GÓI HỌC"); },
           payment: renderPaymentPage,
           "premium-success": renderPremiumSuccessPage,
           arena: renderArenaPage,
           "arena-match": renderArenaMatchPage,
           tutor: renderTutorPage,
-          parents: () => requestParentAccess(renderParentRoute),
+          parents: () => {
+            if (!state.authenticated) {
+              $("#routeView").innerHTML = pageShell("parents", "Xem trước các công cụ đồng hành cùng gia đình. Dữ liệu hồ sơ và tiến độ chỉ hiển thị sau khi đăng nhập và xác nhận phụ huynh.", `
+                <div class="parent-preview-grid">
+                  <article class="settings-card"><span class="catalog-icon">📈</span><h2>Theo dõi tiến độ</h2><p>Xem bài học đã hoàn thành, thời gian học và các kỹ năng bé đang khám phá.</p></article>
+                  <article class="settings-card"><span class="catalog-icon">👧</span><h2>Quản lý hồ sơ</h2><p>Tạo hồ sơ riêng cho từng bé và chuyển đổi giữa các hành trình học tập.</p></article>
+                  <article class="settings-card"><span class="catalog-icon">🛡️</span><h2>Đồng hành an toàn</h2><p>Tham khảo cài đặt thời gian, nội dung và hoạt động thực hành tại nhà.</p></article>
+                </div>
+                <div class="page-actions"><a class="btn btn-primary" href="#/auth" data-route="auth" data-preview-login>Đăng nhập để tiếp tục</a></div>
+              `, "GIA ĐÌNH");
+              return;
+            }
+            requestParentAccess(renderParentRoute);
+          },
           "parent-news": renderParentNews,
           lesson: () => renderLessonRoute(param)
         };
@@ -2610,7 +2975,11 @@
         const recentAttempts = [...attempts].slice(-8).reverse();
         const lessonTotals = new Map();
         attempts.forEach((entry) => lessonTotals.set(entry.lessonId, (lessonTotals.get(entry.lessonId) || 0) + 1));
-        const favoriteLessons = [...lessonTotals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+        const availableLessonIds = new Set(ageAppropriateLessons().map((lesson) => lesson.id));
+        const favoriteLessons = [...lessonTotals.entries()]
+          .filter(([id]) => availableLessonIds.has(id))
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3);
         const radar = renderSkillRadar();
         const minutesToday = Math.floor(state.sessionSeconds / 60);
         const dailyLimit = Math.max(15, Number(state.parentControls.dailyLimit) || 60);
@@ -2644,12 +3013,12 @@
                 <h2>👧 Hồ sơ của con</h2><p>Tạo nhiều hồ sơ và chuyển đổi để xem tiến trình riêng của mỗi trẻ.</p>
                 <form class="profile-add" id="profileDetailsForm">
                   <input name="name" maxlength="40" required aria-label="Tên hoặc biệt danh" value="${escapeHtml(child?.name || state.childName || "Bé")}" placeholder="Tên hoặc biệt danh">
-                  <input name="age" type="number" min="2" max="18" required aria-label="Độ tuổi" value="${Number(child?.age) || 6}" placeholder="Tuổi">
+                  <input name="age" type="number" min="3" max="10" required aria-label="Độ tuổi" value="${Number(child?.age) || 6}" placeholder="Tuổi">
                   <button class="btn btn-light btn-small">Cập nhật hồ sơ</button>
                 </form>
                 <form class="profile-add" id="profileAddForm">
                   <input name="name" maxlength="40" required aria-label="Tên hồ sơ mới" placeholder="Tên/biệt danh của bé mới">
-                  <input name="age" type="number" min="2" max="18" required aria-label="Độ tuổi hồ sơ mới" placeholder="Tuổi">
+                  <input name="age" type="number" min="3" max="10" required aria-label="Độ tuổi hồ sơ mới" placeholder="Tuổi">
                   <button class="btn btn-mint btn-small">＋ Thêm hồ sơ</button>
                 </form>
               </section>
@@ -2680,7 +3049,7 @@
             <section class="parent-panel"><h2>🌱 Gợi ý bước tiếp theo</h2>
               <p>${repeatedDifficulty ? "Các lượt gần đây có nhiều lựa chọn chưa phù hợp trong cùng một chủ đề. Ba mẹ có thể cùng con thực hành lại khi con sẵn sàng." : "Chọn một nội dung vừa sức, khuyến khích con tự suy nghĩ và trao đổi sau bài học."}</p>
               ${repeatedDifficulty ? `<div class="parent-notice">Lưu ý để ba mẹ quan tâm: ${escapeHtml(lessonById(recentMisses[0].lessonId)?.title || "một chủ đề")} có từ hai lượt chọn cần luyện tập trong sáu lượt gần đây. Đây chỉ là gợi ý đồng hành, không phải đánh giá chuyên môn.</div>` : ""}
-              <div class="page-actions">${routeLink(`lesson/${lessons.find((lesson) => !state.completed.includes(lesson.id))?.id || lessons[0].id}`, "Mở bài học gợi ý", "▶")}${routeLink("parent-news", "Xem gợi ý trò chuyện", "💬")}</div>
+              <div class="page-actions">${routeLink(`lesson/${ageAppropriateLessons().find((lesson) => !state.completed.includes(lesson.id))?.id || ageAppropriateLessons()[0].id}`, "Mở bài học gợi ý", "▶")}${routeLink("parent-news", "Xem gợi ý trò chuyện", "💬")}</div>
               <p class="note">Gợi ý được suy ra từ nhật ký cục bộ; chưa có AI Tutor, cá nhân hóa máy chủ hoặc cảnh báo đẩy.</p>
             </section>
             <div class="parent-grid">
@@ -2725,18 +3094,29 @@
           childProgressFields.forEach((key) => { state[key] = next[key] ?? freshState()[key]; });
           state.childName = next.name || state.childName;
           persist();
+          renderDropdown();
+          renderIslands();
+          renderFeatured();
+          renderStories();
           renderParentRoute();
+          showOnboardingIfNeeded();
         });
         $("#profileDetailsForm").addEventListener("submit", (event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
           const name = String(data.get("name") || "").trim().slice(0, 40);
           const age = Number(data.get("age"));
-          if (!name || !Number.isInteger(age) || age < 2 || age > 18) { toast("Hãy nhập tên và độ tuổi từ 2 đến 18."); return; }
+          if (!name || !Number.isInteger(age) || age < 3 || age > 10) { toast("Hãy nhập tên và độ tuổi từ 3 đến 10."); return; }
           child.name = name;
           child.age = age;
+          state.age = age;
+          state.ageGroup = age <= 6 ? "3-6" : "7-10";
           state.childName = name;
           persist();
+          renderDropdown();
+          renderIslands();
+          renderFeatured();
+          renderStories();
           renderParentRoute();
           toast("Đã cập nhật hồ sơ trên thiết bị này.");
         });
@@ -2745,7 +3125,7 @@
           const data = new FormData(event.currentTarget);
           const name = String(data.get("name") || "").trim().slice(0, 40);
           const age = Number(data.get("age"));
-          if (!name || !Number.isInteger(age) || age < 2 || age > 18) { toast("Hãy nhập biệt danh và độ tuổi từ 2 đến 18."); return; }
+          if (!name || !Number.isInteger(age) || age < 3 || age > 10) { toast("Hãy nhập biệt danh và độ tuổi từ 3 đến 10."); return; }
           const defaults = freshState();
           const profile = { id: `child-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, age };
           childProgressFields.forEach((key) => {
@@ -2753,11 +3133,20 @@
             profile[key] = Array.isArray(value) ? [...value] : value && typeof value === "object" ? { ...value } : value;
           });
           profile.childName = name;
+          profile.age = age;
+          profile.ageGroup = age <= 6 ? "3-6" : "7-10";
+          profile.interests = [];
+          profile.onboardingComplete = false;
           state.children.push(profile);
           state.activeChildId = profile.id;
           childProgressFields.forEach((key) => { state[key] = profile[key]; });
           persist();
+          renderDropdown();
+          renderIslands();
+          renderFeatured();
+          renderStories();
           renderParentRoute();
+          showOnboardingIfNeeded();
           toast("Đã tạo hồ sơ mới.");
         });
         $("#parentDailyLimit").addEventListener("change", (event) => { state.parentControls.dailyLimit = Number(event.currentTarget.value); persist(); renderParentRoute(); });
@@ -2924,6 +3313,7 @@
         const routeLinkElement = event.target.closest("a[data-route], button[data-route]");
         if (routeLinkElement) {
           event.preventDefault();
+          if (routeLinkElement.hasAttribute("data-preview-login")) pendingAuthRoute = route;
           if (routeLinkElement.dataset.newsFocus) pendingNewsFocus = routeLinkElement.dataset.newsFocus;
           setRoute(routeLinkElement.dataset.route);
           return;
@@ -2931,14 +3321,13 @@
         const lessonButton = event.target.closest("[data-lesson]");
         if (lessonButton) {
           event.preventDefault();
-          setRoute(`lesson/${lessonButton.dataset.lesson}`);
+          setRoute(`lessons/${lessonButton.dataset.category || ""}`);
           return;
         }
         if (event.target.closest("[data-parent-close]")) { closeParentConfirmation(); return; }
         if (event.target.closest("[data-close]")) { closeDialog(); return; }
         const parentButton = event.target.closest("[data-parent]");
         if (parentButton) { event.preventDefault(); requestParentAccess(() => setRoute("parents")); }
-        if (event.target.closest("[data-open-tutor]")) { event.preventDefault(); openTutor(); }
         const claimQuest = event.target.closest("[data-claim-quest]");
         if (claimQuest && !claimQuest.disabled) {
           const quest = questSpecs.find((item) => item.id === claimQuest.dataset.claimQuest);
@@ -2950,28 +3339,85 @@
           }
           return;
         }
-        const pageAnswer = event.target.closest("[data-quiz-page]");
-        if (pageAnswer && quizPageChoice === null) {
-          quizPageChoice = Number(pageAnswer.dataset.quizPage);
-          state.quiz += 1;
-          state.dailyQuiz += 1;
-          if (quizPageChoice === quizPageLesson.correct) {
-            state.xp += 5;
-            state.rp += 25;
-            speak(`Kết quả thành công! ${quizPageLesson.prompts[2]}`);
+        const quizStart = event.target.closest("#routeView [data-quiz-start]");
+        if (quizStart) {
+          startQuiz(quizStart.dataset.quizStart);
+          return;
+        }
+        const quizAnswer = event.target.closest("#routeView [data-quiz-answer]");
+        if (quizAnswer && quizRun?.mode === "choice" && quizRun.selected === null) {
+          const lesson = quizRun.questions[quizRun.round];
+          const answer = Number(quizAnswer.dataset.quizAnswer);
+          if (answer === lesson.correct) {
+            quizRun.selected = answer;
+            quizRun.correct += 1;
+            state.xp += 3;
+            speak(`Đúng rồi! ${lesson.prompts[2] || lesson.goal}`);
           } else {
-            state.xp = Math.max(0, state.xp - 3);
-            state.rp = Math.max(0, state.rp - 5);
-            speak(`Kết quả chưa thành công. ${quizPageLesson.prompts[1]} Câu này đã khóa. Hãy chuyển sang câu tiếp theo.`);
+            quizRun.wrong = answer;
+            speak(`Không sao, con thử lại nhé. ${lesson.prompts[1] || lesson.goal}`);
           }
           persist();
           renderQuizPage();
-          animateSceneChoice("quizScene", "quizHeroActor", "quizFriendActor", "quizSceneProp", quizPageLesson.answers[quizPageChoice], quizPageLesson, quizPageChoice === quizPageLesson.correct);
           return;
         }
-        if (event.target.closest("#nextQuiz")) {
-          quizPageLesson = lessons[Math.floor(Math.random() * lessons.length)];
-          quizPageChoice = null;
+        if (event.target.closest("#nextQuiz") && quizRun?.mode === "choice" && quizRun.selected !== null) {
+          quizRun.round += 1;
+          if (quizRun.round >= quizRun.questions.length) finishQuiz();
+          else {
+            quizRun.selected = null;
+            quizRun.wrong = null;
+          }
+          renderQuizPage();
+          return;
+        }
+        const matchCategory = event.target.closest("#routeView [data-match-category]");
+        if (matchCategory && quizRun?.mode === "matching") {
+          quizRun.selected = matchCategory.dataset.matchCategory;
+          quizRun.message = "Đã chọn chủ đề. Bây giờ chọn mục tiêu phù hợp.";
+          renderQuizPage();
+          return;
+        }
+        const matchGoal = event.target.closest("#routeView [data-match-goal]");
+        if (matchGoal && quizRun?.mode === "matching" && quizRun.selected) {
+          if (quizRun.selected === matchGoal.dataset.matchGoal) {
+            quizRun.matched.push(quizRun.selected);
+            quizRun.message = "Nối đúng! Con tìm được một cặp phù hợp.";
+            state.xp += 3;
+            if (quizRun.matched.length === quizRun.pairs.length) finishQuiz();
+          } else {
+            quizRun.message = "Chưa khớp, con thử nối cặp khác nhé.";
+          }
+          quizRun.selected = null;
+          persist();
+          renderQuizPage();
+          return;
+        }
+        const orderMove = event.target.closest("#routeView [data-order-move]");
+        if (orderMove && quizRun?.mode === "ordering") {
+          const index = Number(orderMove.dataset.orderIndex);
+          const nextIndex = index + (orderMove.dataset.orderMove === "up" ? -1 : 1);
+          if (Number.isInteger(index) && nextIndex >= 0 && nextIndex < quizRun.items.length) {
+            [quizRun.items[index], quizRun.items[nextIndex]] = [quizRun.items[nextIndex], quizRun.items[index]];
+            quizRun.message = "";
+            renderQuizPage();
+          }
+          return;
+        }
+        if (event.target.closest("#checkQuizOrder") && quizRun?.mode === "ordering") {
+          if (quizRun.items.every((step, index) => step === quizRun.steps[index])) {
+            quizRun.message = "Đúng thứ tự rồi! Con đã sắp xếp các bước rất hợp lý.";
+            state.xp += 5;
+            finishQuiz();
+          } else {
+            quizRun.message = "Thứ tự này chưa hợp lý. Con hãy thử đổi vị trí các bước nhé.";
+          }
+          persist();
+          renderQuizPage();
+          return;
+        }
+        if (event.target.closest("[data-quiz-reset]")) {
+          quizRun = null;
           renderQuizPage();
           return;
         }
@@ -2998,17 +3444,22 @@
         if (event.target === $("#appDialog")) closeOpenDialog();
       });
       $("#appDialog").addEventListener("cancel", (event) => {
+        if ($("#appDialog").dataset.childOnboarding === "true") {
+          event.preventDefault();
+          return;
+        }
         if ($("#appDialog").dataset.parentConfirmation !== "true") return;
         event.preventDefault();
         closeParentConfirmation();
       });
       $("#continueBtn").addEventListener("click", () => {
-        const lesson = lessons.find((item) => !state.completed.includes(item.id)) || lessons[0];
-        setRoute(`lesson/${lesson.id}`);
+        const available = ageAppropriateLessons();
+        const lesson = available.find((item) => !state.completed.includes(item.id)) || available[0];
+        setRoute(`lessons/${lesson.category}`);
       });
       $("#randomLessonBtn").addEventListener("click", () => {
-        const available = lessons.filter((lesson) => !state.completed.includes(lesson.id));
-        const pool = available.length ? available : lessons;
+        const available = ageAppropriateLessons().filter((lesson) => !state.completed.includes(lesson.id));
+        const pool = available.length ? available : ageAppropriateLessons();
         const lesson = pool[Math.floor(Math.random() * pool.length)];
         renderFeatured(lesson);
         toast(`Hero gợi ý: ${lesson.title}`);
@@ -3023,7 +3474,7 @@
         Object.assign(state, preferences);
         pendingAuthRoute = "";
         miniGameRun = null;
-        quizPageChoice = null;
+        quizRun = null;
         applyTheme();
         persist();
         setRoute("home");
@@ -3052,25 +3503,6 @@
         nav.classList.toggle("open");
         $("#menuBtn").setAttribute("aria-expanded", String(nav.classList.contains("open")));
       });
-      $("#fabToggle").addEventListener("click", () => {
-        const actions = $("#floatingActions");
-        const expanded = actions.classList.toggle("open");
-        $("#fabToggle").setAttribute("aria-expanded", String(expanded));
-        $("#fabToggle").setAttribute("aria-label", expanded ? "Thu gọn liên hệ và ủng hộ" : "Mở liên hệ và ủng hộ");
-      });
-      document.addEventListener("click", (event) => {
-        const actions = $("#floatingActions");
-        if (!actions.contains(event.target) || event.target.closest(".fab-link")) {
-          actions.classList.remove("open");
-          $("#fabToggle").setAttribute("aria-expanded", "false");
-          $("#fabToggle").setAttribute("aria-label", "Mở liên hệ và ủng hộ");
-        }
-      });
-      document.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape") return;
-        $("#floatingActions").classList.remove("open");
-        $("#fabToggle").setAttribute("aria-expanded", "false");
-      });
       $("#arenaTabs").addEventListener("click", (event) => {
         const tab = event.target.closest("[data-mode]");
         if (!tab) return;
@@ -3087,7 +3519,12 @@
 
       $("#dailyQuests").addEventListener("click", (event) => {
         if (event.target.closest("#claimQuests")) return;
-        if (dailyProgress("lessons") < 3) { setRoute(`lesson/${lessons.find((lesson) => !state.completed.includes(lesson.id))?.id || lessons[0].id}`); return; }
+        if (dailyProgress("lessons") < 3) {
+          const available = ageAppropriateLessons();
+          const nextLesson = available.find((lesson) => !state.completed.includes(lesson.id)) || available[0];
+          setRoute(`lessons/${nextLesson.category}`);
+          return;
+        }
         if (dailyProgress("quiz") === 0) setRoute("quiz");
         else toast("Bé đã thử các hoạt động hôm nay. Hẹn gặp lại ngày mai nhé!");
       });
@@ -3110,6 +3547,13 @@
           }
         });
       });
+      const previousCloset = safeWardrobe(previousHeroCloset);
+      if (JSON.stringify(safeWardrobe(state.closet)) === JSON.stringify(previousCloset)) {
+        state.closet = freshState().closet;
+        const activeChild = state.children.find((child) => child.id === state.activeChildId);
+        if (activeChild) activeChild.closet = state.closet;
+        persist();
+      }
       renderDropdown();
       renderIslands();
       renderFeatured();
@@ -3123,6 +3567,7 @@
       if (initialRoute !== "home") setRoute(initialRoute, { pop: true });
       else if (!location.hash.startsWith("#/") && state.lastRoute && state.lastRoute !== "home") setRoute(state.lastRoute, { pop: true, restore: true });
       else setRoute("home", { pop: true });
+      showOnboardingIfNeeded();
       window.setInterval(() => {
         refreshDay();
         if (!state.authenticated || document.visibilityState !== "visible") return;
