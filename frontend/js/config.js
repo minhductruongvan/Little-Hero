@@ -1,1 +1,1 @@
-window.LITTLE_HERO_API_BASE = "https://api.littlehero.id.vn";
+window.LITTLE_HERO_API_BASE = "https://little-hero.onrender.com";
