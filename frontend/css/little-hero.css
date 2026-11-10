@@ -489,8 +489,6 @@
     .skills-reason h3 { margin: 4px 0 0; color: var(--reason-color,#e84f68); font-size: 21px; line-height: 1.2; }
     .skills-reason p { max-width: 230px; margin: 0; color: #33485c; font-size: 16px; line-height: 1.5; }
     .learning-steps { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; counter-reset: journey; }
-    .learning-journey-image { display: block; overflow: hidden; border-radius: 24px; }
-    .learning-journey-image img { display: block; width: 100%; height: auto; }
     .learning-step { position: relative; min-height: 160px; padding: 18px 15px; border: 1px solid #e5eee7; border-radius: 21px; background: white; box-shadow: var(--shadow); counter-increment: journey; }
     .learning-step::before { display: grid; width: 37px; height: 37px; place-items: center; border-radius: 13px; background: #e8f7ef; color: #398e75; font-size: 18px; content: counter(journey, decimal-leading-zero); }
     .learning-step h3 { margin: 12px 0 4px; font-size: 13px; }

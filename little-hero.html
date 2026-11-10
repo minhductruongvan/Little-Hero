@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./frontend/css/little-hero.css?v=arena-tight-spacing-20261110-1">
+  <link rel="stylesheet" href="./frontend/css/little-hero.css?v=journey-section-restored-20261110-1">
 
 </head>
 <body>
@@ -120,9 +120,18 @@
     </section>
 
     <section class="section wrap" id="learningJourney">
-      <a class="learning-journey-image" href="#/lessons" data-route="lessons" aria-label="Khám phá khóa học cùng Little Hero">
-        <img src="./frontend/assets/learning-journey.png" alt="Bốn bước học cùng Little Hero: xem tình huống, chọn phản ứng, chơi mini game và nhận phần thưởng. Khám phá khóa học.">
-      </a>
+      <div class="section-head">
+        <div><span class="kicker">HỌC QUA TRẢI NGHIỆM · TIẾN BỘ TỪNG BƯỚC</span><h2>Hành trình học tập cùng Little Hero</h2><p>Mỗi bài học giúp bé khám phá tình huống, lựa chọn cách ứng xử và cùng Hero tiến bộ.</p></div>
+      </div>
+      <div class="learning-showcase">
+        <div><div class="learning-steps">
+          <article class="learning-step" style="--step-bg:#e7f3ff;--step-line:#c9e3ff"><div class="learning-step-illustration">💻</div><h3>Xem tình huống</h3><p>Bé xem câu chuyện gần gũi trong cuộc sống.</p></article>
+          <article class="learning-step" style="--step-bg:#effbef;--step-line:#c8eccb"><div class="learning-step-illustration">🫵😊</div><h3>Chọn phản ứng</h3><p>Bé chọn cách xử lý phù hợp cho tình huống.</p></article>
+          <article class="learning-step" style="--step-bg:#fff9e9;--step-line:#f3e5bd"><div class="learning-step-illustration">🎮</div><h3>Chơi mini game</h3><p>Bé học qua trò chơi tương tác vui nhộn.</p></article>
+          <article class="learning-step" style="--step-bg:#f7efff;--step-line:#e7d6ff"><div class="learning-step-illustration">🎁</div><h3>Nhận phần thưởng</h3><p>Bé tích lũy sao và ghi nhận nỗ lực.</p></article>
+        </div><div class="learning-cta"><button class="btn" data-route="lessons">Khám phá khóa học <span aria-hidden="true">➜</span></button></div></div>
+        <div class="parent-hero" id="journeyHero" aria-hidden="true"></div>
+      </div>
     </section>
 
     <section class="section wrap" id="featured">
