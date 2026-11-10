@@ -8,6 +8,7 @@
 - `js/little-hero-app.js` — định tuyến trang, trạng thái lưu cục bộ, render giao diện và xử lý tương tác.
 - `js/motion.js` — hiệu ứng chuyển động GSAP cho các trang, thẻ nội dung được cập nhật động và điểm lấp lánh Lottie; hai thư viện được tải từ CDN trong trang chính.
 - `js/modules/lesson-catalog.js` — danh mục chủ đề, bài học, câu hỏi tiếp nối, nhiệm vụ và thử thách.
+- `js/modules/expanded-lesson-catalog.js` — 52 bài học bổ sung cho các chủ đề cảm xúc, an toàn, sức khỏe, tư duy, trách nhiệm/môi trường và cộng đồng; trang chính tải mô-đun này ngay sau danh mục bài học.
 - `js/modules/character-model.js` — dựng Hero trang chủ và tạo bộ nhân vật bài học dạng hoạt hình với nét mặt cùng tay/chân có khớp chuyển động.
 - `assets/little-hero-logo.png` — logo Little Hero dùng chung ở đầu trang và chân trang.
 - `assets/hero-character.png` — ảnh Hero mặc định, hiển thị trong vòng nền và bóng đổ SVG.
@@ -19,6 +20,7 @@
 - Bài học chia màn hình giữa hoạt cảnh và câu hỏi, có gợi ý thu gọn và phản hồi giọng nói. Bài ôn tập gồm chọn cách phù hợp, nối cặp và sắp xếp thứ tự; không dùng video hoặc hoạt cảnh.
 - Các trang bài học hiển thị ghi chú đây là giao diện demo; nút quay lại điều hướng về trang trước trong lịch sử ứng dụng.
 - Trang truyện hiển thị thông báo tính năng đang được LITTLE HERO xây dựng; các tình huống kể trong bài học vẫn được giữ lại.
+- Banner truyện giữ tỷ lệ ảnh gốc và giới hạn chiều rộng hiển thị theo độ phân giải ảnh nguồn để tránh bị phóng to mờ.
 - Bảng xếp hạng công khai cho khách và người đăng ký. Khi chưa có điểm thật được chia sẻ trong phạm vi đang xem, giao diện hiển thị thứ hạng minh họa có ghi nhãn; điểm của người chơi chỉ được đồng bộ sau khi phụ huynh đồng ý công khai.
 - Khách chưa đăng nhập có thể mở các trang ở chế độ xem trước; các thao tác ghi tiến độ, gửi nội dung, trả lời câu hỏi hoặc thay đổi hồ sơ yêu cầu đăng nhập. Khu vực phụ huynh chỉ hiển thị phần giới thiệu trước khi đăng nhập và xác nhận phụ huynh.
 

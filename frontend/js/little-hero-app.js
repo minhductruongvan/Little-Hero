@@ -62,7 +62,8 @@
         { id: "sample-review-family", author: "Lê Quang Huy", stars: 4, title: "Một hoạt động hữu ích cho cả nhà", body: "Nội dung nhẹ nhàng, phù hợp để bố mẹ cùng con luyện cách xử lý những tình huống thường gặp ở trường và khi đi chơi." },
         { id: "sample-review-progress", author: "Phạm Thảo Nhi", stars: 5, title: "Con nhớ được điều đã học", body: "Sau khi học về an toàn, con chủ động nhắc lại cần tìm người lớn đáng tin cậy khi thấy lo lắng. Cả nhà có thêm cách ôn bài vui vẻ." }
       ].map((review) => ({ ...review, isSample: true, helpful: 0 }));
-      const { categories, lessons, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
+      const { categories, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
+      const lessons = [...window.LittleHeroLessonCatalog.lessons, ...window.LittleHeroAdditionalLessons];
       const freshState = () => ({
         childName: "",
         leaderboardName: "",
@@ -1875,7 +1876,7 @@
           <p class="lesson-demo-notice" role="note">Hiện tại đây chỉ là giao diện demo, LITTLE HERO sẽ được phát triển và nâng cấp trong tương lai.</p>
           <div class="lesson-layout">
             <div>
-              <div class="lesson-progress"><span>📖 Mạch câu chuyện</span><span id="questionProgress">Câu hỏi 1/3${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}</span></div>
+              <div class="lesson-progress"><span>📖 Mạch câu chuyện</span><span id="questionProgress">Câu hỏi 1/${questions.length}${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}</span></div>
               <article class="scene-card">
                 <div class="scene ${scene.type} scene-${scene.variant} scene-lesson-${lesson.category}${scene.thirdCharacter ? " scene-with-third-character" : ""}${lessonSceneImages[lesson.id] ? " has-illustration" : ""}" id="lessonScene">
                     ${lessonSceneImages[lesson.id]
