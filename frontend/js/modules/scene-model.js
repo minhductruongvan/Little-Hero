@@ -1,42 +1,64 @@
 (() => {
-  window.createLittleHeroSceneModel = ({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, state }) => {
+  window.createLittleHeroSceneModel = ({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, renderLessonCharacterSvg, state }) => {
 const getScene = (lesson) => {
-    const config = {
-      emotion: ["class", "Lớp học của Na", "🎨", { name: "Na", gender: "girl", hair: "short", hairAccessory: "flower", shirt: "#a36d9e", pants: "#245d72", shoes: "#568fc7" }],
-      social: ["class", "Góc chơi trong lớp", "🧩", { name: "Nam", gender: "boy", hair: "short", shirt: "#6c9f72", pants: "#536f92" }],
-      safety: ["outdoor", "Khu sinh hoạt cộng đồng", "🚪", { name: "Bin", gender: "boy", hair: "curly", shirt: "#e4a85a", pants: "#547391" }],
-      health: ["home", "Ở nhà cùng gia đình", "🫧", { name: "Mẹ", gender: "girl", hair: "long", hairAccessory: "flower", adult: true, shirt: "#b47d9b", pants: "#584d70", shoes: "#66504a" }],
-      thinking: ["home", "Bàn học ở nhà", "📚", { name: "Bố", gender: "boy", hair: "short", adult: true, shirt: "#607d9e", pants: "#46586f", shoes: "#51443f" }],
-      care: ["outdoor", "Sân chơi ngoài trời", "🗑️", { name: "Linh", gender: "girl", hair: "ponytail", hairAccessory: "bow", shirt: "#ed9d66", pants: "#5386a4" }],
-      creative: ["outdoor", "Công viên gần nhà", "🚲", { name: "Bố", gender: "boy", hair: "short", adult: true, shirt: "#607d9e", pants: "#46586f", shoes: "#51443f" }],
-      community: ["home", "Ở nhà cùng người lớn", "📱", { name: "Mẹ", gender: "girl", hair: "long", hairAccessory: "flower", adult: true, shirt: "#b47d9b", pants: "#584d70", shoes: "#66504a" }]
-    };
-    const contexts = {
-      emotion: ["class", "Góc mỹ thuật trong lớp", "🎨", { name: "Na", gender: "girl", hair: "short", hairAccessory: "flower", shirt: "#a36d9e", pants: "#245d72" }, "painting"],
-      social: ["class", "Góc xếp hình trong lớp", "🧩", { name: "Nam", gender: "boy", hair: "short", shirt: "#6c9f72", pants: "#536f92" }, "blocks"],
-      safety: ["store", "Quầy thông tin ở siêu thị", "🛡️", { name: "Nhân viên", gender: "boy", hair: "short", adult: true, shirt: "#428d77", pants: "#46586f" }, "lost"],
-      health: ["home", "Bếp nhà Mia · trước bữa ăn", "🫧", { name: "Mẹ", gender: "girl", hair: "long", hairAccessory: "flower", adult: true, shirt: "#b47d9b", pants: "#584d70", shoes: "#66504a" }, "handwash"],
-      thinking: ["home", "Bàn học của An", "📚", { name: "An", gender: "boy", hair: "short", shirt: "#607d9e", pants: "#46586f" }, "spilled-water"],
-      care: ["outdoor", "Sân chơi khu phố", "🗑️", { name: "Linh", gender: "girl", hair: "ponytail", hairAccessory: "bow", shirt: "#ed9d66", pants: "#5386a4" }, "litter"],
-      creative: ["outdoor", "Bãi tập xe an toàn", "🚲", { name: "Bố", gender: "boy", hair: "short", adult: true, shirt: "#607d9e", pants: "#46586f", shoes: "#51443f" }, "bike"],
-      community: ["home", "Bàn máy tính ở nhà", "📱", { name: "Bố", gender: "boy", hair: "short", adult: true, shirt: "#607d9e", pants: "#46586f", shoes: "#51443f" }, "tablet"],
-      calm: ["home", "Phòng chơi của Bo", "🧱", { name: "Em", gender: "girl", hair: "ponytail", hairAccessory: "flower", shirt: "#b07a9b" }, "blocks"],
-      sorry: ["class", "Giờ chơi trong lớp", "🧸", { name: "Bình", gender: "boy", hair: "short", shirt: "#72a78c" }, "apology"],
-      stranger: ["schoolyard", "Cổng công viên · gần mẹ", "🎁", { name: "Mẹ", gender: "girl", hair: "long", adult: true, shirt: "#b47d9b", pants: "#584d70" }, "gate"],
-      "new-thing": ["outdoor", "Bãi tập xe cùng bố", "🚲", { name: "Bố", gender: "boy", hair: "short", adult: true, shirt: "#607d9e", pants: "#46586f" }, "bike"]
-    };
-    const selected = contexts[lesson.id] || config[lesson.category] || config.social;
-    return { type: selected[0], place: selected[1], prop: selected[2], friend: selected[3], variant: selected[4] || lesson.id };
+  const characters = {
+    na: { name: "Na", gender: "girl", hair: "short", hairAccessory: "flower", shirt: "#a36d9e", pants: "#245d72", shoes: "#568fc7" },
+    ha: { name: "Hà", gender: "girl", hair: "ponytail", hairAccessory: "bow", shirt: "#ed9d66", pants: "#5386a4" },
+    nam: { name: "Nam", gender: "boy", hair: "short", shirt: "#6c9f72", pants: "#536f92" },
+    bin: { name: "Bin", gender: "boy", hair: "curly", shirt: "#e4a85a", pants: "#547391" },
+    mia: { name: "Mia", gender: "girl", hair: "long", hairAccessory: "flower", shirt: "#b47d9b", pants: "#584d70" },
+    an: { name: "An", gender: "boy", hair: "short", shirt: "#607d9e", pants: "#46586f" },
+    linh: { name: "Linh", gender: "girl", hair: "ponytail", hairAccessory: "bow", shirt: "#ed9d66", pants: "#5386a4" },
+    bo: { name: "Bố", gender: "boy", hair: "short", adult: true, shirt: "#467f89", pants: "#46586f", shoes: "#51443f" },
+    me: { name: "Mẹ", gender: "girl", hair: "long", hairAccessory: "flower", adult: true, shirt: "#6d759e", pants: "#4b536d", shoes: "#66504a" },
+    teacher: { name: "Cô giáo", gender: "girl", hair: "long", adult: true, shirt: "#548c73", pants: "#536f82" },
+    staff: { name: "Nhân viên", gender: "boy", hair: "short", adult: true, shirt: "#3d7482", pants: "#46586f" },
+    em: { name: "Em", gender: "girl", hair: "ponytail", hairAccessory: "flower", shirt: "#b07a9b" },
+    binh: { name: "Bình", gender: "boy", hair: "short", shirt: "#72a78c" },
+    stranger: { name: "Người lạ", gender: "boy", hair: "short", adult: true, shirt: "#8b7890", pants: "#53576c" },
+    friend: { name: "Bạn", gender: "boy", hair: "short", shirt: "#6c9f72", pants: "#536f92" }
   };
+  const config = {
+    emotion: ["class", "Lớp học của Na", "🎨", characters.na, "painting", characters.teacher],
+    social: ["class", "Góc chơi trong lớp", "🧩", characters.ha, "blocks", characters.nam],
+    safety: ["store", "Quầy thông tin ở siêu thị", "🛡️", characters.bin, "lost", characters.staff, characters.stranger],
+    health: ["home", "Bếp nhà Mia · trước bữa ăn", "🫧", characters.mia, "handwash", characters.me],
+    thinking: ["home", "Bàn học của An", "📚", characters.an, "spilled-water", characters.me],
+    care: ["outdoor", "Sân chơi khu phố", "🍪", characters.linh, "litter", characters.friend],
+    creative: ["outdoor", "Bãi tập xe an toàn", "🚲", characters.bin, "bike", characters.bo],
+    community: ["home", "Bàn máy tính ở nhà", "📱", characters.mia, "tablet", characters.bo]
+  };
+  const contexts = {
+    emotion: ["class", "Góc mỹ thuật trong lớp", "🎨", characters.na, "painting", characters.teacher],
+    social: ["class", "Góc xếp hình trong lớp", "🧩", characters.ha, "blocks", characters.nam],
+    safety: ["store", "Quầy thông tin ở siêu thị", "🛡️", characters.bin, "lost", characters.staff, characters.stranger],
+    health: ["home", "Bếp nhà Mia · trước bữa ăn", "🫧", characters.mia, "handwash", characters.me],
+    thinking: ["home", "Bàn học của An", "📚", characters.an, "spilled-water", characters.me],
+    care: ["outdoor", "Sân chơi khu phố", "🍪", characters.linh, "litter", characters.friend],
+    creative: ["outdoor", "Bãi tập xe an toàn", "🚲", characters.bin, "bike", characters.bo],
+    community: ["home", "Bàn máy tính ở nhà", "📱", characters.mia, "tablet", characters.bo],
+    calm: ["home", "Phòng chơi của Bo", "🧱", { ...characters.bin, name: "Bo" }, "calm-room", characters.em],
+    sorry: ["class", "Giờ chơi trong lớp", "🧸", { ...characters.an, name: "An" }, "apology", characters.binh],
+    stranger: ["schoolyard", "Cổng công viên · gần mẹ", "🎁", characters.mia, "gate", characters.me, characters.stranger],
+    "new-thing": ["outdoor", "Bãi tập xe cùng bố", "🚲", characters.bin, "bike", characters.bo]
+  };
+  const selected = contexts[lesson.id] || config[lesson.category] || config.social;
+  return {
+    type: selected[0],
+    place: selected[1],
+    prop: selected[2],
+    protagonist: selected[3],
+    friend: selected[5] || characters.friend,
+    thirdCharacter: selected[6] || null,
+    variant: selected[4] || lesson.id
+  };
+};
 
-  const renderSceneBackdrop = (scene) => {
-    if (scene.variant === "lost") {
-      return `<img class="scene-illustration" src="./frontend/assets/safety-supermarket.png" alt="Hero trò chuyện với nhân viên tại quầy thông tin trong siêu thị">`;
-    }
-    const room = scene.type === "class"
+const renderSceneBackdrop = (scene) => {
+  const room = scene.type === "class"
       ? `<rect width="1000" height="408" fill="#fff0d9"/><rect y="408" width="1000" height="152" fill="#dfb880"/><path d="M0 415H1000M0 467H1000M0 519H1000M120 408v152m180-152v152m180-152v152m180-152v152m180-152v152" stroke="#bb895d" stroke-width="5" opacity=".56"/>
         <rect x="285" y="62" width="342" height="226" rx="9" fill="#91c8d2" stroke="#a67751" stroke-width="14"/><path d="M456 68v211m-164-105h327" stroke="#fff4d8" stroke-width="13"/><path d="M270 70h34v230h-34zm333 0h34v230h-34z" fill="#72b8c6"/><path d="M259 58h390m-390 12 20 28m370-28-20 28" stroke="#b77f58" stroke-width="9"/>
-        <rect x="691" y="112" width="244" height="150" rx="10" fill="#9d6944" stroke="#d6a477" stroke-width="9"/><rect x="707" y="128" width="212" height="117" rx="5" fill="#347c70"/><text x="813" y="179" text-anchor="middle" fill="#f7f0d7" font-size="23" font-family="sans-serif" font-weight="700">LỚP CỦA NA</text><path d="M759 209q23-25 47 0t48 0" fill="none" stroke="#fff6d5" stroke-width="5"/>
+        <rect x="691" y="112" width="244" height="150" rx="10" fill="#9d6944" stroke="#d6a477" stroke-width="9"/><rect x="707" y="128" width="212" height="117" rx="5" fill="#347c70"/><text x="813" y="179" text-anchor="middle" fill="#f7f0d7" font-size="23" font-family="'Be Vietnam Pro', sans-serif" font-weight="700">LỚP CỦA NA</text><path d="M759 209q23-25 47 0t48 0" fill="none" stroke="#fff6d5" stroke-width="5"/>
         <rect x="34" y="205" width="174" height="187" rx="9" fill="#c58a58" stroke="#9c6642" stroke-width="7"/><path d="M43 254h156M43 315h156M92 255v137m54-137v137" stroke="#9c6642" stroke-width="6"/><g fill="#f6cf64"><rect x="52" y="225" width="27" height="25" rx="3"/><rect x="87" y="229" width="40" height="21" rx="3"/></g><g fill="#5e9a87"><rect x="53" y="270" width="25" height="36" rx="3"/><rect x="105" y="266" width="32" height="40" rx="3"/><rect x="153" y="272" width="34" height="34" rx="3"/></g>
         <g class="scene-cloud"><path d="M709 51q9-28 39-15 20-38 53-8 32-8 37 22Z" fill="#fff" stroke="#d4e8e9" stroke-width="5"/></g><circle class="scene-sun" cx="104" cy="87" r="39" fill="#ffc854"/><path d="M104 34v-16m0 138v-16m-53-53H35m138 0h-16" stroke="#edaa42" stroke-width="8" stroke-linecap="round"/>
         <g fill="#debc8e" stroke="#9c704f" stroke-width="5"><path d="M337 352h163v23H337zm13 23v47m133-47v47m-160 0h194v18H323z"/><path d="M572 355h98v20h-98zm10 20v45m76-45v45m-106 0h137v18H552z"/></g><g fill="#83c6da"><path d="M372 327h25v26h-25z"/><path d="M413 325h23v28h-23z"/></g><path d="M383 325v-26m42 27v-22" stroke="#e37a59" stroke-width="8" stroke-linecap="round"/>`
@@ -50,19 +72,19 @@ const getScene = (lesson) => {
         : scene.type === "schoolyard"
           ? `<rect width="1000" height="376" fill="#ccecf4"/><rect y="376" width="1000" height="184" fill="#9dcd80"/><path d="M0 421q220-60 430 0t570 0v139H0Z" fill="#d5bd86"/><rect x="343" y="104" width="313" height="272" fill="#edc88e" stroke="#a87953" stroke-width="10"/><path d="M368 142h263v234H368z" fill="#9ac77b"/><path d="M500 142v234m-132-116h263" stroke="#f5e2b7" stroke-width="10"/><path d="M320 99h358m-342 16v265m326-265v265" stroke="#b68153" stroke-width="12"/><circle class="scene-sun" cx="120" cy="75" r="42" fill="#ffd25d"/><g class="scene-cloud"><path d="M713 70q10-29 40-14 21-39 54-9 31-7 38 23Z" fill="#fff" stroke="#dce9df" stroke-width="5"/></g><path d="M0 460h1000" stroke="#fff9dc" stroke-width="8" stroke-dasharray="30 23"/><path d="M85 375Q113 287 142 190" fill="none" stroke="#895e42" stroke-width="20"/><circle cx="132" cy="175" r="68" fill="#70ae64"/><circle cx="86" cy="202" r="46" fill="#83bf70"/><circle cx="173" cy="204" r="45" fill="#64a45e"/>`
           : scene.type === "store"
-            ? `<rect width="1000" height="370" fill="#e7f2f3"/><rect y="370" width="1000" height="190" fill="#d9c5a3"/><path d="M0 418H1000M0 474H1000M0 530H1000M160 370v190m190-190v190m190-190v190m190-190v190m190-190v190" stroke="#b69c7d" stroke-width="4" opacity=".55"/><path d="M120 88h760v28H120z" fill="#63ae97"/><rect x="143" y="119" width="714" height="48" rx="8" fill="#fff3d6"/><text x="500" y="151" text-anchor="middle" fill="#43866e" font-size="22" font-family="sans-serif" font-weight="700">SIÊU THỊ GẦN NHÀ</text><g><rect x="55" y="188" width="247" height="170" rx="10" fill="#c89362" stroke="#9c6944" stroke-width="8"/><rect x="72" y="205" width="213" height="42" rx="5" fill="#fff1d0"/><rect x="72" y="259" width="213" height="42" rx="5" fill="#fff1d0"/><rect x="72" y="313" width="213" height="30" rx="5" fill="#fff1d0"/><g fill="#6caf82"><rect x="82" y="211" width="30" height="31" rx="4"/><rect x="119" y="216" width="39" height="26" rx="4" fill="#e6a658"/><rect x="167" y="210" width="27" height="32" rx="4" fill="#82bfd2"/><rect x="202" y="215" width="53" height="27" rx="4" fill="#e58a79"/><rect x="84" y="266" width="48" height="27" rx="4" fill="#edbd52"/><rect x="140" y="264" width="32" height="30" rx="4"/><rect x="183" y="266" width="63" height="27" rx="4" fill="#d789a8"/></g><rect x="680" y="202" width="266" height="156" rx="10" fill="#d0a06e" stroke="#a97449" stroke-width="8"/><rect x="699" y="218" width="228" height="42" rx="5" fill="#e3f2df"/><rect x="699" y="272" width="228" height="42" rx="5" fill="#e3f2df"/><rect x="699" y="326" width="228" height="20" rx="5" fill="#e3f2df"/><g fill="#e17f69"><circle cx="726" cy="238" r="13"/><circle cx="770" cy="291" r="13"/><circle cx="818" cy="238" r="13"/><circle cx="869" cy="292" r="13"/></g><path d="M375 362h251v24H375z" fill="#b77d51"/><path d="M394 386v40m213-40v40" stroke="#8c603f" stroke-width="9"/><circle class="scene-sun" cx="918" cy="58" r="23" fill="#ffcf57"/>`
+            ? `<rect width="1000" height="370" fill="#e7f2f3"/><rect y="370" width="1000" height="190" fill="#d9c5a3"/><path d="M0 418H1000M0 474H1000M0 530H1000M160 370v190m190-190v190m190-190v190m190-190v190m190-190v190" stroke="#b69c7d" stroke-width="4" opacity=".55"/><path d="M120 88h760v28H120z" fill="#63ae97"/><rect x="143" y="119" width="714" height="48" rx="8" fill="#fff3d6"/><text x="500" y="151" text-anchor="middle" fill="#43866e" font-size="22" font-family="'Be Vietnam Pro', sans-serif" font-weight="700">SIÊU THỊ GẦN NHÀ</text><g><rect x="55" y="188" width="247" height="170" rx="10" fill="#c89362" stroke="#9c6944" stroke-width="8"/><rect x="72" y="205" width="213" height="42" rx="5" fill="#fff1d0"/><rect x="72" y="259" width="213" height="42" rx="5" fill="#fff1d0"/><rect x="72" y="313" width="213" height="30" rx="5" fill="#fff1d0"/><g fill="#6caf82"><rect x="82" y="211" width="30" height="31" rx="4"/><rect x="119" y="216" width="39" height="26" rx="4" fill="#e6a658"/><rect x="167" y="210" width="27" height="32" rx="4" fill="#82bfd2"/><rect x="202" y="215" width="53" height="27" rx="4" fill="#e58a79"/><rect x="84" y="266" width="48" height="27" rx="4" fill="#edbd52"/><rect x="140" y="264" width="32" height="30" rx="4"/><rect x="183" y="266" width="63" height="27" rx="4" fill="#d789a8"/></g><rect x="680" y="202" width="266" height="156" rx="10" fill="#d0a06e" stroke="#a97449" stroke-width="8"/><rect x="699" y="218" width="228" height="42" rx="5" fill="#e3f2df"/><rect x="699" y="272" width="228" height="42" rx="5" fill="#e3f2df"/><rect x="699" y="326" width="228" height="20" rx="5" fill="#e3f2df"/><g fill="#e17f69"><circle cx="726" cy="238" r="13"/><circle cx="770" cy="291" r="13"/><circle cx="818" cy="238" r="13"/><circle cx="869" cy="292" r="13"/></g><path d="M375 362h251v24H375z" fill="#b77d51"/><path d="M394 386v40m213-40v40" stroke="#8c603f" stroke-width="9"/><circle class="scene-sun" cx="918" cy="58" r="23" fill="#ffcf57"/>`
             : `<rect width="1000" height="365" fill="#c9ebf1"/><rect y="365" width="1000" height="195" fill="#98c97b"/><path d="M0 452q240-54 493 4t507-12v116H0Z" fill="#d8c48f"/><circle class="scene-sun" cx="104" cy="72" r="42" fill="#ffd162"/><g class="scene-cloud"><path d="M726 71q10-30 40-15 20-37 53-9 33-7 39 24Z" fill="#fff" stroke="#dce9df" stroke-width="5"/></g>
             <path d="M100 365q37-106 74-203" fill="none" stroke="#8d6345" stroke-width="22"/><circle cx="179" cy="144" r="77" fill="#6eae62"/><circle cx="126" cy="176" r="52" fill="#83bf70"/><circle cx="235" cy="180" r="51" fill="#5e9e58"/>
             <path d="M830 365q-30-87-53-165" fill="none" stroke="#8d6345" stroke-width="20"/><circle cx="771" cy="181" r="66" fill="#70ae64"/><circle cx="728" cy="203" r="42" fill="#82bf70"/><circle cx="820" cy="208" r="43" fill="#5d9b57"/>
             <path d="M365 458q140-110 285 0" fill="none" stroke="#c8aa72" stroke-width="15" stroke-dasharray="8 18"/><g fill="#fff"><circle cx="301" cy="305" r="5"/><circle cx="331" cy="328" r="5"/><circle cx="684" cy="297" r="5"/><circle cx="713" cy="324" r="5"/></g>`;
     const classroomDetails = scene.type === "class"
-      ? `<g><rect x="683" y="44" width="240" height="34" rx="8" fill="#fff5da"/><g font-family="sans-serif" font-size="21" font-weight="700" text-anchor="middle"><rect x="694" y="49" width="28" height="25" rx="5" fill="#e98173"/><text x="708" y="68" fill="#fff">A</text><rect x="728" y="49" width="28" height="25" rx="5" fill="#f1c453"/><text x="742" y="68" fill="#fff">B</text><rect x="762" y="49" width="28" height="25" rx="5" fill="#6fba90"/><text x="776" y="68" fill="#fff">C</text><rect x="796" y="49" width="28" height="25" rx="5" fill="#68a9d1"/><text x="810" y="68" fill="#fff">D</text><rect x="830" y="49" width="28" height="25" rx="5" fill="#d884ad"/><text x="844" y="68" fill="#fff">E</text><rect x="864" y="49" width="28" height="25" rx="5" fill="#9b83c9"/><text x="878" y="68" fill="#fff">F</text></g><rect x="226" y="94" width="48" height="76" rx="6" fill="#fff2d4" stroke="#b57e50" stroke-width="5"/><path d="M237 148q12-29 25 0m-24-23h23" fill="none" stroke="#63a67a" stroke-width="5" stroke-linecap="round"/><rect x="640" y="288" width="54" height="70" rx="6" fill="#fff2d4" stroke="#b57e50" stroke-width="5"/><path d="M650 339q14-30 32 0m-30-22h28" fill="none" stroke="#76aeca" stroke-width="5" stroke-linecap="round"/><rect x="319" y="441" width="354" height="59" rx="16" fill="#f7d697" opacity=".84"/><path d="M331 454h64v28h-64zm74 0h64v28h-64zm74 0h64v28h-64zm74 0h64v28h-64zm74 0h34v28h-34z" fill="#fff0c4" opacity=".84"/><g fill="#ea8a71"><circle cx="351" cy="458" r="5"/><circle cx="425" cy="480" r="5"/><circle cx="571" cy="459" r="5"/><circle cx="645" cy="480" r="5"/></g></g>`
+      ? `<g><rect x="683" y="44" width="240" height="34" rx="8" fill="#fff5da"/><g font-family="'Be Vietnam Pro', sans-serif" font-size="21" font-weight="700" text-anchor="middle"><rect x="694" y="49" width="28" height="25" rx="5" fill="#e98173"/><text x="708" y="68" fill="#fff">A</text><rect x="728" y="49" width="28" height="25" rx="5" fill="#f1c453"/><text x="742" y="68" fill="#fff">B</text><rect x="762" y="49" width="28" height="25" rx="5" fill="#6fba90"/><text x="776" y="68" fill="#fff">C</text><rect x="796" y="49" width="28" height="25" rx="5" fill="#68a9d1"/><text x="810" y="68" fill="#fff">D</text><rect x="830" y="49" width="28" height="25" rx="5" fill="#d884ad"/><text x="844" y="68" fill="#fff">E</text><rect x="864" y="49" width="28" height="25" rx="5" fill="#9b83c9"/><text x="878" y="68" fill="#fff">F</text></g><rect x="226" y="94" width="48" height="76" rx="6" fill="#fff2d4" stroke="#b57e50" stroke-width="5"/><path d="M237 148q12-29 25 0m-24-23h23" fill="none" stroke="#63a67a" stroke-width="5" stroke-linecap="round"/><rect x="640" y="288" width="54" height="70" rx="6" fill="#fff2d4" stroke="#b57e50" stroke-width="5"/><path d="M650 339q14-30 32 0m-30-22h28" fill="none" stroke="#76aeca" stroke-width="5" stroke-linecap="round"/><rect x="319" y="441" width="354" height="59" rx="16" fill="#f7d697" opacity=".84"/><path d="M331 454h64v28h-64zm74 0h64v28h-64zm74 0h64v28h-64zm74 0h64v28h-64zm74 0h34v28h-34z" fill="#fff0c4" opacity=".84"/><g fill="#ea8a71"><circle cx="351" cy="458" r="5"/><circle cx="425" cy="480" r="5"/><circle cx="571" cy="459" r="5"/><circle cx="645" cy="480" r="5"/></g></g>`
       : "";
     const details = classroomDetails + ({
       painting: `<g><rect x="775" y="61" width="112" height="68" rx="7" fill="#fff6dc" stroke="#bd875d" stroke-width="6"/><path d="M793 112q10-39 24-24t19-5 34 23" fill="none" stroke="#57a9a0" stroke-width="6"/><circle cx="810" cy="82" r="7" fill="#f2b94e"/><rect x="720" y="308" width="111" height="56" rx="8" fill="#d59c62"/><path d="m743 348 17-27 16 27 12-18 20 18" fill="#76ad77"/><path d="m804 331 6-10 8 10" fill="#ef9b6e"/></g>`,
       blocks: `<g><rect x="738" y="300" width="38" height="38" rx="5" fill="#f0bd55"/><rect x="778" y="286" width="42" height="52" rx="5" fill="#75b8cf"/><rect x="822" y="309" width="35" height="29" rx="5" fill="#d87979"/><path d="M740 351h118" stroke="#c78d53" stroke-width="7" stroke-linecap="round"/><circle cx="790" cy="352" r="4" fill="#6b4b3d"/><circle cx="826" cy="352" r="4" fill="#6b4b3d"/></g>`,
-      lost: `<g><rect x="740" y="80" width="202" height="100" rx="10" fill="#d7a56f" stroke="#a9764b" stroke-width="8"/><rect x="754" y="94" width="174" height="67" rx="5" fill="#f8e7c5"/><text x="841" y="136" text-anchor="middle" fill="#397c70" font-size="22" font-family="sans-serif" font-weight="700">QUẦY THÔNG TIN</text><path d="M742 256h190v104H742z" fill="#f4dda9"/><path d="M768 256v104m48-104v104m48-104v104m47-104v104" stroke="#c79359" stroke-width="7"/><path d="M742 294h190" stroke="#c79359" stroke-width="7"/><circle cx="792" cy="278" r="12" fill="#e7796f"/><circle cx="870" cy="321" r="13" fill="#77b982"/></g>`,
-      handwash: `<g><rect x="705" y="200" width="188" height="18" rx="8" fill="#94c9cd"/><path d="M735 219v70q0 28 28 28h77q28 0 28-28v-70" fill="#f1d7b1" stroke="#ae8056" stroke-width="8"/><path d="M804 159v36q0 20 18 20h23" fill="none" stroke="#9aa6a2" stroke-width="11" stroke-linecap="round"/><path d="M828 214v19" stroke="#60b9d1" stroke-width="8" stroke-linecap="round"/><rect x="870" y="165" width="31" height="35" rx="5" fill="#73b9cf"/><text x="885" y="190" text-anchor="middle" fill="#fff" font-size="16" font-family="sans-serif" font-weight="700">SOAP</text></g>`,
+      lost: `<g><rect x="740" y="80" width="202" height="100" rx="10" fill="#d7a56f" stroke="#a9764b" stroke-width="8"/><rect x="754" y="94" width="174" height="67" rx="5" fill="#f8e7c5"/><text x="841" y="136" text-anchor="middle" fill="#397c70" font-size="22" font-family="'Be Vietnam Pro', sans-serif" font-weight="700">QUẦY THÔNG TIN</text><path d="M742 256h190v104H742z" fill="#f4dda9"/><path d="M768 256v104m48-104v104m48-104v104m47-104v104" stroke="#c79359" stroke-width="7"/><path d="M742 294h190" stroke="#c79359" stroke-width="7"/><circle cx="792" cy="278" r="12" fill="#e7796f"/><circle cx="870" cy="321" r="13" fill="#77b982"/></g>`,
+      handwash: `<g><rect x="705" y="200" width="188" height="18" rx="8" fill="#94c9cd"/><path d="M735 219v70q0 28 28 28h77q28 0 28-28v-70" fill="#f1d7b1" stroke="#ae8056" stroke-width="8"/><path d="M804 159v36q0 20 18 20h23" fill="none" stroke="#9aa6a2" stroke-width="11" stroke-linecap="round"/><path d="M828 214v19" stroke="#60b9d1" stroke-width="8" stroke-linecap="round"/><rect x="870" y="165" width="31" height="35" rx="5" fill="#73b9cf"/><text x="885" y="190" text-anchor="middle" fill="#fff" font-size="16" font-family="'Be Vietnam Pro', sans-serif" font-weight="700">SOAP</text></g>`,
       "spilled-water": `<g><rect x="683" y="305" width="239" height="28" rx="8" fill="#bc8350"/><path d="M710 333v75m187-75v75" stroke="#96643f" stroke-width="12"/><path d="M757 299q18-20 36 0 12 15 28 0t28 0" fill="none" stroke="#80c8e5" stroke-width="9"/><path d="M746 277h36l-4 28h-28Z" fill="#e7a453" stroke="#a96f3c" stroke-width="4"/><path d="m804 310 9-23 22 7" fill="none" stroke="#6684a2" stroke-width="8" stroke-linecap="round"/></g>`,
       litter: `<g><rect x="815" y="277" width="84" height="102" rx="12" fill="#65a889" stroke="#3d7d67" stroke-width="7"/><path d="M805 275h104m-75-12h47l8 12h-64Z" fill="#f0cb64" stroke="#987346" stroke-width="5"/><path d="m842 310 16 22m0-22-16 22m8-31v40" stroke="#eff8d6" stroke-width="6" stroke-linecap="round"/><path d="M714 348q20-23 39 0l-8 12h-26Z" fill="#e5b455"/></g>`,
       bike: `<g><path d="M705 370h190" stroke="#d4b77e" stroke-width="13" stroke-linecap="round"/><circle cx="767" cy="349" r="28" fill="none" stroke="#536c76" stroke-width="6"/><circle cx="858" cy="349" r="28" fill="none" stroke="#536c76" stroke-width="6"/><path d="m767 349 34-43 27 43h-61l22-34h42l27 34m-37-43h23m-55-5h16" fill="none" stroke="#e67859" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M786 294q18-22 38 0l-4 9h-31Z" fill="#f3c85c" stroke="#a97b3f" stroke-width="4"/><path d="M711 315v43m-17-22h34m163-21v43m-17-22h34" stroke="#f6f3de" stroke-width="6"/></g>`,
@@ -73,7 +95,7 @@ const getScene = (lesson) => {
     return `<svg class="scene-backdrop" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">${room}${details}</svg>`;
   };
 
-  const renderSceneActor = (id, name, isHero = false, profile = {}) => {
+  const renderSceneActor = (id, name, isHero = false, profile = {}, useLessonDesign = false) => {
     const outfit = isHero
       ? safeWardrobe(state.closet)
       : {
@@ -89,8 +111,11 @@ const getScene = (lesson) => {
       };
     const actorClass = isHero ? "hero-actor" : "friend-actor";
     const ageClass = !isHero && profile.adult ? "adult-actor" : "child-actor";
+    const characterSvg = useLessonDesign
+      ? renderLessonCharacterSvg({ ...profile, name }, { ariaLabel: `${name}, ${profile.adult ? "người lớn" : "trẻ em"}` })
+      : renderHeroCharacterSvg(outfit, { skin: profile.skin || "#f2c39e", civilian: !isHero, adult: profile.adult, hairAccessory: profile.hairAccessory, ariaLabel: `${name}, ${profile.adult ? "người lớn" : "trẻ em"}` });
     return `<div class="scene-actor ${actorClass} ${ageClass} ${profile.gender === "girl" ? "girl-actor" : "boy-actor"}" id="${id}" data-gender="${profile.gender || outfit.gender}" style="--hero-shirt:${outfit.shirt};--hero-pants:${outfit.pants};--hero-shoes:${outfit.shoes};--hero-cape:${outfit.accessory === "cape" ? outfit.shirt : "#f49a69"}">
-      ${renderHeroCharacterSvg(outfit, { skin: profile.skin || "#f2c39e", civilian: !isHero, adult: profile.adult, hairAccessory: profile.hairAccessory, ariaLabel: `${name}, ${profile.adult ? "người lớn" : "trẻ em"}` })}
+      ${characterSvg}
       <span class="actor-name">${escapeHtml(name)}</span>
     </div>`;
   };

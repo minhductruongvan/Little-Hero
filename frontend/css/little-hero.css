@@ -12,8 +12,14 @@
       --line: #f0eadf;
       --shadow: 0 16px 45px #43516b12;
       --radius: 24px;
+      --font-display: clamp(42px, 4.2vw, 58px);
+      --font-section: clamp(30px, 3.2vw, 40px);
+      --font-card-title: 20px;
+      --font-body: 16px;
+      --font-support: 15px;
+      --font-meta: 12px;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; font-family: "Be Vietnam Pro", sans-serif; }
     [hidden] { display: none !important; }
     html { scroll-behavior: smooth; scroll-padding-top: 94px; }
     body {
@@ -24,14 +30,15 @@
         radial-gradient(ellipse at 92% 11%, #fff0d5 0, transparent 25rem),
         radial-gradient(ellipse at 5% 35%, #e4f8f0 0, transparent 27rem),
         var(--paper);
-      font: 15px/1.6 "Baloo 2", sans-serif;
+      font: var(--font-body)/1.6 "Be Vietnam Pro", sans-serif;
     }
     body::before {
       content: ""; position: fixed; z-index: -1; inset: 0; pointer-events: none;
       background: url("../../little-hero-background.svg") center / cover no-repeat;
       opacity: .12;
     }
-    html, body, button, input, textarea, select { font-family: "Baloo 2", sans-serif; }
+    html, body { font-family: "Be Vietnam Pro", sans-serif; }
+    button, input, textarea, select { font: inherit; }
     button { color: inherit; }
     button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visible {
       outline: 3px solid #f5a052;
@@ -111,15 +118,21 @@
     .page-heading h1 { margin: 5px 0 8px; font-size: clamp(30px, 4vw, 42px); letter-spacing: -1.5px; }
     .page-heading p { color: var(--muted); font-size: 13px; }
     .page-actions { display: flex; flex-wrap: wrap; gap: 9px; margin: 15px 0 22px; }
-    .lesson-catalog, .story-grid-page, .game-grid, .achievement-grid, .forum-grid, .faq-grid, .reviews-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+    .lesson-catalog { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 440px)); justify-content: center; gap: 15px; }
+    .story-grid-page, .game-grid, .achievement-grid, .forum-grid, .faq-grid, .reviews-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
     .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .story-coming-soon { grid-column: 1 / -1; width: min(100%, 1080px); margin-inline: auto; overflow: hidden; border-radius: 24px; }
+    .story-coming-soon img { display: block; width: 100%; height: auto; object-fit: contain; }
     .catalog-card, .story-route-card, .game-card, .achievement-card, .forum-card, .faq-card, .review-form, .settings-card, .empty-card {
       overflow: hidden; padding: 17px; border: 1px solid var(--line); border-radius: 20px; background: white; box-shadow: var(--shadow);
     }
-    .catalog-card { display: grid; grid-template-columns: 48px 1fr; align-items: start; gap: 12px; }
+    .catalog-card { display: grid; grid-template-columns: 1fr; align-items: start; gap: 12px; }
     .catalog-card h3, .story-route-card h3, .game-card h3 { margin: 1px 0 5px; font-size: 14px; }
     .catalog-card p, .story-route-card p, .game-card p, .faq-card p { margin: 0 0 11px; color: var(--muted); font-size: 11px; }
-    .catalog-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 15px; background: var(--tile, #eef7f0); font-size: 24px; }
+    .catalog-art { position: relative; overflow: hidden; aspect-ratio: 16 / 9; border-radius: 14px; background: var(--lesson-color, #eef7f0); }
+    .catalog-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 45%; }
+    .catalog-art span { position: absolute; right: 10px; bottom: 10px; display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #ffffffb3; border-radius: 13px; background: #ffffffdf; font-size: 22px; box-shadow: 0 4px 12px #24334820; }
+    .catalog-card-copy { min-width: 0; }
     .catalog-card .btn, .story-route-card .btn, .game-card .btn { grid-column: 1 / -1; }
     .mini-game-card { display: grid; grid-template-columns: 46px 1fr; align-items: start; gap: 12px; border-color: #dce8df; background: linear-gradient(145deg,#fff,var(--game-tint,#fff2d5)); transition: transform .2s, box-shadow .2s; }
     .mini-game-card:hover { transform: translateY(-4px); box-shadow: 0 15px 32px #263b3b18; }
@@ -193,10 +206,15 @@
     .scene.class::before { background: linear-gradient(0deg,transparent 34%,#715d4b 34.5% 36%,#2e7d72 36.5% 54%,#7e6b53 54.5% 56%,transparent 56.5%),linear-gradient(90deg,transparent 72%,#8db3c4 72.5% 73%,#ccebf0 73% 91%,#8db3c4 91.5% 92%,transparent 92.5%),linear-gradient(0deg,transparent 65%,#cc9d72 65.5% 67%,transparent 67.5%),var(--scene-decoration); }
     .scene.home::before { opacity: .82; background: linear-gradient(90deg,transparent 7%,#a66f49 7.5% 9%,#e9d1a5 9.5% 23%,#a66f49 23.5% 25%,transparent 25.5%),linear-gradient(0deg,transparent 44%,#b07e54 44.5% 47%,#dba676 47.5% 63%,#a96e4b 63.5% 66%,transparent 66.5%),linear-gradient(90deg,transparent 74%,#b07e54 74.5% 76%,#b5d8e5 76.5% 91%,#b07e54 91.5% 93%,transparent 93.5%),radial-gradient(ellipse at 78% 43%,#a4ca91 0 8%,transparent 8.5%),var(--scene-decoration); }
     .scene.outdoor::before, .scene.schoolyard::before { opacity: .8; background: radial-gradient(circle at 18% 45%,#f2cf70 0 3%,transparent 3.5%),radial-gradient(circle at 82% 52%,#fff2a2 0 2%,transparent 2.5%),radial-gradient(ellipse at 12% 57%,#76af68 0 8%,transparent 8.5%),radial-gradient(ellipse at 89% 55%,#73a963 0 11%,transparent 11.5%),var(--scene-decoration); }
-    .scene::after { right: -5%; bottom: 27px; left: -5%; height: 43px; border-top: 5px solid #719a7780; background: repeating-linear-gradient(90deg,#94c58c 0 45px,#8cba7e 46px 49px); }
+    .scene::after { right: 0; bottom: 27px; left: 0; height: 43px; border-top: 5px solid #719a7780; background: repeating-linear-gradient(90deg,#94c58c 0 45px,#8cba7e 46px 49px); }
     .scene-kicker { position: absolute; z-index: 2; top: 13px; left: 14px; padding: 5px 9px; border: 1px solid #ffffffc7; border-radius: 99px; background: #ffffffc9; color: #5f7669; font-size: 9px; font-weight: 850; }
-    .scene-prop { position: absolute; z-index: 1; top: 30%; left: 50%; font-size: 38px; transform: translateX(-50%); filter: drop-shadow(0 6px 5px #43516b20); }
+    .scene-prop { position: absolute; z-index: 1; top: 68%; left: 50%; font-size: 34px; transform: translateX(-50%); filter: drop-shadow(0 6px 5px #43516b20); }
     .scene-backdrop { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; }
+    .scene-backdrop text, .scene-backdrop g[font-family] { font-family: "Be Vietnam Pro", sans-serif; }
+    .scene.has-illustration { display: block; min-height: 0; aspect-ratio: 4 / 3; padding: 0; background: #e8f4e3; }
+    .scene.has-illustration::before, .scene.has-illustration::after { display: none; }
+    .lesson-scene-illustration { display: block; width: 100%; height: 100%; object-fit: contain; }
+    .lesson-demo-notice { margin: 0 0 18px; padding: 12px 16px; border: 1px solid #f0dfb8; border-radius: 15px; background: #fff8e8; color: #765a2c; font-size: 12px; font-weight: 650; }
     .scene-actor { position: relative; z-index: 2; width: 150px; height: 265px; display: flex; flex-direction: column; align-items: center; transform-origin: center bottom; }
     .scene-actor .actor-face { width: 82px; height: 82px; display: grid; place-items: center; border: 4px solid #ffffff; border-radius: 45% 45% 43% 43%; background: linear-gradient(145deg, #ffe0bd, #efbb86); box-shadow: 0 7px 17px #40526a20; font-size: 43px; }
     .scene-actor .actor-face { flex: none; animation: face-bob 2.1s ease-in-out infinite; }
@@ -222,6 +240,15 @@
     .scene-actor.action-help .actor-arm-right, .scene-actor.action-approach .actor-arm-left { animation: arm-reach .65s ease-in-out 2 alternate; }
     .scene-actor.action-unsafe .actor-arm { animation: arm-worry .35s ease-in-out 4 alternate; }
     .scene-actor.action-celebrate .actor-arm { animation: arm-celebrate .45s ease-in-out 3 alternate; }
+    .scene-actor.action-wash .hero-arm-left { animation: character-wash .55s ease-in-out 4 alternate; }
+    .scene-actor.action-wash .hero-arm-right { animation: character-wash .55s ease-in-out 4 alternate-reverse; }
+    .scene-actor.action-think .hero-arm-right { animation: character-think .8s ease-in-out 3 alternate; }
+    .scene-actor.action-think .hero-character-svg .hero-head { animation: character-think-nod .8s ease-in-out 3 alternate; }
+    .scene-actor.action-protect .hero-arm-left,
+    .scene-actor.action-protect .hero-arm-right { animation: character-protect .55s ease-in-out 3 alternate; }
+    .scene-actor.action-safety-ask .hero-arm-right { animation: character-reach .65s ease-in-out 2 alternate; }
+    .scene-actor.action-safety-guide .hero-arm-left { animation: character-wave .5s ease-in-out 3; }
+    .scene-actor.action-safety-guide .hero-arm-right { animation: character-reach .65s ease-in-out 2 alternate; }
     @keyframes face-bob { 50% { transform: translateY(-3px) rotate(2deg); } }
     @keyframes arm-wave { 50% { transform: rotate(-125deg); } }
     @keyframes arm-reach { to { transform: rotate(-62deg) translateY(-5px); } }
@@ -233,6 +260,10 @@
     @keyframes action-calm { 50% { transform: scale(1.04); } }
     @keyframes action-unsafe { 25% { transform: translateX(-8px) rotate(-5deg); } 75% { transform: translateX(8px) rotate(5deg); } }
     @keyframes action-celebrate { 50% { transform: translateY(-15px) scale(1.05); } }
+    @keyframes character-wash { to { transform: rotate(-35deg) translate(-4px, 5px); } }
+    @keyframes character-think { to { transform: rotate(-48deg) translate(-3px, -2px); } }
+    @keyframes character-think-nod { to { transform: rotate(-5deg) translateY(-2px); } }
+    @keyframes character-protect { to { transform: rotate(-42deg) translateY(-4px); } }
     .lesson-choices { display: grid; gap: 9px; }
     .lesson-choice { display: flex; align-items: start; gap: 10px; width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 15px; background: white; text-align: left; font-size: 11px; font-weight: 720; cursor: pointer; transition: transform .17s, border .17s, background .17s; }
     .lesson-choice:hover { transform: translateX(3px); border-color: #94cdb0; }
@@ -253,12 +284,14 @@
     .wardrobe-preview .preview-person { font-size: 80px; }
     .wardrobe-preview .preview-hair { margin-bottom: -25px; color: #704d3f; font-size: 24px; }
     .wardrobe-preview p { margin: 0; color: #607569; font-size: 11px; font-weight: 800; }
+    .wardrobe-preview-note { max-width: 240px; margin-top: 3px; color: var(--muted); font-size: 10px; text-align: center; }
     .wardrobe-controls { display: grid; gap: 11px; }
     .wardrobe-field { padding: 12px; border: 1px solid var(--line); border-radius: 15px; background: white; }
     .wardrobe-field strong { display: block; margin-bottom: 8px; font-size: 11px; }
     .wardrobe-field .pick-card { min-width: 68px; padding: 8px; font-size: 10px; }
     .wardrobe-field .pick-icon { font-size: 19px; }
     .avatar-stage { position: relative; width: 210px; height: 226px; display: grid; justify-items: center; align-content: start; padding-top: 18px; filter: drop-shadow(0 12px 9px #45563b24); }
+    .avatar-stage .hero-character-svg .hero-arm-right { animation: character-wave 1.8s ease-in-out infinite; }
     .avatar-hair { position: absolute; z-index: 3; top: 11px; width: 83px; height: 43px; border-radius: 55% 55% 33% 31%; background: var(--hair-color,#49352d); }
     .avatar-hair::before, .avatar-hair::after { content: ""; position: absolute; background: inherit; }
     .avatar-hair::before { top: 20px; left: -3px; width: 21px; height: 37px; border-radius: 50%; }
@@ -330,7 +363,7 @@
     .parent-stats strong { display: block; color: #278c77; font-size: 23px; line-height: 1.1; }
     .parent-stats span { color: var(--muted); font-size: 10px; }
     .parent-chart { width: 100%; min-height: 205px; }
-    .parent-chart text { font-family: "Baloo 2", sans-serif; fill: #637084; font-size: 11px; }
+    .parent-chart text { font-family: "Be Vietnam Pro", sans-serif; fill: #637084; font-size: 11px; }
     .parent-radar { display: grid; grid-template-columns: minmax(180px,.8fr) 1fr; gap: 12px; align-items: center; }
     .skill-list { display: grid; gap: 8px; }
     .skill-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 11px; }
@@ -415,6 +448,7 @@
     .testimonials-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
     .testimonial-card { min-height: 250px; display: flex; flex-direction: column; justify-content: space-between; padding: 22px; background: var(--testimonial-bg,#f3faf6); }
     .testimonial-person { display: flex; align-items: center; gap: 12px; }
+    .testimonial-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
     .testimonial-avatar { width: 62px; height: 62px; display: grid; place-items: center; flex: none; border: 2px solid var(--testimonial-color,#47a779); border-radius: 50%; background: white; font-size: 30px; }
     .testimonial-quote { margin: 14px 0; color: #1d3444; font-size: 15px; line-height: 1.55; }
     .testimonial-name { color: #155475; font-size: 15px; font-weight: 800; }
@@ -455,6 +489,8 @@
     .skills-reason h3 { margin: 4px 0 0; color: var(--reason-color,#e84f68); font-size: 21px; line-height: 1.2; }
     .skills-reason p { max-width: 230px; margin: 0; color: #33485c; font-size: 16px; line-height: 1.5; }
     .learning-steps { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; counter-reset: journey; }
+    .learning-journey-image { display: block; overflow: hidden; border-radius: 24px; }
+    .learning-journey-image img { display: block; width: 100%; height: auto; }
     .learning-step { position: relative; min-height: 160px; padding: 18px 15px; border: 1px solid #e5eee7; border-radius: 21px; background: white; box-shadow: var(--shadow); counter-increment: journey; }
     .learning-step::before { display: grid; width: 37px; height: 37px; place-items: center; border-radius: 13px; background: #e8f7ef; color: #398e75; font-size: 18px; content: counter(journey, decimal-leading-zero); }
     .learning-step h3 { margin: 12px 0 4px; font-size: 13px; }
@@ -836,9 +872,11 @@
       border: 1px solid var(--line); border-radius: var(--radius); background: white; box-shadow: var(--shadow);
     }
     .lesson-card { display: grid; grid-template-columns: .85fr 1.15fr; min-height: 260px; overflow: hidden; }
-    .lesson-art { display: grid; min-height: 220px; place-items: center; position: relative; overflow: hidden; background: linear-gradient(150deg,#d8f2e5,#bce6d1); }
+    .lesson-art { display: grid; min-height: 220px; place-items: center; position: relative; overflow: hidden; background: var(--lesson-color, linear-gradient(150deg,#d8f2e5,#bce6d1)); }
+    .lesson-art-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 45%; }
+    .lesson-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg,#17291a08 55%,#17291a38); pointer-events: none; }
     .lesson-art::before { content: ""; position: absolute; width: 182px; height: 182px; border-radius: 50%; background: #ffffff67; }
-    .lesson-emoji { position: relative; z-index: 1; font-size: 91px; filter: drop-shadow(0 10px 8px #476b4820); }
+    .lesson-emoji { position: absolute; z-index: 1; top: 14px; right: 14px; display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid #ffffffb3; border-radius: 16px; background: #ffffffdf; font-size: 26px; filter: drop-shadow(0 4px 8px #476b4820); }
     .lesson-note { position: absolute; z-index: 1; bottom: 14px; left: 14px; padding: 6px 9px; border: 1px solid #ffffffb3; border-radius: 10px; background: #ffffffc9; color: #4e816c; font-size: 9px; font-weight: 800; }
     .lesson-copy { align-self: center; padding: 24px; }
     .tag { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border-radius: 99px; background: #f1f8f2; color: #5b9678; font-size: 9px; font-weight: 850; }
@@ -857,7 +895,7 @@
     .journal-recommend { padding: 12px; border: 1px solid #e8e1ff; border-radius: 14px; background: #fff; }
     .journal-recommend strong { font-size: 10px; }
     .journal-recommend p { margin: 4px 0 0; color: #728093; font-size: 10px; }
-    .arena-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 17px; }
+    .arena-grid { display: grid; grid-template-columns: minmax(0,.82fr) minmax(0,1.18fr); gap: 17px; align-items: start; }
     .arena-card { position: relative; padding: 25px; overflow: hidden; background: linear-gradient(145deg,#243951,#385773); color: white; }
     .arena-card::after { content: "✦"; position: absolute; top: 15px; right: 23px; color: #ffda7d; font-size: 30px; }
     .arena-card .kicker { color: #a7ddc2; }
@@ -870,17 +908,59 @@
     .arena-tab { padding: 7px 9px; border: 1px solid #ffffff30; border-radius: 99px; background: transparent; color: #e6eff3; font-size: 9px; cursor: pointer; }
     .arena-tab.active { border-color: #bce8d1; background: #bce8d1; color: #284f48; font-weight: 800; }
     .arena-card .btn-light { border: 0; background: #fff; }
-    .leader-card { padding: 21px; }
+    .leader-card { padding: 24px; overflow: hidden; border-color: #eee6d9; background: linear-gradient(160deg,#fff 20%,#fffaf0); }
     .leader-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .leader-title h3 { margin: 0; font-size: 16px; }
+    .leader-title h3 { margin: 0; font-size: 20px; }
     .leader-title span { color: var(--muted); font-size: 10px; }
-    .leader-row { display: grid; grid-template-columns: 31px 1fr auto; align-items: center; gap: 9px; padding: 11px 5px; border-bottom: 1px solid #f3f0e9; }
+    .leader-controls { margin: 12px 0 8px; padding: 13px; border: 1px solid #e8eee8; border-radius: 15px; background: #f7fbf7; }
+    .leaderboard-preferences { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; align-items: end; }
+    .leaderboard-preferences > label:not(.leaderboard-consent) { display: grid; gap: 5px; color: #64746e; font-size: 9px; font-weight: 800; }
+    .leaderboard-preferences input:not([type="checkbox"]), .leaderboard-preferences select { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid #dfe8df; border-radius: 10px; background: white; color: #344a42; font: inherit; font-size: 11px; }
+    .leaderboard-consent { grid-column: 1 / -1; display: flex; align-items: start; gap: 8px; color: #61716a; font-size: 10px; line-height: 1.5; }
+    .leaderboard-consent input { flex: 0 0 auto; margin: 2px 0 0; accent-color: #3b9c77; }
+    .leaderboard-preferences .btn { justify-self: start; }
+    .leaderboard-view-control { display: grid; max-width: 290px; gap: 5px; margin: 0 0 10px; color: #64746e; font-size: 9px; font-weight: 800; }
+    .leaderboard-view-control[hidden] { display: none; }
+    .leaderboard-view-control select { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid #dfe8df; border-radius: 10px; background: white; color: #344a42; font: inherit; font-size: 11px; }
+    .leaderboard-status { min-height: 18px; margin: 8px 0; color: #718078; font-size: 10px; }
+    .leaderboard-status.error { color: #b13d3d; }
+    .leaderboard-podium { display: flex; align-items: end; justify-content: center; gap: 16px; min-height: 242px; margin: 12px 0 16px; padding: 17px 10px 16px; border: 1px solid #f0e9dc; border-radius: 22px; background: radial-gradient(ellipse at 50% 34%,#fff6d8 0,#fff 58%); }
+    .leader-podium-place { position: relative; display: flex; width: min(31%,180px); min-width: 0; flex-direction: column; align-items: center; gap: 6px; padding: 16px 10px 13px; border: 1px solid #eee6d9; border-radius: 22px 22px 15px 15px; background: #fff; box-shadow: 0 9px 23px #56472a12; text-align: center; }
+    .leader-podium-place.place-1 { min-height: 194px; order: 2; border-color: #f0cb70; background: linear-gradient(160deg,#fffdf5,#fff3cc); box-shadow: 0 8px 28px #e6bb4a36; }
+    .leader-podium-place.place-2 { min-height: 160px; order: 1; }
+    .leader-podium-place.place-3 { min-height: 145px; order: 3; }
+    .leader-podium-place.is-you { outline: 2px solid #50b48a; outline-offset: 1px; }
+    .leader-podium-place.is-example { border-style: dashed; }
+    .podium-medal { font-size: 20px; line-height: 1; }
+    .podium-avatar { display: grid; width: 34px; height: 34px; place-items: center; border: 2px solid #fff; border-radius: 50%; background: linear-gradient(140deg,#a8dfc0,#66b99a); color: #fff; font-size: 15px; font-weight: 900; box-shadow: 0 2px 8px #365b4625; }
+    .place-1 .podium-avatar { width: 40px; height: 40px; background: linear-gradient(140deg,#f7d77f,#eaa840); }
+    .leader-podium-place strong { max-width: 100%; overflow: hidden; color: #26384e; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .leader-podium-place small { max-width: 100%; overflow: hidden; color: #829087; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .leader-podium-place b { color: #a17421; font-size: 12px; }
+    .podium-rank { position: absolute; top: 10px; right: 11px; color: #a29270; font-size: 10px; font-weight: 900; }
+    .leader-row { display: grid; grid-template-columns: 42px minmax(0,1fr) auto; align-items: center; gap: 12px; padding: 13px 10px; border-bottom: 1px solid #f0f1ec; }
+    .leader-row.is-you { border-radius: 10px; background: #f0faf3; }
+    .leader-row.is-example { background: #fffdf6; }
     .medal { font-size: 16px; }
-    .leader-name { font-size: 11px; font-weight: 780; }
-    .leader-sub { color: var(--muted); font-size: 9px; }
-    .leader-score { color: #9a7941; font-size: 11px; font-weight: 850; }
+    .leader-name { font-size: 13px; font-weight: 780; }
+    .leader-sub { color: var(--muted); font-size: 10px; }
+    .leader-score { color: #9a7941; font-size: 12px; font-weight: 850; }
+    .sample-review-note { display: block; margin-top: 5px; color: #7b6c4a; font-size: 10px; font-weight: 700; }
+    .store-review.is-sample { border-style: dashed; background: #fffdf7; }
+    .store-review.is-sample > small { display: block; margin-top: 8px; }
     .leader-you { margin-top: 9px; padding: 11px; border: 1px solid #f2e2b7; border-radius: 13px; background: #fff9e9; }
     .leader-you .leader-row { padding: 0; border: 0; }
+    .dark-mode .leader-controls { border-color: #374c42; background: #24352e; }
+    .dark-mode .leaderboard-preferences > label:not(.leaderboard-consent), .dark-mode .leaderboard-consent { color: #c4d2c9; }
+    .dark-mode .leaderboard-preferences input:not([type="checkbox"]), .dark-mode .leaderboard-preferences select { border-color: #43564c; background: #1d2c26; color: #edf5ef; }
+    .dark-mode .leaderboard-view-control { color: #c4d2c9; }
+    .dark-mode .leaderboard-view-control select { border-color: #43564c; background: #1d2c26; color: #edf5ef; }
+    .dark-mode .leaderboard-podium { background: radial-gradient(ellipse at 50% 100%,#594b2b 0,#352f26 44%,transparent 75%); }
+    .dark-mode .leader-podium-place { border-color: #514a37; background: #293831; }
+    .dark-mode .leader-podium-place.place-1 { border-color: #9c7d39; background: linear-gradient(160deg,#3b392d,#3d3422); }
+    .dark-mode .leader-podium-place strong { color: #edf3ee; }
+    .dark-mode .leader-row { border-color: #37434f; }
+    .dark-mode .leader-row.is-you { background: #283e32; }
     .quiz-center-card { width: min(100%,720px); margin: 0 auto; }
     body.route-active[data-route="quiz"] #routeView > .page-heading { max-width: 720px; margin-right: auto; margin-left: auto; text-align: center; }
     .co-card { display: grid; grid-template-columns: .9fr 1.1fr; gap: 26px; padding: 28px; background: linear-gradient(120deg,#e9f8ef,#f0faf2 65%,#fff9e8); }
@@ -920,6 +1000,46 @@
     .features li { color: #5d6b7b; font-size: 11px; }
     .features li::before { content: "✓"; margin-right: 8px; color: #4baf88; font-weight: 900; }
     .plan-card .btn { width: 100%; }
+    .subscription-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: stretch; gap: 18px; }
+    .subscription-row { --plan-accent: #32a05a; display: grid; grid-template-rows: auto minmax(0,1fr) auto; overflow: hidden; padding: 0; border: 1px solid #cfe7d4; border-radius: 18px; background: #fff; box-shadow: 0 10px 24px #335b4712; }
+    .subscription-row.is-yearly { --plan-accent: #1687c9; border-color: #abd8f3; }
+    .subscription-art { position: relative; overflow: hidden; aspect-ratio: 1.78 / 1; background: #e5f3ed; }
+    .subscription-art::after { position: absolute; inset: auto 0 0; height: 32%; content: ""; background: linear-gradient(transparent,#263c5720); pointer-events: none; }
+    .subscription-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 45%; }
+    .course-art-badge { position: absolute; z-index: 1; top: 12px; left: 13px; padding: 6px 9px; border: 1px solid #ffffffd9; border-radius: 99px; background: #ffffffeb; color: #237b60; font-size: 9px; font-weight: 900; }
+    .is-yearly .course-art-badge { color: #176f9e; }
+    .subscription-copy { padding: 16px 19px 8px; }
+    .course-plan-kicker { color: var(--plan-accent); font-size: 9px; font-weight: 900; }
+    .subscription-copy h3 { margin: 4px 0 0; color: #213d4a; font-size: 19px; line-height: 1.25; }
+    .subscription-copy .features { display: grid; gap: 7px; margin: 11px 0 0; }
+    .subscription-copy .features li { color: #526774; font-size: 11px; }
+    .subscription-copy .features li::before { color: var(--plan-accent); }
+    .subscription-action { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 19px 17px; }
+    .subscription-action strong { display: flex; align-items: baseline; gap: 4px; color: var(--plan-accent); font-size: 24px; font-weight: 900; white-space: nowrap; }
+    .subscription-action strong span { color: var(--muted); font-size: 10px; font-weight: 650; }
+    .subscription-action .btn { min-width: 140px; background: var(--plan-accent); }
+    .free-plan-note { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 3px 8px; margin-top: 13px; color: var(--muted); font-size: 11px; }
+    .free-plan-note .text-link { font-size: 11px; }
+    .checkout-pending, .locked-plan-panel { max-width: 760px; margin-inline: auto; padding: 24px; }
+    .checkout-pending .price { margin: 10px 0; }
+    .checkout-pending .payment-note { margin: 16px 0; padding: 12px 14px; border: 1px solid #e8d39a; border-radius: 8px; background: #fff9e8; color: #70551e; font-size: 12px; line-height: 1.6; }
+    .locked-plan-panel { display: grid; grid-template-columns: auto minmax(0,1fr); align-items: center; gap: 10px 14px; }
+    .locked-plan-panel h2 { margin: 0; font-size: 20px; }
+    .locked-plan-panel p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .locked-plan-panel .page-actions { grid-column: 1 / -1; }
+    .dark-mode .subscription-row { border-color: #42505b; background: #26323e; }
+    .dark-mode .subscription-action strong { color: var(--ink); }
+    .dark-mode .subscription-copy h3 { color: var(--ink); }
+    .dark-mode .subscription-copy .features li { color: #bbc7cf; }
+    .dark-mode .checkout-pending .payment-note { border-color: #6f6038; background: #373429; color: #f1dda4; }
+    @media (max-width: 640px) {
+      .subscription-list { grid-template-columns: 1fr; gap: 14px; }
+      .subscription-art { aspect-ratio: 1.9 / 1; }
+      .subscription-action { align-items: stretch; flex-direction: column; padding-top: 8px; }
+      .subscription-action strong { font-size: 22px; }
+      .subscription-action .btn { width: 100%; }
+      .locked-plan-panel { padding: 17px; }
+    }
     .footer { margin-top: 76px; padding: 35px 0 20px; border-top: 1px solid var(--line); background: #fffdf8; }
     .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.1fr; gap: 28px; }
     .footer h3 { margin: 0 0 10px; font-size: 11px; }
@@ -927,7 +1047,7 @@
     .footer a { display: block; margin: 6px 0; }
     .footer-brand p { max-width: 230px; line-height: 1.7; }
     .footer-bottom { display: flex; justify-content: space-between; gap: 12px; margin-top: 26px; padding-top: 15px; border-top: 1px solid var(--line); color: #89909b; font-size: 9px; }
-    body:not(.route-active) #home > section:not(.hero):not(#about):not(#whyLifeSkills):not(#learningJourney):not(#world):not(#trust):not(#pricing):not(#finalCta) { display: none; }
+    body:not(.route-active) #home > section:not(.hero):not(#about):not(#whyLifeSkills):not(#learningJourney):not(#featured):not(#arena):not(#stories):not(#world):not(#trust):not(#pricing):not(#finalCta) { display: none; }
     .dialog {
       width: min(540px, calc(100% - 28px)); max-height: min(85vh, 760px); padding: 0; overflow: auto;
       border: 1px solid var(--line); border-radius: 25px; background: white; color: var(--ink); box-shadow: 0 25px 100px #202d3b38;
@@ -1003,6 +1123,13 @@
       .head-actions > .stat-pill:not(.level), #soundBtn { display: none; }
     }
     @media (max-width: 760px) {
+      .lesson-catalog { grid-template-columns: minmax(0, 1fr); }
+      .leaderboard-podium { gap: 8px; padding-inline: 5px; }
+      .leader-podium-place { width: 33%; padding-inline: 5px; }
+      .leader-podium-place strong { font-size: 11px; }
+    }
+
+    @media (max-width: 760px) {
       .wrap { width: min(100% - 28px, 560px); }
       .header { min-height: 64px; gap: 8px; }
       .brand { font-size: 18px; }
@@ -1071,6 +1198,8 @@
       .story-card { display: grid; grid-template-columns: .7fr 1.3fr; }
       .story-art { min-height: 180px; }
       .lesson-feature, .arena-grid, .co-card, .social-layout { grid-template-columns: 1fr; }
+      .leaderboard-preferences { grid-template-columns: 1fr; }
+      .leaderboard-consent { grid-column: auto; }
       .lesson-layout, .payment-grid { grid-template-columns: 1fr; }
       .lesson-catalog, .story-grid-page, .game-grid, .achievement-grid, .forum-grid, .faq-grid, .reviews-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .store-rating { grid-template-columns: 105px 1fr; gap: 12px; padding: 14px; }
@@ -1456,13 +1585,28 @@
     .scene-actor.action-pickup .hero-arm-right { animation: character-pickup .7s ease-in-out 2 alternate; }
     .scene-actor.action-receive .hero-arm-left,
     .scene-actor.action-receive .hero-arm-right { animation: character-receive .65s ease-in-out 2 alternate; }
-    .scene.scene-lost { display: block; min-height: 0; aspect-ratio: 1024 / 541; padding: 0; background: #e9d8bd; }
-    .scene.scene-lost::before, .scene.scene-lost::after { display: none; }
-    .scene.scene-lost .scene-illustration { display: block; width: 100%; height: 100%; object-fit: contain; }
-    .scene.scene-lost.safety-helping .scene-illustration { animation: safety-art-confirm .55s ease-in-out 2 alternate; }
-    @keyframes safety-art-confirm { to { filter: saturate(1.07) brightness(1.025); } }
+    .scene-actor.action-pickup .character-movement { animation: scene-bend .9s ease-in-out 2; }
+    .scene-actor.action-run { animation: actor-run .22s ease-in-out 7 alternate; }
+    .scene-actor.action-run .hero-leg-left { animation: leg-run .23s ease-in-out 7 alternate; }
+    .scene-actor.action-run .hero-leg-right { animation: leg-run .23s ease-in-out 7 alternate-reverse; }
+    .scene-actor.action-run .hero-arm-left { animation: arm-run .23s ease-in-out 7 alternate; }
+    .scene-actor.action-run .hero-arm-right { animation: arm-run .23s ease-in-out 7 alternate-reverse; }
+    .scene-actor.action-approach { animation: action-approach .8s ease-in-out 2 alternate; }
+    .scene-actor.action-approach .hero-leg-right { animation: character-step .35s ease-in-out 3 alternate; }
+    .scene-actor.action-hide .character-movement { animation: scene-hide .8s ease-in-out 2; }
+    .scene-actor.action-hide .hero-arm-left, .scene-actor.action-hide .hero-arm-right { animation: character-worry .4s ease-in-out 3 alternate; }
+    .scene-actor.action-pause .character-movement { animation: scene-pause 1s ease-in-out 2; }
+    .scene-actor.action-pause .hero-character-svg .hero-head { animation: character-think-nod .8s ease-in-out 2 alternate; }
+    .scene-actor.action-pause .hero-arm-right { animation: character-think .8s ease-in-out 2 alternate; }
+    .scene.scene-lost { min-height: 430px; aspect-ratio: auto; padding: 60px 30px 43px; background: #e7f2f3; }
+    .scene.scene-painting { display: block; min-height: 0; aspect-ratio: 1024 / 637; padding: 0; background: #fff0d9; }
+    .scene.scene-calm-room { display: block; min-height: 0; aspect-ratio: 1024 / 768; padding: 0; background: #fff0d9; }
+    .scene.scene-painting::before, .scene.scene-painting::after, .scene.scene-calm-room::before, .scene.scene-calm-room::after { display: none; }
+    .scene.scene-painting .scene-illustration, .scene.scene-calm-room .scene-illustration { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .scene-card.playing .scene-lesson-emotion .scene-illustration { animation: classroom-image-response .55s ease-in-out 2 alternate; }
+    @keyframes classroom-image-response { to { filter: saturate(1.08) brightness(1.025); transform: scale(1.012); } }
     @media (max-width: 760px) {
-      .scene.scene-lost { min-height: 0; padding: 0; }
+      .scene.scene-lost { min-height: 350px; padding: 50px 12px 40px; }
     }
     @keyframes actor-pickup { 50% { transform: translateY(11px) rotate(-7deg); } }
     @keyframes character-pickup { to { transform: rotate(38deg) translateY(5px); } }
@@ -1560,6 +1704,11 @@
     .lesson-layout { grid-template-columns: minmax(0,1.08fr) minmax(360px,.92fr); gap: 18px; align-items: start; }
     .lesson-question-panel { min-width: 0; }
     .lesson-question-card { padding: 22px; }
+    .lesson-voice-controls { margin: 12px 0 5px; }
+    .lesson-voice-status { min-height: 20px; margin: 0 0 10px; color: #43856a; font-size: 13px; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere; }
+    .lesson-voice-status.is-listening::before { display: inline-block; width: 9px; height: 9px; margin: 0 7px 1px 1px; border-radius: 50%; background: #e34747; box-shadow: 0 0 0 0 #e3474755; content: ""; vertical-align: middle; animation: lesson-voice-pulse 1.4s ease-out infinite; }
+    .lesson-voice-answer.is-listening { background: #e74848; color: #fff; box-shadow: 0 4px 0 #bd3636, 0 0 0 3px #f4b0b055; }
+    @keyframes lesson-voice-pulse { 70% { box-shadow: 0 0 0 8px #e3474700; } 100% { box-shadow: 0 0 0 0 #e3474700; } }
     .lesson-story { margin: 8px 0 15px; color: #53677d; font-size: 16px; line-height: 1.55; }
     .lesson-prompt { margin: 8px 0 14px; font-size: 18px; font-weight: 900; line-height: 1.35; }
     .lesson-question-card .lesson-progress { font-size: 13px; }
@@ -1713,8 +1862,8 @@
       --shadow: 0 14px 36px #214c7412;
       --radius: 22px;
     }
-    html, body, button, input, textarea, select {
-      font-family: "Baloo 2", sans-serif;
+    html, body, button, input, textarea, select, svg text {
+      font-family: "Be Vietnam Pro", sans-serif;
     }
     body { display: flex; min-height: 100svh; flex-direction: column; font-size: 16px; line-height: 1.6; }
     #home { width: 100%; flex: 1 0 auto; }
@@ -1727,14 +1876,14 @@
     body::before { opacity: .035; }
     h1, h2, h3, h4, h5, h6,
     .hero-copy h1, .page-heading h1, .section-head h2 {
-      font-family: "Baloo 2", sans-serif;
+      font-family: "Be Vietnam Pro", sans-serif;
       font-weight: 600;
       line-height: 1.16;
     }
     .topbar { border-bottom-color: #dceaf7; background: #ffffffed; }
     .nav a.active { border-color: #c5e1fb; background: #edf7ff; color: #1769b1; }
     .nav a:hover, .nav summary:hover { background: #f0f8ff; color: #155e9b; }
-    .btn { border-radius: 14px; background: #1b4e7b; font-family: "Baloo 2", sans-serif; font-size: 14px; }
+    .btn { border-radius: 14px; background: #1b4e7b; font-family: "Be Vietnam Pro", sans-serif; font-size: 14px; }
     .btn-primary, .btn-mint {
       background: linear-gradient(135deg, #3899f0, #1975ce);
       color: #fff;
@@ -1757,7 +1906,7 @@
     #about .section-head h2, #world .section-head h2, #pricing .section-head h2 { color: #1677bd; }
     #whyLifeSkills .section-head h2, #trust .section-head h2 { color: #3658a6; }
     #learningJourney .section-head h2, #arena .section-head h2 { color: #1682a2; }
-    .kicker { color: #2482ca; font-family: "Baloo 2", sans-serif; font-size: 11px; font-weight: 900; }
+    .kicker { color: #2482ca; font-family: "Be Vietnam Pro", sans-serif; font-size: 11px; font-weight: 900; }
     .hero-card .kicker { color: #2877b3; }
     .text-link, .auth-switch { color: #176fb7; }
     .hero { padding-top: 32px; }
@@ -1786,7 +1935,7 @@
     .catalog-card h3, .story-route-card h3, .game-card h3,
     .parent-article h2, .parent-feature-copy h2, .plan-card h3 {
       color: #214f76;
-      font-family: "Baloo 2", sans-serif;
+      font-family: "Be Vietnam Pro", sans-serif;
       font-size: 20px;
       font-weight: 500;
       line-height: 1.25;
@@ -1802,7 +1951,7 @@
     .catalog-card .btn, .story-route-card .btn, .game-card .btn { width: fit-content; margin-top: auto; }
     .mini-game-card-copy p, .story-body p { min-height: 0; }
     .mini-game-card { border-color: #d7e9f8; background: linear-gradient(145deg, #fff, #f1f8ff); }
-    .mini-game-card-copy h3, .mini-game-result h2, .mini-game-result h3 { font-family: "Baloo 2", sans-serif; }
+    .mini-game-card-copy h3, .mini-game-result h2, .mini-game-result h3 { font-family: "Be Vietnam Pro", sans-serif; }
     .lesson-choice, .mini-game-option, .answer { font-size: 14px; line-height: 1.5; }
     .lesson-choice:hover, .answer:hover { border-color: #83b9e8; background: #f3f9ff; }
     .lesson-choice.correct, .mini-game-option.is-correct, .answer.correct { border-color: #80c4a4; background: #effaf5; }
@@ -1812,7 +1961,7 @@
     .form-label { font-size: 14px; }
     .form-label input, .simple-form input, .simple-form textarea, .simple-form select {
       border-color: #d6e4f0;
-      font: 15px "Baloo 2", sans-serif;
+      font: 15px "Be Vietnam Pro", sans-serif;
     }
     .form-label input:focus, .simple-form input:focus, .simple-form textarea:focus, .simple-form select:focus {
       border-color: #4a9ce2;
@@ -1820,7 +1969,7 @@
     }
     .home-info-card, .learning-step, .storybook-card { border-color: #dceaf6; box-shadow: 0 10px 30px #245d8c0c; }
     .home-info-card, .home-info-card:nth-child(2) { min-height: 0; background: linear-gradient(145deg, #fff, #f1f8ff); }
-    .home-info-card h3, .learning-step h3 { color: #225d90; font-family: "Baloo 2", sans-serif; }
+    .home-info-card h3, .learning-step h3 { color: #225d90; font-family: "Be Vietnam Pro", sans-serif; }
     .home-final-cta {
       background:
         radial-gradient(circle at 78% 18%, #ffffff35 0 5px, transparent 6px),
@@ -1830,12 +1979,12 @@
     .home-final-cta .btn { color: #1767a8; }
     .chat-shell { border-color: #dceaf6; box-shadow: 0 16px 42px #204a7012; }
     .chat-top { border-color: #e3eef8; background: #f0f8ff; }
-    .chat-top h2 { color: #165f9f; font-family: "Baloo 2", sans-serif; }
+    .chat-top h2 { color: #165f9f; font-family: "Be Vietnam Pro", sans-serif; }
     .chat-messages, .chat-suggestions { background: #f8fbff; }
     .chat-message.user { border-color: #c4e1f8; background: #eaf5ff; }
     .ai-launcher { background: #1979c8; }
     .footer { margin-top: 56px; border-top-color: #dce9f4; background: #f4f9fe; }
-    .footer h3 { color: #195f98; font-family: "Baloo 2", sans-serif; font-size: 18px; }
+    .footer h3 { color: #195f98; font-family: "Be Vietnam Pro", sans-serif; font-size: 18px; }
     .footer p, .footer a { color: #526b83; font-size: 14px; }
     .footer-bottom { border-color: #d9e7f2; color: #6b8196; font-size: 12px; }
     button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible,
@@ -1868,4 +2017,651 @@
       .footer-grid { grid-template-columns: 1fr 1fr; }
       .footer-brand, .footer-connect { grid-column: 1 / -1; }
       .footer-brand .brand { margin-top: -8px; }
+    }
+    .page-heading h1 { font-size: clamp(38px, 4.4vw, 54px); }
+    .section-head h2 { font-size: var(--font-section); }
+    .hero-copy h1 { font-size: var(--font-display); }
+    .catalog-card h3, .story-route-card h3, .game-card h3, .parent-article h2,
+    .parent-feature-copy h2, .plan-card h3, .home-info-card h3, .learning-step h3,
+    .proof-banner h3, .footer h3 {
+      font-size: var(--font-card-title);
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    .catalog-card p, .story-route-card p, .game-card p, .faq-card p,
+    .parent-article p, .parent-feature-copy p, .story-body p, .lesson-copy p,
+    .plan-card > p, .features li, .parent-preview-grid .settings-card p,
+    .home-info-card p, .learning-step p {
+      font-size: var(--font-support);
+      line-height: 1.65;
+    }
+    .footer p, .footer a { font-size: var(--font-support); }
+    .footer-bottom, .parent-article-meta { font-size: var(--font-meta); }
+    @media (max-width: 760px) {
+      .page-heading h1 { font-size: clamp(34px, 9vw, 44px); }
+      .section-head h2 { font-size: clamp(27px, 7vw, 34px); }
+    }
+    body.route-active[data-route="auth"] { height: 100dvh; overflow: hidden; background: #b7e5ff; }
+    body.route-active[data-route="auth"] #routeView {
+      display: block; width: 100%; height: 100dvh; min-height: 0; padding: 0; overflow-x: hidden; overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    body.route-active[data-route="auth"] #routeView > .route-back,
+    body.route-active[data-route="auth"] #routeView > .page-heading { display: none; }
+    body.route-active[data-route="auth"] #floatingActions { display: none !important; }
+    .auth-scene {
+      position: relative; isolation: isolate; display: grid; min-height: 100dvh; place-items: center;
+      overflow: hidden; padding: 24px 20px 44px;
+      background: linear-gradient(180deg,#9bd9ff 0%,#d7f0ff 61%,#e8f7ff 78%,#b5df8e 100%);
+    }
+    .auth-scene::before {
+      position: absolute; z-index: -1; top: 8%; right: 12%; width: 116px; height: 116px; border-radius: 50%;
+      background: #fff3ae; box-shadow: 0 0 0 18px #fff3ae30,0 0 55px #fff8cc9c; content: "";
+    }
+    .auth-cloud {
+      position: absolute; z-index: -1; width: 155px; height: 42px; border-radius: 50px;
+      background: #ffffffc9; filter: drop-shadow(0 7px 8px #4698c21c);
+    }
+    .auth-cloud::before, .auth-cloud::after {
+      position: absolute; bottom: 10px; border-radius: 50%; background: inherit; content: "";
+    }
+    .auth-cloud::before { left: 22px; width: 58px; height: 58px; }
+    .auth-cloud::after { right: 20px; width: 75px; height: 75px; }
+    .auth-cloud-one { top: 17%; left: 10%; transform: scale(.85); }
+    .auth-cloud-two { top: 32%; right: 10%; transform: scale(.7); }
+    .auth-hills { position: absolute; z-index: -1; right: 0; bottom: 0; left: 0; height: 24%; overflow: hidden; }
+    .auth-hills span { position: absolute; right: -9%; bottom: -53%; left: -9%; height: 130%; border-radius: 50% 50% 0 0; background: #80c96d; }
+    .auth-hills span + span { right: 38%; bottom: -70%; left: -24%; height: 145%; background: #9cda76; }
+    .auth-card-wrap { position: relative; z-index: 2; width: min(520px,100%); margin: auto; padding-top: 104px; }
+    .auth-logo {
+      position: absolute; z-index: 2; top: -4px; left: 50%; width: min(315px,76%); height: 142px;
+      object-fit: contain; transform: translateX(-50%); filter: drop-shadow(0 7px 8px #32557524);
+    }
+    .auth-card {
+      width: 100%; padding: 73px 50px 35px; border: 1px solid #e8f1f8; border-radius: 32px;
+      background: #fffffff5; box-shadow: 0 20px 55px #2754772b,0 4px 0 #ffffffa8;
+      backdrop-filter: blur(7px);
+    }
+    .auth-heading {
+      margin: 0; color: #233d65; font-size: clamp(27px,4vw,35px); font-weight: 800;
+      line-height: 1.2; text-align: center; letter-spacing: -.8px;
+    }
+    .auth-subheading { margin: 9px 0 25px; color: #718198; font-size: 14px; line-height: 1.55; text-align: center; }
+    .auth-form { display: grid; gap: 13px; width: 100%; max-width: none; margin: 0; }
+    .auth-field {
+      position: relative; display: flex; min-width: 0; height: 58px; align-items: center; gap: 12px;
+      padding: 0 16px; border: 1.5px solid #d5e6f4; border-radius: 18px; background: #f7fbff;
+      transition: border-color .18s ease,box-shadow .18s ease,background .18s ease;
+    }
+    .auth-field:focus-within { border-color: #52a6e2; background: #fff; box-shadow: 0 0 0 4px #64b1e522; }
+    .auth-field > svg { width: 21px; height: 21px; flex: 0 0 21px; fill: none; stroke: #6592b8; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .auth-field > input {
+      width: 100%; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: transparent;
+      color: #263c57; font: 500 14px/1.3 "Be Vietnam Pro",sans-serif;
+    }
+    .auth-field > input::placeholder { color: #96a5b7; opacity: 1; }
+    .auth-field > input:focus-visible { outline: 0; }
+    .auth-password-toggle {
+      display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; padding: 0;
+      border: 0; border-radius: 50%; background: transparent; color: #7892aa; cursor: pointer;
+    }
+    .auth-password-toggle:hover { background: #e8f3fc; color: #347eae; }
+    .auth-password-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .auth-form-options { display: flex; min-height: 22px; align-items: center; justify-content: space-between; gap: 12px; margin: 0 2px 3px; }
+    .auth-form-options label { display: inline-flex; align-items: center; gap: 7px; color: #687b91; font-size: 12px; font-weight: 500; cursor: pointer; }
+    .auth-form-options input { width: 15px; height: 15px; margin: 0; accent-color: #398bc8; }
+    .auth-text-button { padding: 0; border: 0; background: transparent; color: #397fb5; font: 600 12px "Be Vietnam Pro",sans-serif; cursor: pointer; }
+    .auth-text-button:hover, .auth-demo-button:hover { text-decoration: underline; }
+    .auth-submit {
+      display: inline-flex; min-height: 56px; align-items: center; justify-content: center; padding: 12px 20px;
+      border: 0; border-radius: 18px; background: linear-gradient(180deg,#ffe47f,#ffc844); color: #654516;
+      box-shadow: 0 5px 0 #e7ad32,0 9px 16px #dbab3533; font: 800 16px "Be Vietnam Pro",sans-serif;
+      cursor: pointer; transition: transform .18s ease,box-shadow .18s ease,filter .18s ease;
+    }
+    .auth-submit:hover { transform: translateY(-2px); box-shadow: 0 7px 0 #e7ad32,0 12px 20px #dbab3540; filter: saturate(1.05); }
+    .auth-submit:active { transform: translateY(2px); box-shadow: 0 3px 0 #e7ad32; }
+    .auth-submit:disabled { cursor: wait; opacity: .7; transform: none; }
+    .auth-switch-caption { margin: 21px 0 9px; color: #8090a2; font-size: 13px; text-align: center; }
+    .auth-outline-button {
+      display: flex; width: 100%; min-height: 51px; align-items: center; justify-content: center; padding: 10px 18px;
+      border: 2px solid #65a6d7; border-radius: 17px; background: #fff; color: #397fb5;
+      font: 700 14px "Be Vietnam Pro",sans-serif; cursor: pointer; transition: background .18s ease,transform .18s ease;
+    }
+    .auth-outline-button:hover { background: #f0f8ff; transform: translateY(-1px); }
+    .auth-demo-button { display: block; margin: 17px auto 0; padding: 3px; border: 0; background: transparent; color: #7b8fa3; font: 500 12px "Be Vietnam Pro",sans-serif; cursor: pointer; }
+    .auth-form-error { max-width: none; margin: 12px 0 0; padding: 10px 12px; border: 1px solid #f1b6b2; border-radius: 13px; background: #fff5f4; color: #af3f39; font-size: 12px; font-weight: 600; line-height: 1.5; text-align: left; }
+    .auth-registration-form { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .auth-registration-form .auth-field:nth-child(5), .auth-registration-form .auth-field-note,
+    .auth-registration-form > .auth-submit { grid-column: 1 / -1; }
+    .auth-field-note { margin: -3px 1px 0; color: #8292a3; font-size: 11px; line-height: 1.45; }
+    .auth-privacy-note { margin: 12px 0 0; color: #8492a2; font-size: 11px; line-height: 1.5; text-align: center; }
+    .auth-recovery-form { gap: 13px; }
+    .auth-recovery-label { display: grid; gap: 6px; color: #536a81; font-size: 12px; font-weight: 700; }
+    .auth-recovery-label input, .auth-recovery-label select {
+      width: 100%; min-height: 52px; padding: 11px 15px; border: 1.5px solid #d5e6f4; border-radius: 16px;
+      background: #f7fbff; color: #263c57; font: 500 14px "Be Vietnam Pro",sans-serif;
+    }
+    .auth-local-warning {
+      position: fixed; z-index: 5; top: 14px; right: 16px; display: grid; width: min(390px,calc(100% - 32px));
+      gap: 5px; padding: 12px 15px; border: 1px solid #f4d184; border-radius: 15px;
+      background: #fff9e8ed; color: #75571e; box-shadow: 0 6px 22px #4f4a3215; font-size: 11px; line-height: 1.45;
+    }
+    .auth-local-warning strong { font-size: 12px; }
+    .auth-local-warning a { width: fit-content; color: #2f78ae; font-weight: 800; text-decoration: underline; }
+    .visually-hidden {
+      position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important;
+      clip: rect(0,0,0,0) !important; white-space: nowrap !important; clip-path: inset(50%) !important;
+    }
+    @media (max-width: 760px) {
+      .auth-scene { padding: 28px 16px 38px; }
+      .auth-card-wrap { width: min(500px,100%); padding-top: 90px; }
+      .auth-logo { height: 128px; }
+      .auth-card { padding: 67px 34px 30px; border-radius: 28px; }
+      .auth-cloud-one { left: -35px; }
+      .auth-cloud-two { right: -35px; }
+    }
+    @media (max-width: 520px) {
+      .auth-scene { min-height: 100dvh; align-items: start; padding: 24px 14px 36px; }
+      .auth-card-wrap { width: min(440px,100%); margin: auto; padding-top: 84px; }
+      .auth-logo { width: min(270px,75%); height: 118px; }
+      .auth-card { padding: 61px 22px 26px; border-radius: 25px; }
+      .auth-heading { font-size: 27px; }
+      .auth-subheading { margin: 7px 0 21px; font-size: 12px; }
+      .auth-form { gap: 11px; }
+      .auth-field { height: 55px; padding-inline: 13px; border-radius: 16px; }
+      .auth-field > input { font-size: 13px; }
+      .auth-registration-form { grid-template-columns: 1fr; }
+      .auth-registration-form .auth-field:nth-child(5), .auth-registration-form .auth-field-note,
+      .auth-registration-form > .auth-submit { grid-column: auto; }
+      .auth-hills { height: 15%; }
+      .auth-local-warning { top: 8px; right: 8px; width: min(360px,calc(100% - 16px)); padding: 9px 11px; font-size: 10px; }
+      .auth-local-warning strong { font-size: 11px; }
+    }
+    @media (max-height: 720px) and (min-width: 521px) {
+      .auth-scene { padding-top: 12px; padding-bottom: 20px; }
+      .auth-card-wrap { padding-top: 78px; }
+      .auth-logo { height: 120px; }
+      .auth-card { padding: 60px 42px 25px; }
+      .auth-subheading { margin-bottom: 17px; }
+      .auth-field { height: 52px; }
+      .auth-form { gap: 10px; }
+    }
+    body.route-active[data-route="auth"] #routeView .auth-card { padding: 73px 50px 35px; border-color: #e8f1f8; border-radius: 32px; box-shadow: 0 20px 55px #2754772b,0 4px 0 #ffffffa8; }
+    body.route-active[data-route="auth"] #routeView .auth-card > section > .auth-switch-caption { margin: 21px 0 9px; }
+    body.route-active[data-route="auth"] #routeView #registrationForm { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    @media (max-width: 760px) {
+      body.route-active[data-route="auth"] #routeView .auth-card { padding: 67px 34px 30px; border-radius: 28px; }
+    }
+    @media (max-width: 520px) {
+      body.route-active[data-route="auth"] #routeView .auth-card { padding: 61px 22px 26px; border-radius: 25px; }
+      body.route-active[data-route="auth"] #routeView #registrationForm { grid-template-columns: 1fr; }
+    }
+    @media (max-height: 520px) {
+      body.route-active[data-route="auth"] #routeView .auth-card { padding: 60px 42px 25px; }
+    }
+    .scene.scene-painting, .scene.scene-calm-room {
+      display: flex; min-height: 430px; aspect-ratio: auto; padding: 60px 30px 43px;
+      background: radial-gradient(ellipse at 50% 25%,#ffffffad,transparent 55%),var(--scene-bg);
+    }
+    .scene.scene-painting::before, .scene.scene-painting::after,
+    .scene.scene-calm-room::before, .scene.scene-calm-room::after { display: block; }
+    .scene.scene-with-third-character { gap: clamp(8px,2vw,24px); padding-inline: clamp(18px,4vw,36px); }
+    .scene.scene-with-third-character .scene-actor { width: 28%; }
+    .scene.scene-with-third-character .hero-character-svg { width: min(100%,150px); }
+    .scene-actor .hero-character-svg .hero-body { transform-box: fill-box; transform-origin: center bottom; animation: scene-breathing 3.2s ease-in-out infinite; }
+    .scene-actor .hero-character-svg .hero-head { transform-box: fill-box; transform-origin: center bottom; }
+    .scene-actor.action-breathe .character-movement { animation: scene-breathe 1.7s ease-in-out 2; }
+    .scene-actor.action-clean .character-movement { animation: scene-bend 1.2s ease-in-out 2; }
+    .scene-actor.action-clean .hero-arm-left { animation: scene-wipe .4s ease-in-out 5 alternate; }
+    .scene-actor.action-clean .hero-arm-right { animation: scene-wipe .4s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-apologize .character-movement { animation: scene-bow .9s ease-in-out 2; }
+    .scene-actor.action-greet .hero-arm-right, .scene-actor.action-greet .hero-arm-left { animation: character-wave .55s ease-in-out 3; }
+    .scene-actor.action-handshake .hero-arm-right,
+    .scene-actor.action-handshake-partner .hero-arm-left { animation: scene-handshake .7s ease-in-out 3 alternate; }
+    .scene-actor.action-handshake-partner { animation: scene-step-in .7s ease-in-out 2 alternate; }
+    .scene-actor.action-report .hero-arm-right { animation: character-reach .65s ease-in-out 2 alternate; }
+    .scene-actor.action-listen .hero-character-svg .hero-head { animation: character-think-nod .8s ease-in-out 2 alternate; }
+    .scene-actor.action-guide .hero-arm-left { animation: character-wave .55s ease-in-out 3; }
+    .scene-actor.action-guide .hero-arm-right { animation: character-reach .65s ease-in-out 2 alternate; }
+    .scene-actor.action-encourage .hero-arm-left,
+    .scene-actor.action-encourage .hero-arm-right { animation: character-celebrate .48s ease-in-out 3 alternate; }
+    .scene-actor.action-reassure .hero-arm-right { animation: character-reach .65s ease-in-out 2 alternate; }
+    .scene-actor.action-protect .hero-arm-left,
+    .scene-actor.action-protect .hero-arm-right { animation: character-protect .55s ease-in-out 3 alternate; }
+    .scene-actor.action-ride { animation: actor-run .3s ease-in-out 5 alternate; }
+    .scene-actor.action-ride .hero-leg-left { animation: leg-stride .3s ease-in-out 5 alternate; }
+    .scene-actor.action-ride .hero-leg-right { animation: leg-stride .3s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-ride .hero-arm-left { animation: arm-walk .3s ease-in-out 5 alternate; }
+    .scene-actor.action-ride .hero-arm-right { animation: arm-walk .3s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-step-back { animation: scene-step-back .8s ease-in-out 2; }
+    #lessonScene .scene-actor.action-step-back,
+    #lessonScene .scene-actor.action-run,
+    #lessonScene .scene-actor.action-approach { animation: none; }
+    @keyframes scene-breathing { 50% { transform: translateY(-2px) scaleY(1.015); } }
+    @keyframes scene-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+    @keyframes scene-bend { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(8px) rotate(8deg); } }
+    @keyframes scene-wipe { to { transform: rotate(-48deg) translate(-5px,8px); } }
+    @keyframes scene-bow { 0%,100% { transform: rotate(0); } 45%,70% { transform: rotate(10deg) translateY(5px); } }
+    @keyframes scene-handshake { to { transform: rotate(-70deg) translate(-3px,-3px); } }
+    @keyframes scene-step-in { to { transform: translateX(-8px); } }
+    @keyframes scene-step-back { 35% { transform: translateX(12px); } 70% { transform: translateX(8px); } }
+    @keyframes scene-hide { 40% { transform: translateY(3px) rotate(-8deg) scale(.97); } 100% { transform: rotate(0) scale(1); } }
+    @keyframes scene-pause { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+    @media (max-width: 760px) {
+      .scene.scene-painting, .scene.scene-calm-room { min-height: 350px; padding: 48px 7px 42px; }
+      .scene.scene-with-third-character { gap: 1px; padding-inline: 3px; }
+      .scene.scene-with-third-character .scene-actor,
+      .scene.scene-with-third-character .scene-actor.adult-actor { width: 33.333%; height: 242px; }
+      .scene.scene-with-third-character .hero-character-svg,
+      .scene.scene-with-third-character .scene-actor.adult-actor .hero-character-svg { width: min(100%,110px); height: 216px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .scene-actor .hero-character-svg .hero-body { animation: none; }
+      .scene-actor.action-breathe .character-movement,
+      .scene-actor.action-clean .character-movement,
+      .scene-actor.action-run, .scene-actor.action-run .hero-leg-left,
+      .scene-actor.action-run .hero-leg-right, .scene-actor.action-run .hero-arm-left,
+      .scene-actor.action-run .hero-arm-right, .scene-actor.action-approach,
+      .scene-actor.action-approach .hero-leg-right, .scene-actor.action-hide .character-movement,
+      .scene-actor.action-hide .hero-arm-left, .scene-actor.action-hide .hero-arm-right,
+      .scene-actor.action-pause .character-movement,
+      .scene-actor.action-pause .hero-character-svg .hero-head, .scene-actor.action-pause .hero-arm-right,
+      .scene-actor.action-clean .hero-arm-left, .scene-actor.action-clean .hero-arm-right,
+      .scene-actor.action-apologize .character-movement, .scene-actor.action-greet .hero-arm-right,
+      .scene-actor.action-greet .hero-arm-left, .scene-actor.action-handshake .hero-arm-right,
+      .scene-actor.action-handshake-partner .hero-arm-left, .scene-actor.action-handshake-partner,
+      .scene-actor.action-report .hero-arm-right, .scene-actor.action-listen .hero-character-svg .hero-head,
+      .scene-actor.action-guide .hero-arm-left, .scene-actor.action-guide .hero-arm-right,
+      .scene-actor.action-encourage .hero-arm-left, .scene-actor.action-encourage .hero-arm-right,
+      .scene-actor.action-reassure .hero-arm-right, .scene-actor.action-protect .hero-arm-left,
+      .scene-actor.action-protect .hero-arm-right, .scene-actor.action-ride,
+      .scene-actor.action-ride .hero-leg-left, .scene-actor.action-ride .hero-leg-right,
+      .scene-actor.action-ride .hero-arm-left, .scene-actor.action-ride .hero-arm-right,
+      .scene-actor.action-step-back { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
+    .scene-actor .lesson-character-svg {
+      display: block; width: min(100%,150px); height: 245px; overflow: visible;
+      filter: drop-shadow(0 7px 5px #43516b1c);
+    }
+    .scene-with-third-character .lesson-character-svg { width: min(100%,145px); }
+    .lesson-movement { transform-box: view-box; transform-origin: 100px 260px; }
+    .lesson-torso { transform-box: view-box; transform-origin: 100px 171px; animation: lesson-breath 3s ease-in-out infinite; }
+    .lesson-head { transform-box: view-box; transform-origin: 100px 101px; }
+    .lesson-arm-left { transform-box: view-box; transform-origin: 69px 119px; }
+    .lesson-arm-right { transform-box: view-box; transform-origin: 131px 119px; }
+    .lesson-forearm-left { transform-box: view-box; transform-origin: 49px 146px; }
+    .lesson-forearm-right { transform-box: view-box; transform-origin: 151px 146px; }
+    .lesson-leg-left { transform-box: view-box; transform-origin: 82px 177px; }
+    .lesson-leg-right { transform-box: view-box; transform-origin: 118px 177px; }
+    .lesson-knee { transform-box: view-box; }
+    .lesson-knee-left { transform-origin: 79px 208px; }
+    .lesson-knee-right { transform-origin: 121px 208px; }
+    .lesson-actor { transform-box: border-box; transform-origin: center bottom; }
+    .scene-actor.action-walk .lesson-leg-left { animation: lesson-walk-leg .45s ease-in-out 4 alternate; }
+    .scene-actor.action-walk .lesson-leg-right { animation: lesson-walk-leg .45s ease-in-out 4 alternate-reverse; }
+    .scene-actor.action-walk .lesson-arm-left { animation: lesson-walk-arm .45s ease-in-out 4 alternate; }
+    .scene-actor.action-walk .lesson-arm-right { animation: lesson-walk-arm .45s ease-in-out 4 alternate-reverse; }
+    .scene-actor.action-walk .lesson-forearm-left { animation: lesson-elbow-bend .45s ease-in-out 4 alternate; }
+    .scene-actor.action-walk .lesson-forearm-right { animation: lesson-elbow-bend .45s ease-in-out 4 alternate-reverse; }
+    .scene-actor.action-run .lesson-movement { animation: lesson-run-body .22s ease-in-out 7 alternate; }
+    .scene-actor.action-run .lesson-leg-left { animation: lesson-run-leg .22s ease-in-out 7 alternate; }
+    .scene-actor.action-run .lesson-leg-right { animation: lesson-run-leg .22s ease-in-out 7 alternate-reverse; }
+    .scene-actor.action-run .lesson-arm-left { animation: lesson-run-arm .22s ease-in-out 7 alternate; }
+    .scene-actor.action-run .lesson-arm-right { animation: lesson-run-arm .22s ease-in-out 7 alternate-reverse; }
+    .scene-actor.action-run .lesson-forearm-left { animation: lesson-run-elbow .22s ease-in-out 7 alternate; }
+    .scene-actor.action-run .lesson-forearm-right { animation: lesson-run-elbow .22s ease-in-out 7 alternate-reverse; }
+    .scene-actor.action-run .lesson-knee-left { animation: lesson-knee-flex .22s ease-in-out 7 alternate; }
+    .scene-actor.action-run .lesson-knee-right { animation: lesson-knee-flex .22s ease-in-out 7 alternate-reverse; }
+    .scene-actor.action-pickup .lesson-torso,
+    .scene-actor.action-clean .lesson-torso { animation: lesson-bend 1s ease-in-out 2; }
+    .scene-actor.action-pickup .lesson-leg-left,
+    .scene-actor.action-clean .lesson-leg-left { animation: lesson-crouch .8s ease-in-out 2; }
+    .scene-actor.action-pickup .lesson-leg-right,
+    .scene-actor.action-clean .lesson-leg-right { animation: lesson-crouch .8s ease-in-out 2 alternate-reverse; }
+    .scene-actor.action-pickup .lesson-arm-right { animation: lesson-reach-down .8s ease-in-out 2; }
+    .scene-actor.action-pickup .lesson-forearm-right { animation: lesson-grab .8s ease-in-out 2; }
+    .scene-actor.action-pickup .lesson-knee-left,
+    .scene-actor.action-clean .lesson-knee-left { animation: lesson-knee-flex .8s ease-in-out 2; }
+    .scene-actor.action-pickup .lesson-knee-right,
+    .scene-actor.action-clean .lesson-knee-right { animation: lesson-knee-flex .8s ease-in-out 2 alternate-reverse; }
+    .scene-actor.action-clean .lesson-arm-right { animation: lesson-clean-arm .42s ease-in-out 5 alternate; }
+    .scene-actor.action-clean .lesson-arm-left { animation: lesson-clean-arm .42s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-wash .lesson-arm-left { animation: lesson-wash-arm .55s ease-in-out 4 alternate; }
+    .scene-actor.action-wash .lesson-arm-right { animation: lesson-wash-arm .55s ease-in-out 4 alternate-reverse; }
+    .scene-actor.action-wash .lesson-forearm-left { animation: lesson-wash-forearm .42s ease-in-out 5 alternate; }
+    .scene-actor.action-wash .lesson-forearm-right { animation: lesson-wash-forearm .42s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-apologize .lesson-torso { animation: lesson-bow .9s ease-in-out 2; }
+    .scene-actor.action-apologize .lesson-arm-right { animation: lesson-hand-to-heart .9s ease-in-out 2; }
+    .scene-actor.action-greet .lesson-arm-right,
+    .scene-actor.action-guide .lesson-arm-left { animation: lesson-wave .5s ease-in-out 3; }
+    .scene-actor.action-greet .lesson-forearm-right,
+    .scene-actor.action-guide .lesson-forearm-left { animation: lesson-wave-elbow .5s ease-in-out 3 alternate; }
+    .scene-actor.action-greet .lesson-forearm-left { animation: lesson-wave-elbow .5s ease-in-out 3 alternate-reverse; }
+    .scene-actor.action-handshake .lesson-arm-right { animation: lesson-handshake .7s ease-in-out 3 alternate; }
+    .scene-actor.action-handshake-partner .lesson-arm-left { animation: lesson-handshake-partner .7s ease-in-out 3 alternate; }
+    .scene-actor.action-handshake .lesson-forearm-right { animation: lesson-handshake-elbow .7s ease-in-out 3 alternate; }
+    .scene-actor.action-handshake-partner .lesson-forearm-left { animation: lesson-handshake-elbow .7s ease-in-out 3 alternate-reverse; }
+    .scene-actor.action-handshake-partner { animation: lesson-step-in .7s ease-in-out 2 alternate; }
+    .scene-actor.action-report .lesson-arm-right,
+    .scene-actor.action-reassure .lesson-arm-right,
+    .scene-actor.action-assist .lesson-arm-left { animation: lesson-reach .75s ease-in-out 2 alternate; }
+    .scene-actor.action-report .lesson-forearm-right,
+    .scene-actor.action-reassure .lesson-forearm-right,
+    .scene-actor.action-assist .lesson-forearm-left { animation: lesson-reach-elbow .75s ease-in-out 2 alternate; }
+    .scene-actor.action-assist .lesson-torso { animation: lesson-bend .9s ease-in-out 2; }
+    .scene-actor.action-listen .lesson-head,
+    .scene-actor.action-forgive .lesson-head { animation: lesson-listen .65s ease-in-out 3 alternate; }
+    .scene-actor.action-forgive .lesson-arm-left { animation: lesson-welcome .75s ease-in-out 2 alternate; }
+    .scene-actor.action-breathe .lesson-torso,
+    .scene-actor.action-mirror-breathe .lesson-torso { animation: lesson-calm-breath 1.7s ease-in-out 2; }
+    .scene-actor.action-protect .lesson-arm-left,
+    .scene-actor.action-protect .lesson-arm-right,
+    .scene-actor.action-warn .lesson-arm-left { animation: lesson-protect .6s ease-in-out 3 alternate; }
+    .scene-actor.action-protect .lesson-forearm-left,
+    .scene-actor.action-protect .lesson-forearm-right,
+    .scene-actor.action-warn .lesson-forearm-left { animation: lesson-protect-elbow .6s ease-in-out 3 alternate; }
+    .scene-actor.action-call .lesson-arm-right { animation: lesson-call .55s ease-in-out 3 alternate; }
+    .scene-actor.action-search .lesson-head { animation: lesson-search .7s ease-in-out 3 alternate; }
+    .scene-actor.action-ride .lesson-leg-left { animation: lesson-run-leg .3s ease-in-out 5 alternate; }
+    .scene-actor.action-ride .lesson-leg-right { animation: lesson-run-leg .3s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-ride .lesson-arm-left { animation: lesson-walk-arm .3s ease-in-out 5 alternate; }
+    .scene-actor.action-ride .lesson-arm-right { animation: lesson-walk-arm .3s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-step-back { animation: scene-step-back .8s ease-in-out 2; }
+    .scene-actor.action-stay .lesson-head { animation: lesson-listen .8s ease-in-out 2; }
+    @keyframes lesson-breath { 50% { transform: translateY(-1px) scaleY(1.012); } }
+    @keyframes lesson-walk-leg { to { transform: rotate(20deg); } }
+    @keyframes lesson-walk-arm { to { transform: rotate(-24deg); } }
+    @keyframes lesson-run-body { to { transform: translateY(-5px) rotate(-5deg); } }
+    @keyframes lesson-run-leg { to { transform: rotate(38deg); } }
+    @keyframes lesson-run-arm { to { transform: rotate(-45deg); } }
+    @keyframes lesson-bend { 0%,100% { transform: rotate(0); } 45%,70% { transform: rotate(22deg) translateY(3px); } }
+    @keyframes lesson-crouch { 50% { transform: rotate(17deg); } }
+    @keyframes lesson-reach-down { 45%,75% { transform: rotate(58deg); } }
+    @keyframes lesson-grab { 50% { transform: rotate(-30deg); } }
+    @keyframes lesson-clean-arm { to { transform: rotate(48deg); } }
+    @keyframes lesson-wash-arm { to { transform: rotate(-62deg); } }
+    @keyframes lesson-wash-forearm { to { transform: rotate(42deg); } }
+    @keyframes lesson-bow { 0%,100% { transform: rotate(0); } 45%,70% { transform: rotate(15deg) translateY(4px); } }
+    @keyframes lesson-hand-to-heart { 45%,75% { transform: rotate(-72deg); } }
+    @keyframes lesson-wave { 35%,75% { transform: rotate(-104deg); } }
+    @keyframes lesson-wave-elbow { to { transform: rotate(-40deg); } }
+    @keyframes lesson-elbow-bend { to { transform: rotate(20deg); } }
+    @keyframes lesson-run-elbow { to { transform: rotate(48deg); } }
+    @keyframes lesson-knee-flex { to { transform: rotate(-30deg); } }
+    @keyframes lesson-handshake { 40%,80% { transform: rotate(-68deg); } }
+    @keyframes lesson-handshake-partner { 40%,80% { transform: rotate(68deg); } }
+    @keyframes lesson-handshake-elbow { 40%,80% { transform: rotate(-24deg); } }
+    @keyframes lesson-step-in { to { transform: translateX(-8px); } }
+    @keyframes lesson-reach { 50% { transform: rotate(-60deg); } }
+    @keyframes lesson-reach-elbow { 50% { transform: rotate(-32deg); } }
+    @keyframes lesson-listen { to { transform: rotate(-8deg) translateY(2px); } }
+    @keyframes lesson-welcome { to { transform: rotate(-35deg); } }
+    @keyframes lesson-calm-breath { 50% { transform: translateY(-3px) scaleY(1.025); } }
+    @keyframes lesson-protect { to { transform: rotate(-80deg); } }
+    @keyframes lesson-protect-elbow { to { transform: rotate(35deg); } }
+    @keyframes lesson-call { to { transform: rotate(-95deg); } }
+    @keyframes lesson-search { to { transform: rotate(12deg) translateX(4px); } }
+    @media (max-width: 760px) {
+      .scene-actor .lesson-character-svg { width: min(100%,118px); height: 216px; }
+      .scene.scene-with-third-character { gap: 1px; padding-inline: 20px; }
+      .scene.scene-with-third-character .scene-actor { width: 26%; }
+      .scene.scene-with-third-character .scene-actor.adult-actor { width: 26%; }
+      .scene-with-third-character .lesson-character-svg { width: min(100%,104px); height: 205px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .scene-actor .lesson-character-svg *,
+      .scene-actor.action-step-back,
+      .scene-actor.action-step-in { animation: none !important; transition: none !important; }
+    }
+    .scene-actor .lesson-character-svg {
+      height: 245px;
+      overflow: visible;
+      filter: drop-shadow(0 5px 4px #43516b18);
+    }
+    .scene-actor .lesson-character-svg.lesson-character-adult { transform: scale(.94,1.05); transform-origin: center bottom; }
+    .scene-actor .lesson-character-svg * {
+      transform-box: view-box;
+      transition: transform .3s ease;
+    }
+    .scene-actor .lesson-character-svg .lesson-movement {
+      transform-origin: 80px 225px;
+      animation: lesson-idle 2.8s ease-in-out infinite;
+    }
+    .scene-actor .lesson-character-svg .lesson-upper { transform-origin: 80px 165px; }
+    .scene-actor .lesson-character-svg .lesson-arm-left { transform-origin: 61px 111px; }
+    .scene-actor .lesson-character-svg .lesson-arm-right { transform-origin: 99px 111px; }
+    .scene-actor .lesson-character-svg .lesson-forearm-left { transform-origin: 44px 135px; }
+    .scene-actor .lesson-character-svg .lesson-forearm-right { transform-origin: 116px 135px; }
+    .scene-actor .lesson-character-svg .lesson-head { transform-origin: 80px 70px; }
+    .scene-actor .lesson-character-svg .lesson-leg-left { transform-origin: 66px 163px; }
+    .scene-actor .lesson-character-svg .lesson-leg-right { transform-origin: 94px 163px; }
+    .scene-actor .lesson-character-svg .lesson-knee-left { transform-origin: 63px 195px; }
+    .scene-actor .lesson-character-svg .lesson-knee-right { transform-origin: 97px 195px; }
+    .scene-actor .lesson-character-svg .lesson-foot-left { transform-origin: 62px 218px; }
+    .scene-actor .lesson-character-svg .lesson-foot-right { transform-origin: 98px 218px; }
+    .scene-actor .lesson-character-svg .lesson-torso { animation: none; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-movement { animation: lesson-walk .7s ease-in-out 4; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-leg-left { animation: lesson-walk-leg-left .64s cubic-bezier(.45,0,.55,1) 4; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-leg-right { animation: lesson-walk-leg-right .64s cubic-bezier(.45,0,.55,1) 4; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-knee-left { animation: lesson-walk-knee .64s ease-in-out 4; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-knee-right { animation: lesson-walk-knee .64s ease-in-out 4 reverse; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-foot-left { animation: lesson-foot-roll .64s ease-in-out 4; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-foot-right { animation: lesson-foot-roll .64s ease-in-out 4 reverse; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-arm-left { animation: lesson-walk-arm-left .64s ease-in-out 4; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-arm-right { animation: lesson-walk-arm-right .64s ease-in-out 4; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-forearm-left { animation: lesson-walk-elbow .64s ease-in-out 4; }
+    .scene-actor.action-walk .lesson-character-svg .lesson-forearm-right { animation: lesson-walk-elbow .64s ease-in-out 4 reverse; }
+    .scene-actor.action-run .lesson-character-svg .lesson-movement { animation: lesson-run .32s cubic-bezier(.4,0,.6,1) 6; }
+    .scene-actor.action-run .lesson-character-svg .lesson-leg-left { animation: lesson-run-leg-left .32s ease-in-out 6; }
+    .scene-actor.action-run .lesson-character-svg .lesson-leg-right { animation: lesson-run-leg-right .32s ease-in-out 6; }
+    .scene-actor.action-run .lesson-character-svg .lesson-knee-left { animation: lesson-run-knee .32s ease-in-out 6; }
+    .scene-actor.action-run .lesson-character-svg .lesson-knee-right { animation: lesson-run-knee .32s ease-in-out 6 reverse; }
+    .scene-actor.action-run .lesson-character-svg .lesson-arm-left { animation: lesson-run-arm-left .32s ease-in-out 6; }
+    .scene-actor.action-run .lesson-character-svg .lesson-arm-right { animation: lesson-run-arm-right .32s ease-in-out 6; }
+    .scene-actor.action-run .lesson-character-svg .lesson-forearm-left { animation: lesson-run-elbow .32s ease-in-out 6; }
+    .scene-actor.action-run .lesson-character-svg .lesson-forearm-right { animation: lesson-run-elbow .32s ease-in-out 6 reverse; }
+    .scene-actor.action-pickup .lesson-character-svg .lesson-movement { animation: lesson-pickup-bob .9s ease-in-out 2; }
+    .scene-actor.action-pickup .lesson-character-svg .lesson-upper { animation: lesson-pickup .9s cubic-bezier(.4,0,.3,1) 2; }
+    .scene-actor.action-pickup .lesson-character-svg .lesson-arm-right { animation: lesson-reach .9s ease-in-out 2; }
+    .scene-actor.action-pickup .lesson-character-svg .lesson-forearm-right { animation: lesson-grab .9s ease-in-out 2; }
+    .scene-actor.action-pickup .lesson-character-svg .lesson-knee-left,
+    .scene-actor.action-pickup .lesson-character-svg .lesson-knee-right { animation: lesson-crouch-knee .9s ease-in-out 2; }
+    .scene-actor.action-clean .lesson-character-svg .lesson-upper { animation: lesson-clean .8s ease-in-out 2; }
+    .scene-actor.action-clean .lesson-character-svg .lesson-arm-left { animation: lesson-wipe .4s ease-in-out 5 alternate; }
+    .scene-actor.action-clean .lesson-character-svg .lesson-arm-right { animation: lesson-wipe .4s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-wash .lesson-character-svg .lesson-movement { animation: lesson-wash .55s ease-in-out 4 alternate; }
+    .scene-actor.action-wash .lesson-character-svg .lesson-arm-left { animation: lesson-wash-arm .55s ease-in-out 4 alternate; }
+    .scene-actor.action-wash .lesson-character-svg .lesson-arm-right { animation: lesson-wash-arm .55s ease-in-out 4 alternate-reverse; }
+    .scene-actor.action-apologize .lesson-character-svg .lesson-movement { animation: lesson-bow .9s ease-in-out 2; }
+    .scene-actor.action-greet .lesson-character-svg .lesson-movement,
+    .scene-actor.action-guide .lesson-character-svg .lesson-movement { animation: lesson-greet .7s ease-in-out 2; }
+    .scene-actor.action-greet .lesson-character-svg .lesson-arm-right,
+    .scene-actor.action-guide .lesson-character-svg .lesson-arm-left { animation: lesson-wave .5s ease-in-out 3; }
+    .scene-actor.action-handshake .lesson-character-svg .lesson-movement { animation: lesson-step-in .7s ease-in-out 2 alternate; }
+    .scene-actor.action-handshake-partner .lesson-character-svg .lesson-movement { animation: lesson-step-in-partner .7s ease-in-out 2 alternate; }
+    .scene-actor.action-handshake .lesson-character-svg .lesson-arm-right { animation: lesson-shake .7s ease-in-out 3 alternate; }
+    .scene-actor.action-handshake-partner .lesson-character-svg .lesson-arm-left { animation: lesson-shake-partner .7s ease-in-out 3 alternate; }
+    .scene-actor.action-report .lesson-character-svg .lesson-movement,
+    .scene-actor.action-listen .lesson-character-svg .lesson-movement { animation: lesson-listen .7s ease-in-out 3 alternate; }
+    .scene-actor.action-report .lesson-character-svg .lesson-arm-right { animation: lesson-reach-up .65s ease-in-out 2 alternate; }
+    .scene-actor.action-assist .lesson-character-svg .lesson-movement { animation: lesson-assist .8s ease-in-out 2; }
+    .scene-actor.action-assist .lesson-character-svg .lesson-arm-left { animation: lesson-reach .8s ease-in-out 2 alternate; }
+    .scene-actor.action-breathe .lesson-character-svg .lesson-movement,
+    .scene-actor.action-mirror-breathe .lesson-character-svg .lesson-movement { animation: lesson-calm 1.8s ease-in-out 2; }
+    .scene-actor.action-protect .lesson-character-svg .lesson-movement,
+    .scene-actor.action-warn .lesson-character-svg .lesson-movement { animation: lesson-protect .65s ease-in-out 3 alternate; }
+    .scene-actor.action-protect .lesson-character-svg .lesson-arm-left,
+    .scene-actor.action-warn .lesson-character-svg .lesson-arm-left { animation: lesson-stop .65s ease-in-out 3 alternate; }
+    .scene-actor.action-call .lesson-character-svg .lesson-movement { animation: lesson-call .55s ease-in-out 3 alternate; }
+    .scene-actor.action-call .lesson-character-svg .lesson-arm-right { animation: lesson-reach-up .55s ease-in-out 3 alternate; }
+    .scene-actor.action-search .lesson-character-svg .lesson-movement { animation: lesson-search .7s ease-in-out 3 alternate; }
+    .scene-actor.action-forgive .lesson-character-svg .lesson-movement,
+    .scene-actor.action-reassure .lesson-character-svg .lesson-movement { animation: lesson-comfort .8s ease-in-out 2; }
+    .scene-actor.action-forgive .lesson-character-svg .lesson-arm-left,
+    .scene-actor.action-reassure .lesson-character-svg .lesson-arm-right { animation: lesson-comfort-arm .8s ease-in-out 2 alternate; }
+    .scene-actor.action-ride .lesson-character-svg .lesson-movement { animation: lesson-run .3s ease-in-out 5 alternate; }
+    .scene-actor.action-ride .lesson-character-svg .lesson-leg-left { animation: lesson-step .3s ease-in-out 5 alternate; }
+    .scene-actor.action-ride .lesson-character-svg .lesson-leg-right { animation: lesson-step .3s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-ride .lesson-character-svg .lesson-arm-left { animation: lesson-swing .3s ease-in-out 5 alternate; }
+    .scene-actor.action-ride .lesson-character-svg .lesson-arm-right { animation: lesson-swing .3s ease-in-out 5 alternate-reverse; }
+    .scene-actor.action-sit .lesson-character-svg .lesson-movement { animation: lesson-sit .85s ease-in-out 2; }
+    .scene-actor.action-sit .lesson-character-svg .lesson-leg-left { animation: lesson-sit-leg .85s ease-in-out 2; }
+    .scene-actor.action-sit .lesson-character-svg .lesson-leg-right { animation: lesson-sit-leg .85s ease-in-out 2 alternate-reverse; }
+    .scene-actor.action-sit .lesson-character-svg .lesson-arm-left { animation: lesson-sit-arm .85s ease-in-out 2; }
+    .scene-actor.action-sit .lesson-character-svg .lesson-arm-right { animation: lesson-sit-arm .85s ease-in-out 2 alternate-reverse; }
+    .scene-actor.action-approach .lesson-character-svg .lesson-movement { animation: lesson-approach .8s ease-in-out 2 alternate; }
+    .scene-actor.action-hide .lesson-character-svg .lesson-movement { animation: lesson-hide .8s ease-in-out 2; }
+    .scene-actor.action-unsafe .lesson-character-svg .lesson-movement { animation: lesson-flinch .45s ease-in-out 3 alternate; }
+    .scene-actor.action-pause .lesson-character-svg .lesson-movement { animation: lesson-listen .8s ease-in-out 2 alternate; }
+    .scene-actor.action-step-back { animation: scene-step-back .8s ease-in-out 2; }
+    .scene-actor.mood-happy .lesson-character-svg .lesson-upper { animation: lesson-joy .65s ease-in-out 2; }
+    .scene-actor.mood-sad .lesson-character-svg .lesson-upper,
+    .scene-actor.mood-concerned .lesson-character-svg .lesson-upper { animation: lesson-concern .55s ease-in-out 2; }
+    .scene-actor.mood-angry .lesson-character-svg .lesson-head { animation: lesson-angry .35s ease-in-out 3 alternate; }
+    .scene-actor.mood-calm .lesson-character-svg .lesson-movement { animation: lesson-calm 1.8s ease-in-out 2; }
+    @keyframes lesson-idle { 50% { transform: translateY(-2px); } }
+    @keyframes lesson-walk { 50% { transform: translate(2px,-3px); } }
+    @keyframes lesson-walk-leg-left { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(18deg); } }
+    @keyframes lesson-walk-leg-right { 0%,100% { transform: rotate(18deg); } 50% { transform: rotate(-14deg); } }
+    @keyframes lesson-walk-knee { 0%,100% { transform: rotate(3deg); } 50% { transform: rotate(-13deg); } }
+    @keyframes lesson-foot-roll { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(9deg); } }
+    @keyframes lesson-walk-arm-left { 0%,100% { transform: rotate(15deg); } 50% { transform: rotate(-18deg); } }
+    @keyframes lesson-walk-arm-right { 0%,100% { transform: rotate(-18deg); } 50% { transform: rotate(15deg); } }
+    @keyframes lesson-walk-elbow { 0%,100% { transform: rotate(7deg); } 50% { transform: rotate(22deg); } }
+    @keyframes lesson-run { 0%,100% { transform: translateY(1px) rotate(2deg); } 50% { transform: translate(3px,-7px) rotate(-5deg); } }
+    @keyframes lesson-run-leg-left { 0%,100% { transform: rotate(-27deg); } 50% { transform: rotate(34deg); } }
+    @keyframes lesson-run-leg-right { 0%,100% { transform: rotate(34deg); } 50% { transform: rotate(-27deg); } }
+    @keyframes lesson-run-knee { 0%,100% { transform: rotate(-34deg); } 50% { transform: rotate(18deg); } }
+    @keyframes lesson-run-arm-left { 0%,100% { transform: rotate(28deg); } 50% { transform: rotate(-42deg); } }
+    @keyframes lesson-run-arm-right { 0%,100% { transform: rotate(-42deg); } 50% { transform: rotate(28deg); } }
+    @keyframes lesson-run-elbow { 0%,100% { transform: rotate(28deg); } 50% { transform: rotate(50deg); } }
+    @keyframes lesson-pickup-bob { 0%,100% { transform: translateY(0); } 45%,70% { transform: translateY(5px); } }
+    @keyframes lesson-pickup { 0%,100% { transform: rotate(0); } 45%,70% { transform: rotate(17deg) translateY(3px); } }
+    @keyframes lesson-crouch-knee { 0%,100% { transform: rotate(0); } 48%,72% { transform: rotate(-28deg); } }
+    @keyframes lesson-reach { 0%,100% { transform: rotate(0); } 45%,75% { transform: rotate(49deg); } }
+    @keyframes lesson-grab { 0%,100% { transform: rotate(0); } 55% { transform: rotate(-24deg); } }
+    @keyframes lesson-clean { 45%,75% { transform: translateY(5px) rotate(8deg); } }
+    @keyframes lesson-wipe { to { transform: rotate(46deg); } }
+    @keyframes lesson-wash { to { transform: translateY(3px) rotate(4deg); } }
+    @keyframes lesson-wash-arm { to { transform: rotate(-52deg); } }
+    @keyframes lesson-bow { 0%,100% { transform: rotate(0); } 45%,70% { transform: translateY(4px) rotate(12deg); } }
+    @keyframes lesson-greet { 50% { transform: translateX(4px) rotate(-3deg); } }
+    @keyframes lesson-wave { 35%,75% { transform: rotate(-78deg); } }
+    @keyframes lesson-step-in { to { transform: translateX(-8px); } }
+    @keyframes lesson-step-in-partner { to { transform: translateX(8px); } }
+    @keyframes lesson-shake { 40%,80% { transform: rotate(-58deg); } }
+    @keyframes lesson-shake-partner { 40%,80% { transform: rotate(58deg); } }
+    @keyframes lesson-listen { to { transform: translateX(-3px) rotate(-4deg); } }
+    @keyframes lesson-reach-up { to { transform: rotate(-78deg); } }
+    @keyframes lesson-assist { 45%,75% { transform: translateY(4px) rotate(8deg); } }
+    @keyframes lesson-calm { 50% { transform: translateY(-3px) scale(1.015); } }
+    @keyframes lesson-protect { to { transform: translateX(-5px) rotate(-5deg); } }
+    @keyframes lesson-stop { to { transform: rotate(-72deg); } }
+    @keyframes lesson-call { to { transform: translateX(4px) rotate(-6deg); } }
+    @keyframes lesson-search { to { transform: rotate(6deg) translateX(3px); } }
+    @keyframes lesson-comfort { 50% { transform: translateX(-4px) rotate(-3deg); } }
+    @keyframes lesson-comfort-arm { to { transform: rotate(-32deg); } }
+    @keyframes lesson-joy { 50% { transform: translateY(-7px) rotate(3deg); } }
+    @keyframes lesson-concern { 50% { transform: translateY(2px) rotate(-3deg); } }
+    @keyframes lesson-angry { to { transform: rotate(-4deg); } }
+    @keyframes lesson-approach { to { transform: translateX(7px) rotate(5deg); } }
+    @keyframes lesson-sit { 45%,75% { transform: translateY(7px) rotate(3deg); } }
+    @keyframes lesson-sit-leg { 45%,75% { transform: rotate(27deg); } }
+    @keyframes lesson-sit-arm { 45%,75% { transform: rotate(28deg); } }
+    @keyframes lesson-hide { 40% { transform: translateY(5px) rotate(-7deg); } }
+    @keyframes lesson-flinch { to { transform: translateX(-3px) rotate(-5deg); } }
+    @media (max-width: 760px) {
+      .scene-actor .lesson-character-svg { height: 216px; }
+      .scene-with-third-character .lesson-character-svg { height: 205px; }
+      .scene-actor.action-step-back { animation-name: lesson-step-back-mobile; }
+    }
+    #lessonScene.scene.scene-painting,
+    #lessonScene.scene.scene-calm-room {
+      display: flex; min-height: 430px; aspect-ratio: auto; align-items: flex-end; justify-content: space-evenly;
+      gap: clamp(10px,4vw,48px); padding: 60px 24px 43px;
+    }
+    #lessonScene.scene.scene-painting .scene-actor,
+    #lessonScene.scene.scene-calm-room .scene-actor { flex: 0 1 150px; }
+    @keyframes lesson-step-back-mobile { 35% { transform: translateX(5px); } 70% { transform: translateX(3px); } }
+    @media (max-width: 760px) {
+      #lessonScene.scene.scene-painting,
+      #lessonScene.scene.scene-calm-room { min-height: 350px; gap: 8px; padding: 48px 10px 42px; }
+      #lessonScene.scene.scene-painting .scene-actor,
+      #lessonScene.scene.scene-calm-room .scene-actor { width: min(42%,150px); height: 242px; }
+      #lessonScene.scene.scene-painting .lesson-character-svg,
+      #lessonScene.scene.scene-calm-room .lesson-character-svg { width: min(100%,130px); height: 216px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .scene-actor .lesson-character-svg *,
+      .scene-actor.action-step-back { animation: none !important; transition: none !important; }
+    }
+    :root {
+      --font-display: clamp(2.25rem, 4vw, 3.25rem);
+      --font-section: clamp(1.75rem, 2.8vw, 2.25rem);
+      --font-card-title: 1.25rem;
+      --font-body: 1rem;
+      --font-support: .9375rem;
+      --font-meta: .8125rem;
+    }
+    body { font-size: var(--font-body); line-height: 1.65; }
+    #home .hero-copy h1 { font-size: var(--font-display); line-height: 1.12; letter-spacing: -.04em; }
+    #home .section-head h2,
+    #routeView .page-heading h1 { font-size: var(--font-section); line-height: 1.2; letter-spacing: -.025em; }
+    #home h3, #routeView h2 { font-size: var(--font-card-title); line-height: 1.35; }
+    #home .kicker, #routeView .kicker, #home .tag, #routeView .tag,
+    #home .lesson-meta, #routeView .lesson-meta, #home .note, #routeView .note,
+    #home small, #routeView small, .footer small,
+    #home .leader-row .leader-sub, #home .leader-row .leader-score,
+    #routeView .leader-row .leader-sub, #routeView .leader-row .leader-score,
+    #home .features li, #routeView .features li { font-size: 12px; }
+    #home .eyebrow, #home .hello-bubble, #home .float-tag,
+    #home .lesson-note, #home .story-label, #home .skills-reason-link,
+    #home .quest-intro span, #home .quest small, #home .quest-title,
+    #home .quest-title span:last-child, #home .stat-pill,
+    #home .arena-tab, #home .leaderboard-view-control,
+    #home .leaderboard-preferences > label:not(.leaderboard-consent),
+    #home .leaderboard-consent, #home .leaderboard-status { font-size: 12px; }
+    #home .mini-trust, #home .collect, #home .journal-stat span,
+    #home .journal-recommend, #home .journal-recommend strong,
+    #home .rank-big span, #home .leader-title span,
+    #home .leader-podium-place strong, #home .leader-podium-place small,
+    #home .podium-rank,
+    #home .challenge-info strong, #home .challenge-info small,
+    #home .challenge button, #home .proof-numbers span,
+    #home .course-art-badge, #home .course-plan-kicker,
+    #home .subscription-action span, #home .free-plan-note,
+    #home .text-link { font-size: 12px; }
+    #home .leaderboard-preferences input:not([type="checkbox"]),
+    #home .leaderboard-preferences select,
+    #home .leaderboard-view-control select { font-size: 12px; }
+    #home .btn { font-size: 13px; }
+    .btn-small { font-size: 13px; }
+    .features li { line-height: 1.6; }
+    #home p, #routeView p, .footer p, .testimonial-card blockquote {
+      font-size: var(--font-support);
+      line-height: 1.7;
+      text-align: justify;
+      text-justify: inter-word;
+    }
+    #home .section-head p, #home .hero-copy > p, #home .home-info-card p,
+    #home .skills-reason p, #home .lesson-copy p, #home .story-body p,
+    #routeView .page-heading > p, #routeView .catalog-card p,
+    #routeView .story-route-card p, #routeView .game-card p,
+    #routeView .faq-card p, #routeView .score-card > p,
+    #routeView .quiz-story, #routeView .quiz-note,
+    #routeView .parent-article p, #routeView .parent-feature-copy p,
+    #routeView .co-copy p {
+      font-size: var(--font-support);
+      line-height: 1.7;
+      text-align: justify;
+      text-justify: inter-word;
+    }
+    #home .leaderboard-status, #routeView .leaderboard-status,
+    #routeView .quiz-feedback, #routeView .feedback { text-align: left; }
+    @media (max-width: 600px) {
+      :root {
+        --font-display: clamp(2rem, 8vw, 2.5rem);
+        --font-section: clamp(1.55rem, 6vw, 1.9rem);
+        --font-card-title: 1.125rem;
+      }
     }

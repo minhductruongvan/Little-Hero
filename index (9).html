@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Little Hero</title>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--sky:#EAF6FF;--ink:#26325B;--sun:#FFC93C;--mint:#2EC4A6;--coral:#FF6B6B;--vio:#7B5CFF;--blue:#4F8DF7;--w:#fff;--r:24px}
-*{box-sizing:border-box}
-body{margin:0;font-family:'Baloo 2','Segoe UI',system-ui,sans-serif;background:var(--sky) radial-gradient(circle at 10% 0,#fff8 0,#0000 40%);color:var(--ink);font-size:18px;line-height:1.4;padding-bottom:84px}
+*{box-sizing:border-box;font-family:'Be Vietnam Pro',sans-serif}
+body{margin:0;font-family:'Be Vietnam Pro',sans-serif;background:var(--sky) radial-gradient(circle at 10% 0,#fff8 0,#0000 40%);color:var(--ink);font-size:18px;line-height:1.4;padding-bottom:84px}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0}
 :focus-visible{outline:4px solid var(--vio);outline-offset:3px}
 header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--w);border-bottom:4px solid var(--sun);flex-wrap:wrap}
@@ -137,7 +137,7 @@ footer{background:var(--w);border-top:4px solid var(--sun);margin-top:30px;opaci
 .a-point .aR{transform:rotate(-105deg)}.a-point .aL{transform:rotate(8deg)}
 /* ===== bộ thẻ (đã sửa lệch khung, QR + logo nằm trong thẻ, mặt sau là bầu trời) ===== */
 .fcs{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}.fc{height:300px}
-.ff{padding:0;display:block;overflow:hidden;text-align:left;font-family:'Baloo 2','Trebuchet MS',sans-serif;line-height:1.25}
+.ff{padding:0;display:block;overflow:hidden;text-align:left;font-family:'Be Vietnam Pro',sans-serif;line-height:1.25}
 .ff.fr{color:#fff}.ff.fr .e{font-size:64px}
 .lg2{position:absolute;top:9px;left:9px;display:flex;align-items:center;gap:4px;font-weight:800;font-size:12px;background:#fff;color:#26325B;border-radius:99px;padding:2px 10px 2px 4px;max-width:calc(100% - 18px);white-space:nowrap;z-index:2}
 .lg2 i{font-style:normal;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#7B5CFF,#FF7AC6);display:grid;place-items:center;font-size:12px}
@@ -171,7 +171,7 @@ footer{background:var(--w);border-top:4px solid var(--sun);margin-top:30px;opaci
 .kc{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 18px}.kn{background:#fff;border-radius:20px;padding:12px 16px;box-shadow:0 5px 0 #26325B22}.kn h4{margin:0 0 6px}.kn ul{margin:0;padding-left:20px}.kn.ch{background:linear-gradient(120deg,#FFF3C4,#FFE0A8)}
 /* ===== video giới thiệu (v6): khung 960x540, phóng theo chiều rộng ===== */
 .vwrap{position:relative;aspect-ratio:16/9;width:100%;border-radius:28px;overflow:hidden;background:#26325B;box-shadow:0 8px 0 #26325B33;margin:6px 0 18px}
-.vin{position:absolute;left:0;top:0;width:960px;height:540px;transform-origin:0 0;font-family:'Baloo 2',system-ui,sans-serif;color:#fff}
+.vin{position:absolute;left:0;top:0;width:960px;height:540px;transform-origin:0 0;font-family:'Be Vietnam Pro',sans-serif;color:#fff}
 .vbg{position:absolute;inset:0;transition:background .5s}
 .vwrap.dk .vin{color:#26325B}.vwrap.dk .vbrand{text-shadow:none}
 .vsc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:70px 60px 148px}
@@ -1396,9 +1396,9 @@ home=function(){
  const h=H(),plays=Math.min(3,h.plays||0),minutes=Math.min(10,mins()),tests=Math.min(1,h.quiz||0);
  app.innerHTML=`<div class="lh-home">
   <section class="lh-hero" aria-label="Chào mừng đến với Little Hero">
-   <div class="lh-hero-content"><span class="lh-eyebrow">⭐ HỌC KỸ NĂNG SỐNG · 4–8 TUỔI</span>
+   <div class="lh-hero-content"><span class="lh-eyebrow">⭐ HỌC KỸ NĂNG SỐNG · 3–10 TUỔI</span>
     <h1>Chào ${S.user?esc(S.user.name):'bạn nhỏ'}! 👋</h1><p>Cùng ${S.hero==='girl'?'Mia':'Bin'} khám phá thế giới kỹ năng sống nhé.</p>
-    <div class="lh-hero-actions"><button class="btn sun" id="lhContinue">▶ ${next?'Học tiếp: '+esc(next.t):'Khám phá bài học'}</button><button class="btn ghost" id="lhCostume">🎭 Đổi trang phục Hero</button></div>
+    <div class="lh-hero-actions"><button class="btn sun" id="lhContinue">▶ ${next?'Học tiếp: '+esc(next.t):'Khám phá bài học'}</button></div>
     <div class="seg" style="margin-top:16px">Chọn Hero: <button data-h="boy" class="${S.hero==='boy'?'on':''}">👦 Bin</button><button data-h="girl" class="${S.hero==='girl'?'on':''}">👧 Mia</button></div>
    </div><div class="lh-hero-art" aria-hidden="true">${char('me','wave')}</div>
   </section>
@@ -1419,7 +1419,6 @@ home=function(){
  </div>`;
  $$('.seg button[data-h]').forEach(b=>b.onclick=()=>{S.hero=b.dataset.h;S.look={};save();home()});
  $('#lhContinue').onclick=()=>next?play(next):go('learn');
- $('#lhCostume').onclick=()=>go('lab');
  $('#lhAllLessons').onclick=()=>{S.catSel='all';go('learn')};
  $$('.lh-island').forEach(b=>b.onclick=()=>{S.catSel=b.dataset.topic;go('learn')});
  $$('[data-nv]').forEach(b=>b.onclick=()=>go(b.dataset.nv));
@@ -1469,7 +1468,7 @@ home=function(){
  const featured=available.filter(l=>l.id!==next?.id).slice(0,3);
  app.innerHTML=`<div class="lh-focused">
   <section class="lh-focused-hero">
-   <div class="lh-focused-copy"><span class="lh-focused-kicker">LITTLE HERO · KỸ NĂNG SỐNG CHO BÉ 4–8 TUỔI</span>
+   <div class="lh-focused-copy"><span class="lh-focused-kicker">LITTLE HERO · KỸ NĂNG SỐNG CHO BÉ 3–10 TUỔI</span>
     <h1>Mỗi ngày một kỹ năng nhỏ, con thêm tự tin.</h1>
     <p>Cùng ${S.hero==='girl'?'Mia':'Bin'} học qua những câu chuyện gần gũi.</p>
     <div class="lh-focused-actions"><button class="btn sun" id="lhStart">▶ ${next?'Học tiếp':'Bắt đầu học'}</button><button class="btn ghost" id="lhExplore">Khám phá bài học</button></div>

@@ -17,7 +17,7 @@ Máy chủ Node.js phục vụ website, xác thực tài khoản và chuyển c�
 
 3. Mở `http://127.0.0.1:31377/`. Backend Node.js sẽ phục vụ website cùng API Gemini và tài khoản.
 
-Cổng mặc định là `3000`; đặt `PORT=31377` trong PowerShell trước khi chạy để dùng địa chỉ trên. API gồm `GET /api/health`, `POST /api/chat`, `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/recovery/request` và `POST /api/auth/recovery/reset`.
+Cổng mặc định là `3000`; đặt `PORT=31377` trong PowerShell trước khi chạy để dùng địa chỉ trên. API gồm `GET /api/health`, `POST /api/chat`, `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/recovery/request`, `POST /api/auth/recovery/reset`, `GET /api/leaderboard`, `POST /api/leaderboard/score` và `DELETE /api/leaderboard/score`.
 
 ### Dùng giao diện qua VS Code Live Server ở cổng 5500
 
@@ -40,7 +40,7 @@ Không đổi bản ghi của domain gốc `littlehero.id.vn`; domain đó tiế
 
 Hỏi Hero gửi câu hỏi tới Gemini bằng API key chỉ có trên backend, sau đó truyền nội dung trả lời theo dạng streaming. Đặt biến môi trường `GEMINI_API_KEY` cho tiến trình backend (hoặc mục Environment của Render) để bật AI; `GET /api/health` báo `configured: false` nếu chưa có key. Hero có thể trả lời chủ đề tổng quát và hướng dẫn các tính năng Little Hero, nhưng không có khả năng tra cứu web trực tiếp hay đảm bảo mọi câu trả lời luôn chính xác. Những câu hỏi liên quan tới ứng dụng có thể kèm nút mở khu vực phù hợp.
 
-Trên trình duyệt hỗ trợ Web Speech, người dùng có thể nhấn nút micro, nói câu hỏi rồi nhấn lại để gửi; Hero sẽ đọc câu trả lời. Nút “Hội thoại rảnh tay” bật chế độ nhận diện tiếng Việt liên tục: sau khoảng lặng, câu hỏi được gửi tới Gemini, câu trả lời được đọc thành tiếng rồi micro tự nghe lượt tiếp theo. Cần cấp quyền micro, dùng HTTPS hoặc localhost; có thể tắt chế độ bất cứ lúc nào. Nhận diện và đọc giọng nói do trình duyệt/hệ điều hành cung cấp, nên khả năng và giọng tiếng Việt tùy thiết bị.
+Trên trình duyệt hỗ trợ Web Speech, người dùng có thể nhấn nút micro, nói câu hỏi rồi nhấn lại để gửi; Hero sẽ đọc câu trả lời. Nút “Hội thoại rảnh tay” bật chế độ nhận diện liên tục theo ngôn ngữ đã chọn (tiếng Việt hoặc English): sau khoảng lặng, câu hỏi được gửi tới Gemini, câu trả lời được đọc thành tiếng rồi micro tự nghe lượt tiếp theo. Ngôn ngữ được gửi riêng dưới mã `vi` hoặc `en`; máy chủ chỉ dùng giá trị này để chọn ngôn ngữ phản hồi, không đưa đầu vào tùy ý vào chỉ dẫn hệ thống. Cần cấp quyền micro, dùng HTTPS hoặc localhost; có thể tắt chế độ bất cứ lúc nào. Nhận diện và đọc giọng nói do trình duyệt/hệ điều hành cung cấp, nên giọng đọc khả dụng tùy thiết bị.
 
 Có thể đính kèm tối đa 3 ảnh, video MP4/MPEG/MOV/AVI/FLV/MPG/WebM/WMV/3GPP hoặc tệp PDF/TXT/CSV. Giới hạn là 10 MB mỗi tệp và 12 MB tổng dung lượng mỗi lượt. Tệp và nội dung trò chuyện được gửi tới Google Gemini để xử lý; ứng dụng không lưu lịch sử chat vào máy chủ. Không gửi mật khẩu, địa chỉ hoặc thông tin riêng tư của trẻ.
 
@@ -58,3 +58,9 @@ Khôi phục mật khẩu xác minh quyền truy cập email hoặc số điện
 Các biến môi trường phải được cấu hình riêng trong terminal hoặc bảng điều khiển của nhà cung cấp hosting; không đưa thông tin xác thực vào Git. Mã xác minh có hiệu lực 10 phút, giới hạn 5 lần nhập và mỗi kênh/địa chỉ chỉ gửi một mã mỗi phút. Mã và phiên khôi phục nằm trong bộ nhớ của máy chủ; nếu máy chủ khởi động lại, người dùng cần yêu cầu mã mới.
 
 Tiến độ học, thời gian sử dụng, cấp độ, nhật ký và hồ sơ bé lưu riêng trong trình duyệt theo email đã đăng nhập; hiện không đồng bộ giữa các thiết bị. Cần chạy backend và truy cập trang qua localhost để sử dụng AI hoặc xác thực.
+
+### Bảng xếp hạng Đấu trường
+
+Người dùng đã đăng nhập có thể chủ động đồng ý chia sẻ biệt danh, tỉnh/thành và điểm RP. Bảng xếp hạng chỉ công khai các thông tin này (không trả email hoặc số điện thoại), sắp xếp theo RP giảm dần và có các phạm vi nhóm tuổi, tỉnh/thành, miền và toàn quốc. Trang Đấu trường làm mới dữ liệu mỗi 10 giây. Tắt lựa chọn chia sẻ sẽ xóa hồ sơ xếp hạng khỏi máy chủ. Phiên API dùng token trong bộ nhớ của backend nên cần đăng nhập lại sau khi máy chủ khởi động lại. Điểm hiện được gửi từ tiến độ phía trình duyệt của tài khoản; đây không phải hệ thống chống gian lận.
+
+Bảng xếp hạng dùng cùng SQLite cục bộ với tài khoản. Trên Render Free, cả tài khoản lẫn điểm có thể mất khi dịch vụ khởi động lại hoặc triển khai lại; dùng lưu trữ bền vững nếu cần giữ dữ liệu lâu dài.

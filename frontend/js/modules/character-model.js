@@ -25,8 +25,11 @@
       const closet = safeWardrobe(outfit);
       const skin = options.skin || "#f2c39e";
       const adult = Boolean(options.adult);
-      const referenceCloset = freshState().closet;
-      if (!options.civilian && !adult && Object.keys(referenceCloset).every((key) => closet[key] === referenceCloset[key])) {
+      const referenceClosets = [
+        freshState().closet,
+        { gender: "boy", hair: "curly", hairColor: "#624337", shirt: "#53b99d", pants: "#536f92", shoes: "#e98257", accessory: "cape", outfit: "classic" }
+      ];
+      if (!options.civilian && !adult && referenceClosets.some((reference) => Object.keys(reference).every((key) => closet[key] === reference[key]))) {
         return `<svg class="hero-character-svg hero-character-reference" viewBox="0 0 300 450" role="img" aria-label="${escapeHtml(options.ariaLabel || "Nhân vật Hero")}">
           <circle cx="150" cy="200" r="120" fill="#E8F7F2"/>
           <circle cx="150" cy="200" r="120" fill="none" stroke="#A2D2C2" stroke-width="2" stroke-dasharray="5 5"/>
@@ -53,7 +56,8 @@
       const glasses = closet.accessory === "glasses"
         ? '<g fill="none" stroke="#47768a" stroke-width="3.5"><circle cx="85" cy="76" r="12"/><circle cx="117" cy="76" r="12"/><path d="M97 75h8M72 74l-8-3m68 3 8-3"/></g>'
         : "";
-      const chestAccessory = ["space", "robot-blue"].includes(closet.outfit)
+      const chestAccessory = options.civilian ? ""
+        : ["space", "robot-blue"].includes(closet.outfit)
         ? '<circle cx="101" cy="129" r="11" fill="#f4f7ff" stroke="#8395d8" stroke-width="3"/><circle cx="101" cy="129" r="5" fill="#77c9e8"/>'
         : ["fairy", "anime-rose"].includes(closet.outfit)
           ? '<path d="m100 115 4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1Z" fill="#ffdf72" stroke="#d5a83e" stroke-width="2"/>'
@@ -138,20 +142,83 @@
       </svg>`;
     };
 
+    const renderLessonCharacterSvg = (profile = {}, options = {}) => {
+      const color = (value, fallback) => /^#[\da-f]{6}$/i.test(value || "") ? value : fallback;
+      const skin = color(profile.skin, "#f2c39e");
+      const shirt = color(profile.shirt, "#55a98c");
+      const pants = color(profile.pants, "#536f92");
+      const hair = color(profile.hairColor, "#624337");
+      const size = profile.adult ? "adult" : "child";
+      const ariaLabel = escapeHtml(options.ariaLabel || profile.name || "Nhân vật bài học");
+      const hairShape = profile.hair === "curly"
+        ? `<path d="M42 59Q34 43 48 34Q48 17 64 19Q76 5 88 17Q105 9 111 27Q129 26 128 44L119 66 106 54 57 57Z" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`
+        : `<path d="M43 60Q36 28 59 17Q87 2 109 19Q129 33 119 62L109 55Q103 39 94 37Q78 51 53 42L49 62Z" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`;
+      const hairBack = ["long", "braids"].includes(profile.hair)
+        ? `<path d="M48 43Q38 68 47 94Q54 103 62 93L60 57m49-14q11 27 2 52-7 10-15 0l2-39" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`
+        : profile.hair === "ponytail"
+          ? `<path d="M111 37q26-7 22 17l-10 24-14-10Z" fill="${hair}" stroke="#392d30" stroke-width="4"/>`
+          : "";
+      return `<svg class="lesson-character-svg lesson-character-${size}" viewBox="0 0 160 250" role="img" aria-label="${ariaLabel}">
+        <ellipse cx="80" cy="239" rx="32" ry="7" fill="#354354" opacity=".16"/>
+        <g class="lesson-movement">
+          <g class="lesson-legs">
+            <g class="lesson-leg-left"><path d="M66 160 63 195" fill="none" stroke="#463d4b" stroke-width="21" stroke-linecap="round"/><path d="M66 160 63 195" fill="none" stroke="${pants}" stroke-width="15" stroke-linecap="round"/><circle cx="63" cy="195" r="8" fill="${pants}"/><g class="lesson-knee-left"><path d="M63 195 62 218" fill="none" stroke="#463d4b" stroke-width="17" stroke-linecap="round"/><path d="M63 195 62 218" fill="none" stroke="${pants}" stroke-width="11" stroke-linecap="round"/><g class="lesson-foot-left"><path d="M62 218q-15 0-17 12h34q0-9-17-12Z" fill="#fff9ee" stroke="#463d4b" stroke-width="4" stroke-linejoin="round"/><path d="M48 226h25" stroke="#e7a980" stroke-width="2.5" stroke-linecap="round"/></g></g></g>
+            <g class="lesson-leg-right"><path d="M94 160 97 195" fill="none" stroke="#463d4b" stroke-width="21" stroke-linecap="round"/><path d="M94 160 97 195" fill="none" stroke="${pants}" stroke-width="15" stroke-linecap="round"/><circle cx="97" cy="195" r="8" fill="${pants}"/><g class="lesson-knee-right"><path d="M97 195 98 218" fill="none" stroke="#463d4b" stroke-width="17" stroke-linecap="round"/><path d="M97 195 98 218" fill="none" stroke="${pants}" stroke-width="11" stroke-linecap="round"/><g class="lesson-foot-right"><path d="M98 218q15 0 17 12H81q0-9 17-12Z" fill="#fff9ee" stroke="#463d4b" stroke-width="4" stroke-linejoin="round"/><path d="M87 226h25" stroke="#e7a980" stroke-width="2.5" stroke-linecap="round"/></g></g></g>
+          </g>
+          <g class="lesson-upper">
+            <g class="lesson-arms">
+              <g class="lesson-arm-left"><path d="M59 111 44 135" fill="none" stroke="#463d4b" stroke-width="18" stroke-linecap="round"/><path d="M59 111 44 135" fill="none" stroke="${shirt}" stroke-width="12" stroke-linecap="round"/><circle cx="44" cy="135" r="7" fill="${shirt}" stroke="#463d4b" stroke-width="3"/><g class="lesson-forearm-left"><path d="M44 135 45 159" fill="none" stroke="#463d4b" stroke-width="17" stroke-linecap="round"/><path d="M44 135 45 159" fill="none" stroke="${shirt}" stroke-width="11" stroke-linecap="round"/><path d="M39 160q-2 7 5 8 7-1 6-8Z" fill="${skin}" stroke="#805b49" stroke-width="2"/></g></g>
+              <g class="lesson-arm-right"><path d="M101 111 116 135" fill="none" stroke="#463d4b" stroke-width="18" stroke-linecap="round"/><path d="M101 111 116 135" fill="none" stroke="${shirt}" stroke-width="12" stroke-linecap="round"/><circle cx="116" cy="135" r="7" fill="${shirt}" stroke="#463d4b" stroke-width="3"/><g class="lesson-forearm-right"><path d="M116 135 115 159" fill="none" stroke="#463d4b" stroke-width="17" stroke-linecap="round"/><path d="M116 135 115 159" fill="none" stroke="${shirt}" stroke-width="11" stroke-linecap="round"/><path d="M110 160q-1 7 5 8 7-1 6-8Z" fill="${skin}" stroke="#805b49" stroke-width="2"/></g></g>
+            </g>
+            <path d="M72 91h16v20H72Z" fill="${skin}" stroke="#805b49" stroke-width="2"/>
+            <path class="lesson-torso" d="M59 108q21-13 42 0l10 53q-29 17-62 0Z" fill="${shirt}" stroke="#463d4b" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M70 109 80 120 90 109M80 120v11" fill="none" stroke="#ffffffd9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M65 143q15 8 30 0v15q-15 8-30 0Z" fill="#ffffff24" stroke="#ffffff77" stroke-width="2"/>
+            <circle cx="80" cy="140" r="3" fill="#fff4d6"/><circle cx="80" cy="151" r="3" fill="#fff4d6"/>
+            <g class="lesson-head">
+              <path d="M43 59Q43 24 78 19 115 18 118 56L115 78Q110 99 82 101 54 99 47 78Z" fill="${skin}" stroke="#463d4b" stroke-width="4"/>
+              <ellipse cx="45" cy="67" rx="7" ry="10" fill="${skin}" stroke="#463d4b" stroke-width="3"/><ellipse cx="116" cy="67" rx="7" ry="10" fill="${skin}" stroke="#463d4b" stroke-width="3"/>
+              ${hairBack}${hairShape}
+              <path class="lesson-face-brows" d="M60 58q8-5 16 0m8 0q8-5 16 0" fill="none" stroke="#463d4b" stroke-width="3" stroke-linecap="round"/>
+              <ellipse cx="69" cy="69" rx="6" ry="8" fill="#fff"/><ellipse cx="91" cy="69" rx="6" ry="8" fill="#fff"/>
+              <circle cx="70" cy="70" r="3.5" fill="#342e3b"/><circle cx="92" cy="70" r="3.5" fill="#342e3b"/>
+              <circle cx="71" cy="69" r="1.3" fill="#fff"/><circle cx="93" cy="69" r="1.3" fill="#fff"/>
+              <path d="M80 73q-4 6 1 7" fill="none" stroke="#a9785a" stroke-width="2" stroke-linecap="round"/>
+              <ellipse cx="59" cy="81" rx="7" ry="4" fill="#ec8c91" opacity=".66"/><ellipse cx="101" cy="81" rx="7" ry="4" fill="#ec8c91" opacity=".66"/>
+              <path class="lesson-face-mouth" d="M73 82q7 8 14 0" fill="none" stroke="#74404a" stroke-width="3" stroke-linecap="round"/>
+            </g>
+          </g>
+        </g>
+      </svg>`;
+    };
+
     const setCharacterExpression = (actor, expression) => {
-      const mouth = actor?.querySelector(".face-mouth");
-      const brows = actor?.querySelector(".face-brows");
+      const lessonCharacter = actor?.querySelector(".lesson-character-svg");
+      const mouth = actor?.querySelector(lessonCharacter ? ".lesson-face-mouth" : ".face-mouth");
+      const brows = actor?.querySelector(lessonCharacter ? ".lesson-face-brows" : ".face-brows");
       if (!mouth || !brows) return;
       const expressions = {
-        happy: { mouth: "M92 96Q100 103 108 96", brows: "M74 64q10-9 21-2m11 0q11-7 21 2" },
-        sad: { mouth: "M92 100Q100 93 108 100", brows: "M74 65q10-5 21 2m11 2q11-7 21-2" },
-        angry: { mouth: "M92 100Q100 93 108 100", brows: "m74 62 21 6m32-6-21 6" }
+        happy: lessonCharacter
+          ? { mouth: "M73 80q7 9 14 0", brows: "M60 58q8-5 16 0m8 0q8-5 16 0" }
+          : { mouth: "M92 96Q100 103 108 96", brows: "M74 64q10-9 21-2m11 0q11-7 21 2" },
+        calm: lessonCharacter
+          ? { mouth: "M74 83q6 2 12 0", brows: "M60 58q8-3 16 0m8 0q8-3 16 0" }
+          : { mouth: "M94 99q6 2 12 0", brows: "M74 64q10-5 21 0m11 0q11-5 21 0" },
+        sad: lessonCharacter
+          ? { mouth: "M73 87q7-7 14 0", brows: "M60 60q8-4 16 1m8 1q8-5 16-1" }
+          : { mouth: "M92 100Q100 93 108 100", brows: "M74 65q10-5 21 2m11 2q11-7 21-2" },
+        angry: lessonCharacter
+          ? { mouth: "M74 87h12", brows: "M60 56l16 5m28-5-16 5" }
+          : { mouth: "M92 100Q100 93 108 100", brows: "m74 62 21 6m32-6-21 6" },
+        concerned: lessonCharacter
+          ? { mouth: "M74 85q6-4 12 0", brows: "M60 58q8-4 16 1m8 1q8-5 16-1" }
+          : { mouth: "M94 100Q100 96 106 100", brows: "M74 64q10-6 21 1m11 1q11-7 21-1" }
       };
       const face = expressions[expression] || expressions.happy;
       mouth.setAttribute("d", face.mouth);
       brows.setAttribute("d", face.brows);
     };
 
-    return { safeWardrobe, renderHeroCharacterSvg, setCharacterExpression };
+    return { safeWardrobe, renderHeroCharacterSvg, renderLessonCharacterSvg, setCharacterExpression };
   };
 })();

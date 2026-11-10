@@ -1,7 +1,7 @@
 
 :root{--sky:#EAF6FF;--ink:#26325B;--sun:#FFC93C;--mint:#2EC4A6;--coral:#FF6B6B;--vio:#7B5CFF;--blue:#4F8DF7;--w:#fff;--r:24px}
-*{box-sizing:border-box}
-body{margin:0;font-family:'Baloo 2','Segoe UI',system-ui,sans-serif;background:var(--sky) radial-gradient(circle at 10% 0,#fff8 0,#0000 40%);color:var(--ink);font-size:18px;line-height:1.4;padding-bottom:84px}
+*{box-sizing:border-box;font-family:'Be Vietnam Pro',sans-serif}
+body{margin:0;font-family:'Be Vietnam Pro',sans-serif;background:var(--sky) radial-gradient(circle at 10% 0,#fff8 0,#0000 40%);color:var(--ink);font-size:18px;line-height:1.4;padding-bottom:84px}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer;border:0}
 :focus-visible{outline:4px solid var(--vio);outline-offset:3px}
 header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--w);border-bottom:4px solid var(--sun);flex-wrap:wrap}

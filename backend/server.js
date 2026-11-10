@@ -6,6 +6,7 @@ const path = require('path');
 const { GoogleGenAI } = require('@google/genai');
 const { DatabaseSync } = require('node:sqlite');
 const { promisify } = require('util');
+const locationCatalog = require('../frontend/js/modules/location-catalog.js');
 
 const app = express();
 const configuredAppOrigins = (process.env.LITTLE_HERO_ALLOWED_ORIGINS || '')
@@ -23,8 +24,8 @@ app.use((req, res, next) => {
     const origin = req.get('origin');
     if (allowedAppOrigins.has(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         res.vary('Origin');
     }
     if (req.method === 'OPTIONS' && req.path.startsWith('/api/')) return res.sendStatus(204);
@@ -85,12 +86,34 @@ accountDatabase.exec(`
         password_hash TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS accounts_phone_idx ON accounts (phone);
+    CREATE TABLE IF NOT EXISTS leaderboard_scores (
+        email TEXT PRIMARY KEY COLLATE NOCASE,
+        display_name TEXT NOT NULL,
+        province TEXT NOT NULL,
+        age_group TEXT NOT NULL,
+        points INTEGER NOT NULL CHECK (points >= 0),
+        updated_at TEXT NOT NULL
+    );
 `);
 const scrypt = promisify(crypto.scrypt);
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 let authQueue = Promise.resolve();
 const passwordRecoveryChallenges = new Map();
 const passwordRecoveryRequests = new Map();
+const leaderboardSessions = new Map();
+const leaderboardSessionLifetime = 30 * 24 * 60 * 60 * 1000;
+
+const getLeaderboardSession = (req) => {
+    const token = /^Bearer ([A-Za-z0-9_-]+)$/.exec(req.get('authorization') || '')?.[1];
+    if (!token) return null;
+    const session = leaderboardSessions.get(token);
+    if (!session) return null;
+    if (session.expiresAt <= Date.now()) {
+        leaderboardSessions.delete(token);
+        return null;
+    }
+    return session;
+};
 
 const withAuthUsers = (operation) => {
     const result = authQueue.then(async () => {
@@ -201,11 +224,130 @@ app.post('/api/auth/login', async (req, res) => {
             return { name: account.name, email: account.email, phone: account.phone };
         });
         if (!user) return res.status(401).json({ error: 'Email hoặc mật khẩu không chính xác.' });
-        res.json({ user });
+        const token = crypto.randomBytes(32).toString('base64url');
+        leaderboardSessions.set(token, { email: user.email, expiresAt: Date.now() + leaderboardSessionLifetime });
+        res.json({ user, token });
     } catch (error) {
         console.error('Lỗi đăng nhập Little Hero:', error);
         res.status(500).json({ error: 'Không thể đăng nhập lúc này. Vui lòng thử lại.' });
     }
+});
+
+app.get('/api/leaderboard', (req, res) => {
+    const mode = typeof req.query.mode === 'string' ? req.query.mode : 'nation';
+    const ageGroup = typeof req.query.ageGroup === 'string' ? req.query.ageGroup : '';
+    const province = typeof req.query.province === 'string' ? req.query.province : '';
+    if (!['duel', 'region', 'city', 'nation'].includes(mode)) {
+        return res.status(400).json({ error: 'Phạm vi bảng xếp hạng không hợp lệ.' });
+    }
+    if (mode !== 'nation' && !['3-6', '7-10'].includes(ageGroup)) {
+        return res.status(400).json({ error: 'Nhóm tuổi bảng xếp hạng không hợp lệ.' });
+    }
+    if ((mode === 'region' || mode === 'city') && !locationCatalog.regionByProvince[province]) {
+        return res.status(400).json({ error: 'Hãy chọn tỉnh/thành hợp lệ để xem bảng xếp hạng.' });
+    }
+
+    const conditions = [];
+    const values = [];
+    if (mode !== 'nation') {
+        conditions.push('age_group = ?');
+        values.push(ageGroup);
+    }
+    if (mode === 'city') {
+        conditions.push('province = ?');
+        values.push(province);
+    } else if (mode === 'region') {
+        const regionProvinces = locationCatalog.provinces
+            .filter((entry) => entry.region === locationCatalog.regionByProvince[province])
+            .map((entry) => entry.name);
+        conditions.push(`province IN (${regionProvinces.map(() => '?').join(', ')})`);
+        values.push(...regionProvinces);
+    }
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const selectPlayers = accountDatabase.prepare(`
+        SELECT email, display_name AS name, province, age_group AS ageGroup,
+               points, updated_at AS updatedAt
+        FROM leaderboard_scores
+        ${where}
+        ORDER BY points DESC, email ASC
+        LIMIT 50
+    `);
+    const rows = selectPlayers.all(...values);
+    const session = getLeaderboardSession(req);
+    const players = rows.map((row, index) => ({
+        rank: index + 1,
+        name: row.name,
+        province: row.province,
+        ageGroup: row.ageGroup,
+        points: row.points,
+        updatedAt: row.updatedAt,
+        isCurrentUser: row.email.toLowerCase() === session?.email.toLowerCase()
+    }));
+    let you = null;
+    if (session) {
+        const current = accountDatabase.prepare(`
+            SELECT display_name AS name, points, updated_at AS updatedAt
+            FROM leaderboard_scores
+            ${where ? `${where} AND` : 'WHERE'} email = ?
+        `).get(...values, session.email);
+        if (current) {
+            const higherConditions = [...conditions,
+                '(points > ? OR (points = ? AND email < ?))'];
+            const rankQuery = accountDatabase.prepare(`
+                SELECT COUNT(*) AS ahead FROM leaderboard_scores
+                WHERE ${higherConditions.join(' AND ')}
+            `);
+            const rank = Number(rankQuery.get(
+                ...values,
+                current.points,
+                current.points,
+                session.email
+            ).ahead) + 1;
+            you = { rank, points: current.points, name: current.name };
+        }
+    }
+    res.json({ players, you, updatedAt: new Date().toISOString() });
+});
+
+app.post('/api/leaderboard/score', (req, res) => {
+    const session = getLeaderboardSession(req);
+    if (!session) return res.status(401).json({ error: 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.' });
+    const displayName = typeof req.body?.displayName === 'string' ? req.body.displayName.trim() : '';
+    const province = typeof req.body?.province === 'string' ? req.body.province : '';
+    const ageGroup = typeof req.body?.ageGroup === 'string' ? req.body.ageGroup : '';
+    const points = Number(req.body?.points);
+    if (!displayName || displayName.length > 24) {
+        return res.status(400).json({ error: 'Biệt danh phải có từ 1 đến 24 ký tự.' });
+    }
+    if (!locationCatalog.regionByProvince[province]) {
+        return res.status(400).json({ error: 'Hãy chọn tỉnh/thành hợp lệ.' });
+    }
+    if (!['3-6', '7-10'].includes(ageGroup)) {
+        return res.status(400).json({ error: 'Nhóm tuổi không hợp lệ.' });
+    }
+    if (!Number.isSafeInteger(points) || points < 0 || points > 10000000) {
+        return res.status(400).json({ error: 'Điểm xếp hạng không hợp lệ.' });
+    }
+    const accountExists = accountDatabase.prepare('SELECT 1 FROM accounts WHERE email = ?').get(session.email);
+    if (!accountExists) return res.status(401).json({ error: 'Không tìm thấy tài khoản. Hãy đăng nhập lại.' });
+    accountDatabase.prepare(`
+        INSERT INTO leaderboard_scores (email, display_name, province, age_group, points, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(email) DO UPDATE SET
+            display_name = excluded.display_name,
+            province = excluded.province,
+            age_group = excluded.age_group,
+            points = excluded.points,
+            updated_at = excluded.updated_at
+    `).run(session.email, displayName, province, ageGroup, points, new Date().toISOString());
+    res.json({ message: 'Đã cập nhật bảng xếp hạng.' });
+});
+
+app.delete('/api/leaderboard/score', (req, res) => {
+    const session = getLeaderboardSession(req);
+    if (!session) return res.status(401).json({ error: 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.' });
+    accountDatabase.prepare('DELETE FROM leaderboard_scores WHERE email = ?').run(session.email);
+    res.sendStatus(204);
 });
 
 const recoveryChannelConfigured = (channel) => channel === 'email'
@@ -373,6 +515,7 @@ app.post('/api/chat', async (req, res) => {
 
     const messages = req.body?.messages;
     const attachments = req.body?.attachments || [];
+    const responseLanguage = req.body?.language === 'en' ? 'English' : 'Vietnamese';
     if (!Array.isArray(messages) || messages.length === 0 || messages.length > 12) {
         return res.status(400).json({ error: 'Cuộc trò chuyện không hợp lệ.' });
     }
@@ -415,7 +558,7 @@ app.post('/api/chat', async (req, res) => {
             model: 'gemini-3.8-flash',
             contents,
             config: {
-                systemInstruction: `Bạn là Hero, trợ lý AI thân thiện trong ứng dụng Little Hero dành cho gia đình và trẻ em. Hỗ trợ câu hỏi tổng quát trên nhiều chủ đề và câu hỏi về Little Hero; trả lời tự nhiên bằng tiếng Việt trừ khi người dùng yêu cầu ngôn ngữ khác. Đọc kỹ toàn bộ ngữ cảnh hội thoại và nội dung tệp đính kèm trước khi trả lời. Đưa ra câu trả lời hữu ích, có cấu trúc và đủ chi tiết; hỏi lại khi thiếu thông tin quan trọng. Phân biệt điều đã biết với suy đoán, nói rõ khi không chắc hoặc cần thông tin cập nhật; không bịa dữ kiện, không tuyên bố đã tìm kiếm Internet hay thực hiện hành động bên ngoài. Khi phù hợp, hướng dẫn tới tính năng liên quan: bản đồ (#/map), bài học (#/lessons), truyện (#/stories), trò chơi (#/games), nhiệm vụ (#/quests), thành tích (#/achievements), tủ đồ (#/wardrobe), phụ huynh (#/parents), gói dịch vụ (#/pricing), tài khoản (#/auth), hỗ trợ (#/faq). Không yêu cầu người dùng gửi mật khẩu, mã xác minh, địa chỉ nhà hoặc dữ liệu riêng tư của trẻ; không khẳng định có thể thực hiện thanh toán, chẩn đoán y tế hay thay thế chuyên gia/người lớn đáng tin cậy. Nếu ai đó có thể đang gặp nguy hiểm, hướng dẫn họ tìm người lớn đáng tin cậy hoặc dịch vụ khẩn cấp tại nơi họ sống.`,
+                systemInstruction: `You are Hero, a friendly AI assistant in Little Hero for families and children. Support general questions and questions about Little Hero. Reply in ${responseLanguage} throughout the conversation, including when earlier messages use another language. Read the full conversation and any attachments before answering. Give helpful, clear, appropriately detailed answers and ask follow-up questions when important information is missing. Distinguish facts from guesses, say when you are unsure or need current information, and never invent facts or claim to have searched the web or taken external actions. When useful, direct users to relevant app routes: lessons (#/lessons), stories (#/stories), games (#/games), quests (#/quests), achievements (#/achievements), wardrobe (#/wardrobe), parents (#/parents), plans (#/pricing), account (#/auth), and help (#/faq). Never ask for passwords, verification codes, home addresses, or children's private data. Do not claim to make payments, diagnose health conditions, or replace a qualified professional or trusted adult. If someone may be in immediate danger, encourage them to find a trusted adult nearby or contact local emergency services.`,
                 maxOutputTokens: 1024,
                 temperature: 0.4
             }

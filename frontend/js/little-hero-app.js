@@ -9,6 +9,9 @@
           ? ""
           : (window.LITTLE_HERO_API_BASE || "");
       const apiUrl = (path) => `${API_BASE}${path}`;
+      const localFileAuthMessage = location.protocol === "file:"
+        ? "Bạn đang mở website trực tiếp bằng file:// nên trình duyệt chặn kết nối tài khoản. Hãy truy cập https://littlehero.id.vn hoặc chạy website qua Live Server cùng backend."
+        : "";
       const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       const DEMO_ACCOUNT = Object.freeze({
         email: "demo@littlehero.id.vn",
@@ -53,9 +56,18 @@
           shares: 3
         }
       ];
+      const sampleReviews = [
+        { id: "sample-review-routine", author: "Nguyễn Minh Anh", stars: 5, title: "Bé hào hứng học mỗi tối", body: "Các tình huống gần gũi nên con dễ hiểu và chịu kể lại cách mình sẽ làm. Gia đình mình thường cùng con chọn một bài trước giờ đi ngủ." },
+        { id: "sample-review-practice", author: "Trần Thu Hà", stars: 5, title: "Dễ học cùng con", body: "Bài học ngắn, phần lựa chọn giúp bố mẹ có thêm chủ đề để trò chuyện với con. Bé thích nhất các nhân vật trong câu chuyện." },
+        { id: "sample-review-family", author: "Lê Quang Huy", stars: 4, title: "Một hoạt động hữu ích cho cả nhà", body: "Nội dung nhẹ nhàng, phù hợp để bố mẹ cùng con luyện cách xử lý những tình huống thường gặp ở trường và khi đi chơi." },
+        { id: "sample-review-progress", author: "Phạm Thảo Nhi", stars: 5, title: "Con nhớ được điều đã học", body: "Sau khi học về an toàn, con chủ động nhắc lại cần tìm người lớn đáng tin cậy khi thấy lo lắng. Cả nhà có thêm cách ôn bài vui vẻ." }
+      ].map((review) => ({ ...review, isSample: true, helpful: 0 }));
       const { categories, lessons, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
       const freshState = () => ({
         childName: "",
+        leaderboardName: "",
+        leaderboardProvince: "",
+        leaderboardOptIn: false,
         age: 6,
         ageGroup: "3-6",
         interests: [],
@@ -79,6 +91,9 @@
         darkMode: false,
         language: "vi",
         premium: false,
+        premiumStatus: "inactive",
+        premiumPlan: "",
+        premiumExpiresAt: "",
         authenticated: false,
         demoAccount: false,
         accountEmail: "",
@@ -100,7 +115,9 @@
         closet: { gender: "boy", hair: "curly", hairColor: "#624337", shirt: "#4ba6c5", pants: "#386b83", shoes: "#de6549", accessory: "cape", outfit: "classic" }
       });
       let state = freshState();
+      let verifiedSubscription = null;
       const forumMediaUrls = new Map();
+      let activeLessonRecognition = null;
       try {
         const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
         if (stored && typeof stored === "object") state = { ...state, ...stored };
@@ -108,9 +125,18 @@
         console.warn("Không thể đọc tiến độ Little Hero từ thiết bị.", error);
       }
 
-      const childProgressFields = ["childName", "age", "ageGroup", "interests", "onboardingComplete", "xp", "rp", "completed", "completedDays", "challenges", "gameRewards", "quiz", "sessionSeconds", "studySeconds", "dailyLessons", "dailyQuiz", "lessonMistakes", "sessionDay", "questClaims", "closet", "learningHistory", "dailyUsage", "dailyStudy"];
-      const accountProgressFields = [...childProgressFields, "children", "activeChildId", "premium", "parentControls", "reviews", "forumPosts", "dailyReviews"];
+      const childProgressFields = ["childName", "leaderboardName", "leaderboardProvince", "leaderboardOptIn", "age", "ageGroup", "interests", "onboardingComplete", "xp", "rp", "completed", "completedDays", "challenges", "gameRewards", "quiz", "sessionSeconds", "studySeconds", "dailyLessons", "dailyQuiz", "lessonMistakes", "sessionDay", "questClaims", "closet", "learningHistory", "dailyUsage", "dailyStudy"];
+      const accountProgressFields = [...childProgressFields, "children", "activeChildId", "premium", "premiumStatus", "premiumPlan", "premiumExpiresAt", "parentControls", "reviews", "forumPosts", "dailyReviews"];
       const accountStorageKey = (email) => `${STORAGE_KEY}:account:${email}`;
+      const leaderboardTokenKey = (email) => `${STORAGE_KEY}:leaderboard-token:${email}`;
+      const leaderboardToken = () => {
+        if (!state.authenticated || !state.accountEmail) return "";
+        try { return sessionStorage.getItem(leaderboardTokenKey(state.accountEmail)) || ""; }
+        catch (error) {
+          console.warn("Không thể đọc phiên bảng xếp hạng.", error);
+          return "";
+        }
+      };
       const normalizeProgressState = () => {
         if (!Array.isArray(state.children) || !state.children.length) {
           const childId = "child-1";
@@ -137,7 +163,15 @@
         state.dailyUsage = state.dailyUsage && typeof state.dailyUsage === "object" ? state.dailyUsage : {};
         state.dailyStudy = state.dailyStudy && typeof state.dailyStudy === "object" ? state.dailyStudy : {};
         state.studySeconds = Number(state.studySeconds) || 0;
+        state.language = state.language === "en" ? "en" : "vi";
+        state.leaderboardName = typeof state.leaderboardName === "string" ? state.leaderboardName.slice(0, 24) : "";
+        state.leaderboardProvince = window.LittleHeroLocations.regionByProvince[state.leaderboardProvince] ? state.leaderboardProvince : "";
+        state.leaderboardOptIn = state.leaderboardOptIn === true;
         state.parentControls = { ...freshState().parentControls, ...(state.parentControls || {}) };
+        state.premium = false;
+        state.premiumStatus = "inactive";
+        state.premiumPlan = "";
+        state.premiumExpiresAt = "";
       };
       const loadAccountProgress = (email, accountName = "") => {
         let savedProgress = null;
@@ -173,6 +207,7 @@
         state.demoAccount = false;
         normalizeProgressState();
       }
+      document.documentElement.lang = state.language;
       state.reviews = (state.reviews || []).filter((review) => {
         const author = String(review.author || "").trim();
         const normalizedAuthor = author.toLocaleLowerCase();
@@ -190,8 +225,7 @@
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       })[char]);
-      const { safeWardrobe, renderHeroCharacterSvg, setCharacterExpression } = window.createLittleHeroCharacterModel({ freshState, escapeHtml });
-      const previousHeroCloset = { gender: "boy", hair: "curly", hairColor: "#624337", shirt: "#53b99d", pants: "#536f92", shoes: "#e98257", accessory: "cape", outfit: "classic" };
+      const { safeWardrobe, renderHeroCharacterSvg, renderLessonCharacterSvg, setCharacterExpression } = window.createLittleHeroCharacterModel({ freshState, escapeHtml });
       const persist = () => {
         const child = state.children.find((entry) => entry.id === state.activeChildId);
         if (child) {
@@ -208,6 +242,7 @@
           console.warn("Không thể lưu tiến độ Little Hero trên thiết bị.", error);
           toast("Không lưu được tiến độ trên thiết bị này. Bé vẫn có thể tiếp tục trải nghiệm.");
         }
+        queueLeaderboardSync();
         renderStats();
       };
       let parentUnlocked = false;
@@ -318,6 +353,20 @@
       const showOnboardingIfNeeded = () => {
         if (state.authenticated && !state.onboardingComplete) openChildOnboarding();
       };
+      let activeSpeech = null;
+      const updateSpeechControls = (speaking) => {
+        const stopButton = $("#lessonStopSpeech");
+        if (!stopButton) return;
+        stopButton.disabled = !speaking;
+        stopButton.setAttribute("aria-pressed", String(speaking));
+      };
+      const stopSpeech = () => {
+        if (!("speechSynthesis" in window)) return;
+        activeSpeech = null;
+        window.speechSynthesis.cancel();
+        updateSpeechControls(false);
+      };
+      window.addEventListener("pagehide", stopSpeech);
       const speak = (text, onComplete) => {
         if (!("speechSynthesis" in window)) {
           toast("Trình duyệt chưa hỗ trợ giọng đọc. Bé vẫn có thể đọc nội dung trên màn hình.");
@@ -326,14 +375,20 @@
         }
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "vi-VN";
+        activeSpeech = utterance;
+        updateSpeechControls(true);
+        utterance.lang = state.language === "en" ? "en-US" : "vi-VN";
         utterance.rate = 0.92;
-        const vietnameseVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith("vi"));
-        if (vietnameseVoice) utterance.voice = vietnameseVoice;
+        const speechPrefix = state.language === "en" ? "en" : "vi";
+        const preferredVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith(speechPrefix));
+        if (preferredVoice) utterance.voice = preferredVoice;
         let completed = false;
         const finishSpeech = () => {
           if (completed) return;
           completed = true;
+          if (activeSpeech !== utterance) return;
+          activeSpeech = null;
+          updateSpeechControls(false);
           onComplete?.();
         };
         utterance.onerror = (event) => {
@@ -380,13 +435,50 @@
         state.learningHistory.push({ lessonId: lesson.id, questionIndex, choice, correct: choice === correctIndex, at: new Date().toISOString() });
         state.learningHistory = state.learningHistory.slice(-500);
       };
+      const subscriptionPlans = {
+        monthly: {
+          name: "Hành trang Tự Tin – Gói tháng",
+          title: "Hành trang Tự Tin",
+          caption: "GÓI THÁNG · HỌC VUI CÙNG HERO",
+          badge: "BẮT ĐẦU NHẸ NHÀNG",
+          image: "./frontend/assets/emotion-classroom.png",
+          imageAlt: "Hero và bạn cùng học trong lớp mỹ thuật",
+          price: 49000,
+          durationDays: 30,
+          features: ["12 bài học kỹ năng cốt lõi", "Truyện tương tác và trò chơi", "Sao thưởng sau mỗi bài"]
+        },
+        yearly: {
+          name: "Cùng Hero Mỗi Ngày – Gói năm",
+          title: "Cùng Hero Mỗi Ngày",
+          caption: "GÓI NĂM · CẢ NHÀ CÙNG TIẾN BỘ",
+          badge: "ĐỒNG HÀNH TRỌN NĂM",
+          image: "./frontend/assets/safety-supermarket.png",
+          imageAlt: "Hero thực hành kỹ năng an toàn tại quầy thông tin",
+          price: 399000,
+          durationDays: 365,
+          features: ["Toàn bộ nội dung gói tháng", "Báo cáo tiến độ dành cho phụ huynh", "Tiết kiệm 189.000đ so với gia hạn theo tháng"]
+        }
+      };
       const PAYMENT_CONFIG = {
-        bankName: "MB BANK",
-        bankCode: "970422",
+        bankName: "MB Bank",
         accountName: "LITTLE HERO",
-        accountNumber: "16030616032006",
-        amount: 99000,
-        transferNote: "LITTLE HERO"
+        accountNumber: "16030616032006"
+      };
+      const freeLessonIds = new Set(categories.map((category) => category.lesson));
+      const hasVerifiedPremium = () => Boolean(verifiedSubscription
+        && verifiedSubscription.status === "active"
+        && ["monthly", "yearly"].includes(verifiedSubscription.plan)
+        && Number.isFinite(Date.parse(verifiedSubscription.expiresAt || ""))
+        && Date.parse(verifiedSubscription.expiresAt) > Date.now());
+      const hasYearlyPremium = () => hasVerifiedPremium() && verifiedSubscription.plan === "yearly";
+      const isPremiumLesson = (lesson) => !freeLessonIds.has(lesson.id);
+      const renderLockedPlanPage = (title, description) => {
+        $("#routeView").innerHTML = pageShell("pricing", description, `
+          <article class="locked-plan-panel">
+            <span class="catalog-icon" aria-hidden="true">🔒</span>
+            <div><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div>
+            <div class="page-actions"><a class="btn btn-primary" href="#/pricing" data-route="pricing">Xem các gói Premium →</a><a class="btn btn-light" href="#/lessons" data-route="lessons">Về kho bài học</a></div>
+          </article>`, "QUYỀN TRUY CẬP");
       };
       const GOOGLE_CLIENT_ID = "";
       const refreshDay = () => {
@@ -447,21 +539,20 @@
         $("#journalDays").textContent = state.completedDays.length;
         const savedReviews = (state.reviews || []).filter((review) => !review.isSample);
         const testimonialColors = [["#f2faf5", "#39a454"], ["#fff9ed", "#ff9d22"], ["#f1f9ff", "#1684e8"], ["#f8f1ff", "#9138e8"]];
-        $("#homeTestimonials").innerHTML = savedReviews.length
-          ? [...savedReviews].slice(-4).reverse().map((review, index) => {
+        const homeReviews = savedReviews.length
+          ? [...savedReviews].slice(-4).reverse()
+          : sampleReviews;
+        $("#homeTestimonials").innerHTML = homeReviews.length
+          ? homeReviews.map((review, index) => {
             const [background, color] = testimonialColors[index % testimonialColors.length];
             const stars = Math.max(1, Math.min(5, Number(review.stars) || 0));
             const author = String(review.author).trim();
             return `<article class="testimonial-card" style="--testimonial-bg:${background};--testimonial-color:${color}">
-              <div class="testimonial-person"><span class="testimonial-avatar" aria-hidden="true">${escapeHtml(Array.from(author)[0] || "L")}</span><span><span class="review-stars" aria-label="${stars} trên 5 sao">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></span></div>
+              <div class="testimonial-person"><span class="testimonial-avatar" aria-hidden="true">${escapeHtml(Array.from(author)[0] || "L")}</span><span class="testimonial-meta"><span class="testimonial-name">${escapeHtml(author)}</span><span class="review-stars" aria-label="${stars} trên 5 sao">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></span></div>
               <blockquote class="testimonial-quote">“${escapeHtml(review.body)}”</blockquote>
-              <div class="testimonial-name">${escapeHtml(author)}</div>
             </article>`;
           }).join("")
-          : `<article class="testimonial-card testimonial-empty">
-              <div class="testimonial-avatar" aria-hidden="true">💬</div><div><strong>Chưa có phản hồi từ gia đình</strong><p class="note">Ba mẹ có thể là người đầu tiên chia sẻ trải nghiệm.</p></div>
-              <a class="btn btn-light btn-small" href="#/reviews" data-route="reviews">Chia sẻ trải nghiệm</a>
-            </article>`;
+          : "";
         $("#journalTip").textContent = completedCount()
           ? "Cùng bé thử hoạt động ngoài đời trong bài vừa học, rồi khen nỗ lực của con."
           : "Chọn một bài học để Hero tìm hoạt động phù hợp cùng bé.";
@@ -531,31 +622,44 @@
         </svg><svg class="journey-path" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true"><path d="${path}" fill="none" stroke="#eaffdb" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/><path d="${path}" fill="none" stroke="#7cbb83" stroke-width="7" stroke-dasharray="1 17" stroke-linecap="round"/></svg>${stopMarkup}`;
       };
       const renderIslands = () => {
-        renderJourneyMap($("#islandGrid"));
+        const islandGrid = $("#islandGrid");
+        if (islandGrid) renderJourneyMap(islandGrid);
       };
+      const lessonImages = {
+        emotion: { src: "./frontend/assets/emotion-calm-room.png", alt: "Các bạn nhỏ cùng Hero nhận biết cảm xúc trong phòng chơi" },
+        social: { src: "./frontend/assets/emotion-classroom.png", alt: "Hero và bạn cùng học trong lớp mỹ thuật" },
+        safety: { src: "./frontend/assets/safety-supermarket.png", alt: "Hero thực hành kỹ năng an toàn tại quầy thông tin" },
+        health: { src: "./frontend/assets/lesson-handwashing.png", alt: "Hero hướng dẫn Mia rửa tay trong bếp" },
+        thinking: { src: "./frontend/assets/emotion-calm-room.png", alt: "Các bạn nhỏ cùng Hero suy nghĩ và giải quyết tình huống" },
+        care: { src: "./frontend/assets/lesson-playground-cleanup.png", alt: "Hero và Linh cùng giữ sân chơi sạch đẹp" },
+        creative: { src: "./frontend/assets/lesson-safe-bicycle.png", alt: "Hero và bố hướng dẫn Bin tập xe an toàn" },
+        community: { src: "./frontend/assets/safety-supermarket.png", alt: "Hero thực hành nhận biết và xử lý tình huống an toàn" }
+      };
+      const lessonSceneImages = {
+        health: lessonImages.health,
+        care: lessonImages.care,
+        creative: lessonImages.creative
+      };
+      const lessonImage = (categoryId) => lessonImages[categoryId] || lessonImages.emotion;
       const renderFeatured = (lesson) => {
         const available = ageAppropriateLessons();
         if (!available.some((item) => item.id === lesson?.id)) {
           lesson = available.find((item) => !state.completed.includes(item.id)) || available[0];
         }
         const category = categories.find((item) => item.id === lesson.category);
-        $("#featuredLesson").innerHTML = `<div class="lesson-art" style="background:linear-gradient(145deg,${category.color},#ffffff)">
-          <span class="lesson-emoji">${lesson.icon}</span><span class="lesson-note">✦ TÌNH HUỐNG GẦN GŨI</span>
+        const image = lessonImage(lesson.category);
+        $("#featuredLesson").innerHTML = `<div class="lesson-art" style="--lesson-color:${category.color}">
+          <img class="lesson-art-image" src="${image.src}" alt="${escapeHtml(image.alt)}" loading="lazy">
+          <span class="lesson-emoji" aria-hidden="true">${lesson.icon}</span><span class="lesson-note">✦ TÌNH HUỐNG GẦN GŨI</span>
         </div><div class="lesson-copy"><span class="tag">${category.icon} ${escapeHtml(category.name)}</span>
           <h3>${escapeHtml(lesson.title)}</h3><p>${escapeHtml(lesson.goal)}</p>
           <div class="lesson-meta"><span>♧ ${lesson.age}</span><span>◷ ${lesson.duration}</span><span>⭐ +${lesson.reward}</span></div>
           <button class="btn btn-mint btn-small" data-route="lessons/${category.id}">${state.completed.includes(lesson.id) ? "Xem lại chủ đề →" : "Khám phá chủ đề →"}</button>
         </div>`;
       };
+      const storyComingSoonNotice = `<div class="story-coming-soon"><img src="./frontend/assets/stories-coming-soon.png" alt="Tính năng truyện đọc đang được đội ngũ LITTLE HERO xây dựng và phát triển" loading="lazy"></div>`;
       const renderStories = () => {
-        $("#storyGrid").innerHTML = ["emotion", "social", "safety"].map((id) => {
-          const lesson = lessonById(id);
-          const category = categories.find((item) => item.id === lesson.category);
-          return `<article class="story-card"><div class="story-art" style="--story-bg:linear-gradient(145deg,${category.color},#fff)">
-              <span class="story-art-icon">${lesson.icon}</span><span class="story-label">📖 TRUYỆN TƯƠNG TÁC · ${lesson.duration.toUpperCase()}</span>
-            </div><div class="story-body"><span class="tag">${category.icon} ${category.name}</span><h3>${lesson.title}</h3>
-              <p>${lesson.story}</p><button class="btn btn-light btn-small" data-route="lesson/${lesson.id}">Đọc & chọn cùng Hero →</button></div></article>`;
-        }).join("");
+        $("#storyGrid").innerHTML = storyComingSoonNotice;
       };
 
       const dailyProgress = (id) => {
@@ -575,23 +679,165 @@
           <button class="collect" id="claimQuests" ${allClaimed ? "disabled" : ""}>${allClaimed ? "Đã nhận ✓" : "Nhận sao ✨"}</button>`;
       };
 
-      const leaderboardByMode = {
-        duel: [["🥇", "Bảo An", 245], ["🥈", "Minh Khang", 215], ["🥉", "Gia Hân", 190], ["4", "Khánh Linh", 170], ["5", "Quang Huy", 150]],
-        region: [["🥇", "Khánh Linh", 270], ["🥈", "An Nhiên", 235], ["🥉", "Quang Huy", 210], ["4", "Minh Khang", 185], ["5", "Bảo An", 160]],
-        city: [["🥇", "Gia Hân", 295], ["🥈", "Bảo An", 250], ["🥉", "Khánh Linh", 225], ["4", "An Nhiên", 195], ["5", "Minh Khang", 175]],
-        nation: [["🥇", "An Nhiên", 320], ["🥈", "Gia Hân", 280], ["🥉", "Minh Khang", 245], ["4", "Quang Huy", 220], ["5", "Khánh Linh", 195]],
-        class: [["🥇", "Quang Huy", 180], ["🥈", "Bảo An", 160], ["🥉", "Minh Khang", 145], ["4", "Gia Hân", 130], ["5", "An Nhiên", 115]]
+      let leaderboardRequestId = 0;
+      let leaderboardSyncTimer = null;
+      let arenaLeaderboardInterval = null;
+      const sampleLeaderboardNames = ["Mây Nhỏ", "Cá Heo", "Bé Sóc", "Thỏ Nâu", "Gấu Nhỏ", "Mầm Xanh", "Sao Mai", "Chim Non"];
+      const exampleLeaderboardPlayers = window.LittleHeroLocations.provinces.flatMap(({ name: province }, provinceIndex) =>
+        ["3-6", "7-10"].flatMap((ageGroup, ageIndex) =>
+          sampleLeaderboardNames.slice(ageIndex * 4, ageIndex * 4 + 4).map((name, playerIndex) => ({
+            name: `${name} ${String(provinceIndex + 1).padStart(2, "0")}`,
+            province,
+            ageGroup,
+            points: 1900 - provinceIndex * 13 - ageIndex * 70 - playerIndex * 17
+          }))
+        )
+      );
+      let leaderboardViewProvince = state.leaderboardProvince || "Đà Nẵng";
+      const leaderboardProvinceOptions = () => window.LittleHeroLocations.provinces.map(({ name }) =>
+        `<option value="${escapeHtml(name)}" ${leaderboardViewProvince === name ? "selected" : ""}>${escapeHtml(name)}</option>`
+      ).join("");
+      const leaderboardLocationControl = (id) => `
+        <label class="leaderboard-view-control" id="${id}Wrap"><span>Xem bảng theo tỉnh/thành</span>
+          <select id="${id}" aria-label="Chọn tỉnh/thành để xem bảng xếp hạng">${leaderboardProvinceOptions()}</select>
+        </label>`;
+      const leaderboardScopeLabel = (mode) => ({
+        duel: `Nhóm ${currentAgeLabel()}`,
+        region: window.LittleHeroLocations.regions[window.LittleHeroLocations.regionByProvince[leaderboardViewProvince]],
+        city: leaderboardViewProvince,
+        nation: "Toàn quốc"
+      }[mode]);
+      const syncLeaderboardLocationControls = () => {
+        ["homeLeaderboardProvince", "arenaLeaderboardProvince"].forEach((id) => {
+          const select = $(`#${id}`);
+          if (select) select.value = leaderboardViewProvince;
+        });
       };
-      const renderLeaderboard = (root = document, mode = arenaMode) => {
-        const baseLeaders = leaderboardByMode[mode] || leaderboardByMode.duel;
-        const leaders = currentAgeGroup() === "3-6"
-          ? baseLeaders.map(([medal, , points], index) => [medal, ["Bé Mây", "Bé Sóc", "Bé Na", "Bé Cún", "Bé Thỏ"][index], points])
-          : baseLeaders;
-        $("#leaderboard", root).innerHTML = leaders.map(([medal, name, points]) =>
-          `<div class="leader-row"><span class="medal">${medal}</span><span><span class="leader-name">${name}</span><br><span class="leader-sub">Nhóm ${currentAgeGroup().replace("-", "–")} tuổi · Luyện tập</span></span><span class="leader-score">${points} RP</span></div>`
-        ).join("");
-        const rank = Math.max(6, 2000 - Math.floor(state.rp / 10));
-        $("#leaderYou", root).innerHTML = `<div class="leader-row"><span class="medal">🌟</span><span><span class="leader-name">${escapeHtml(state.childName || "Bé (bạn)")}</span><br><span class="leader-sub">Nhóm ${currentAgeGroup().replace("-", "–")} tuổi · ${state.rp} RP</span></span><span class="leader-score">#${rank.toLocaleString("vi-VN")}</span></div>`;
+      $("#homeLeaderboardProvince").innerHTML = leaderboardProvinceOptions();
+      syncLeaderboardLocationControls();
+      const leaderboardStatus = (root, message, isError = false) => {
+        const status = $("#leaderboardStatus", root);
+        if (status) {
+          status.classList.toggle("error", isError);
+          status.textContent = message;
+        }
+      };
+      const syncLeaderboardScore = async () => {
+        const token = leaderboardToken();
+        if (!token) return;
+        try {
+          const response = await fetch(apiUrl("/api/leaderboard/score"), {
+            method: state.leaderboardOptIn ? "POST" : "DELETE",
+            headers: {
+              ...(state.leaderboardOptIn ? { "Content-Type": "application/json" } : {}),
+              Authorization: `Bearer ${token}`
+            },
+            ...(state.leaderboardOptIn ? {
+              body: JSON.stringify({
+                displayName: state.leaderboardName.trim(),
+                province: state.leaderboardProvince,
+                ageGroup: currentAgeGroup(),
+                points: state.rp
+              })
+            } : {})
+          });
+          if (response.status === 401) {
+            try { sessionStorage.removeItem(leaderboardTokenKey(state.accountEmail)); }
+            catch (error) { console.warn("Không thể xóa phiên đăng nhập đã hết hạn.", error); }
+            leaderboardStatus(document, "Phiên đã hết hạn. Hãy đăng xuất rồi đăng nhập lại để đồng bộ điểm.", true);
+            return;
+          }
+          if (!response.ok) {
+            const result = await response.json();
+            throw new Error(result.error || "Không thể cập nhật bảng xếp hạng.");
+          }
+          await renderLeaderboard(route === "arena" ? $("#routeView") : document, arenaMode);
+        } catch (error) {
+          console.error("Không thể đồng bộ điểm bảng xếp hạng.", error);
+          leaderboardStatus(document, error.message || "Không thể đồng bộ điểm lúc này.", true);
+        }
+      };
+      const queueLeaderboardSync = () => {
+        if (!state.authenticated || !state.accountEmail || !state.leaderboardOptIn || !leaderboardToken()) return;
+        window.clearTimeout(leaderboardSyncTimer);
+        leaderboardSyncTimer = window.setTimeout(syncLeaderboardScore, 500);
+      };
+      const renderLeaderboard = async (root = document, mode = arenaMode) => {
+        const list = $("#leaderboard", root);
+        if (!list) return;
+        const requestId = ++leaderboardRequestId;
+        const province = leaderboardViewProvince;
+        if ((mode === "region" || mode === "city") && !province) {
+          list.innerHTML = "";
+          const podium = $("#leaderboardPodium", root);
+          if (podium) podium.innerHTML = "";
+          const you = $("#leaderYou", root);
+          if (you) you.innerHTML = "";
+          leaderboardStatus(root, "Chọn tỉnh/thành trong phần thiết lập để xem bảng xếp hạng khu vực.");
+          return;
+        }
+        const url = new URL(apiUrl("/api/leaderboard"), location.origin);
+        url.searchParams.set("mode", mode);
+        url.searchParams.set("ageGroup", currentAgeGroup());
+        if (province) url.searchParams.set("province", province);
+        leaderboardStatus(root, "Đang cập nhật bảng xếp hạng…");
+        try {
+          const token = leaderboardToken();
+          const response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Không thể tải bảng xếp hạng.");
+          if (requestId !== leaderboardRequestId) return;
+          let players = Array.isArray(result.players) ? result.players : [];
+          const showingExamples = players.length === 0;
+          if (showingExamples) {
+            const selectedRegion = province
+              ? window.LittleHeroLocations.regionByProvince[province]
+              : "";
+            players = exampleLeaderboardPlayers
+              .filter((player) => mode === "nation" || player.ageGroup === currentAgeGroup())
+              .filter((player) => mode !== "city" || player.province === province)
+              .filter((player) => mode !== "region"
+                || window.LittleHeroLocations.regionByProvince[player.province] === selectedRegion)
+              .sort((left, right) => right.points - left.points)
+              .slice(0, 50)
+              .map((player, index) => ({ ...player, rank: index + 1, isCurrentUser: false }));
+          }
+          const medals = ["🥇", "🥈", "🥉"];
+          const podium = $("#leaderboardPodium", root);
+          if (podium) {
+            podium.hidden = players.length === 0;
+            podium.innerHTML = players.slice(0, 3).map((player, index) =>
+              `<div class="leader-podium-place place-${index + 1} ${player.isCurrentUser ? "is-you" : ""} ${showingExamples ? "is-example" : ""}">
+                <span class="podium-medal">${medals[index]}</span><span class="podium-avatar">${escapeHtml(player.name.slice(0, 1).toLocaleUpperCase("vi"))}</span>
+                <strong>${escapeHtml(player.name)}</strong><small>${escapeHtml(player.province)} · ${player.ageGroup.replace("-", "–")} tuổi</small>
+                <b>${Number(player.points).toLocaleString("vi-VN")} RP</b><span class="podium-rank">#${player.rank}</span>
+              </div>`
+            ).join("");
+          }
+          list.innerHTML = players.slice(3).map((player) =>
+            `<div class="leader-row ${player.isCurrentUser ? "is-you" : ""} ${showingExamples ? "is-example" : ""}">
+              <span class="medal">#${player.rank}</span>
+              <span><span class="leader-name">${escapeHtml(player.name)}</span><br><span class="leader-sub">${escapeHtml(player.province)} · Nhóm ${player.ageGroup.replace("-", "–")} tuổi</span></span>
+              <span class="leader-score">${Number(player.points).toLocaleString("vi-VN")} RP</span>
+            </div>`
+          ).join("");
+          const you = $("#leaderYou", root);
+          if (you) {
+            you.innerHTML = result.you
+              ? `<div class="leader-row"><span class="medal">🌟</span><span><span class="leader-name">Hạng của bé</span><br><span class="leader-sub">${escapeHtml(result.you.name)} · ${Number(result.you.points).toLocaleString("vi-VN")} RP</span></span><span class="leader-score">#${Number(result.you.rank).toLocaleString("vi-VN")}</span></div>`
+              : "";
+          }
+          const updated = new Date(result.updatedAt);
+          leaderboardStatus(root, showingExamples
+            ? players.length
+              ? "Bảng xếp hạng đang cập nhật theo phạm vi đã chọn."
+              : "Chưa có người chơi trong phạm vi này. Bảng sẽ được cập nhật khi có thêm người tham gia."
+            : `Cập nhật lúc ${updated.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })} · tự làm mới mỗi 10 giây`);
+        } catch (error) {
+          if (requestId !== leaderboardRequestId) return;
+          console.error("Không thể tải bảng xếp hạng.", error);
+          leaderboardStatus(root, error.message || "Không thể tải bảng xếp hạng. Hãy thử lại sau.", true);
+        }
       };
 
       const renderChallengeList = () => {
@@ -619,9 +865,9 @@
           state.completedDays = [...new Set([...state.completedDays, currentDay()])];
           state.rp += 25;
           persist();
+          renderLeaderboard();
           renderIslands();
           renderFeatured(lessons.find((item) => !state.completed.includes(item.id)) || lesson);
-          $("#leaderYou").innerHTML = `<div class="leader-row"><span class="medal">🌟</span><span><span class="leader-name">${escapeHtml(state.childName || "Bé (bạn)")}</span><br><span class="leader-sub">Điểm của bé · ${state.rp} RP</span></span><span class="leader-score">#${Math.max(6, 2000 - Math.floor(state.rp / 10)).toLocaleString("vi-VN")}</span></div>`;
           buttons.forEach((button, index) => { if (index !== answerIndex) button.remove(); });
           const next = document.createElement("button");
           next.className = "btn btn-mint btn-small";
@@ -727,9 +973,9 @@
       };
 
       const openPricing = () => {
-        showDialog(`<div class="dialog-head"><div><span class="kicker">GÓI HỌC PREMIUM</span><h2 id="dialogTitle">Mở rộng hành trình khám phá</h2><p>99.000đ/tháng theo định hướng mô hình sản phẩm.</p></div><button class="close-btn" data-close aria-label="Đóng">×</button></div>
-          <div class="story-box"><strong>👑 Gói dự kiến gồm:</strong><br>Mở rộng thư viện theo mục tiêu 80 bài · Truyện và hoạt động bổ sung · Nhật ký học tập nâng cao.</div>
-          <p class="note">Thông tin ngân hàng, mã VietQR và cổng thanh toán chưa được cấu hình. Hiện chưa hỗ trợ chuyển khoản hoặc xác nhận giao dịch — không chuyển tiền qua trang này.</p>
+        showDialog(`<div class="dialog-head"><div><span class="kicker">GÓI HỌC PREMIUM</span><h2 id="dialogTitle">Mở rộng hành trình khám phá</h2><p>49.000đ/tháng hoặc 399.000đ/năm.</p></div><button class="close-btn" data-close aria-label="Đóng">×</button></div>
+          <div class="story-box"><strong>👑 Gói tháng:</strong> 12 bài học và trò chơi Premium.<br><strong>👑 Gói năm:</strong> toàn bộ quyền lợi gói tháng và báo cáo tiến độ phụ huynh.</div>
+          <p class="note">Cổng thanh toán và xác minh giao dịch chưa được kết nối. Không có quyền lợi nào được kích hoạt trước khi máy chủ xác nhận thanh toán.</p>
           <button class="btn btn-primary" id="pricingOk">Đã hiểu</button>`);
         $("#pricingOk").addEventListener("click", closeDialog);
       };
@@ -742,8 +988,11 @@
           <p class="note">Đoạn thử được đọc trực tiếp trên thiết bị, không phát âm thanh nếu chưa được người dùng bấm.</p>`);
         $("#voicePreview").addEventListener("click", () => {
           if (supported) {
-            const utterance = new SpeechSynthesisUtterance(`Xin chào ${state.childName || "bạn nhỏ"}! Cùng Hero khám phá thế giới hôm nay nhé!`);
-            utterance.lang = "vi-VN";
+            const greeting = state.language === "en"
+              ? `Hello ${state.childName || "friend"}! Let's explore the world with Hero today!`
+              : `Xin chào ${state.childName || "bạn nhỏ"}! Cùng Hero khám phá thế giới hôm nay nhé!`;
+            const utterance = new SpeechSynthesisUtterance(greeting);
+            utterance.lang = state.language === "en" ? "en-US" : "vi-VN";
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(utterance);
             state.sound = true;
@@ -786,16 +1035,18 @@
           $("#quizLockNote").hidden = index === lesson.correct;
           persist();
           $("#rankPoints").textContent = `${state.rp} RP`;
-          $("#leaderYou").innerHTML = `<div class="leader-row"><span class="medal">🌟</span><span><span class="leader-name">${escapeHtml(state.childName || "Bé (bạn)")}</span><br><span class="leader-sub">Điểm của bé · ${state.rp} RP</span></span><span class="leader-score">#${Math.max(6, 2000 - Math.floor(state.rp / 10)).toLocaleString("vi-VN")}</span></div>`;
+          renderLeaderboard();
         }));
       };
 
       let route = "home";
+      let routeHistory = [];
+      let routeHistoryIndex = 0;
       let pendingNewsFocus = "";
       let pendingAuthRoute = "";
       let cleanupTutorSession = null;
-      const accountFeatureRoutes = new Set(["map", "lesson", "quiz", "games", "quests", "achievements", "parents", "arena", "arena-match", "payment", "premium-success", "wardrobe"]);
-      const previewRoutes = new Set([...accountFeatureRoutes, "forum", "reviews", "language"]);
+      const accountFeatureRoutes = new Set(["map", "lesson", "quiz", "games", "quests", "achievements", "parents", "arena", "arena-match", "payment", "premium-success"]);
+      const previewRoutes = new Set([...accountFeatureRoutes, "forum", "reviews"]);
       const guestActionSelector = [
         "#dialogContent [data-answer]",
         "#dialogContent [data-quiz-answer]",
@@ -821,8 +1072,6 @@
         "[data-claim-quest]",
         "#claimQuests",
         "[data-challenge]",
-        "[data-wardrobe]",
-        "[data-language]",
         "[data-like-post]",
         "[data-react]",
         "[data-share-post]",
@@ -851,6 +1100,7 @@
         "#forumForm",
         ".social-comment-form",
         "#reviewForm",
+        "#leaderboardPreferencesForm",
         "#paymentConfirmForm",
         "#profileDetailsForm",
         "#profileAddForm",
@@ -872,14 +1122,274 @@
       let selectedStars = 5;
       let miniGameRun = null;
       const localizedTitles = {
-        vi: { home: "Trang chủ", map: "Bản đồ ốc đảo", lessons: "Kho bài học", stories: "Truyện tranh", storybook: "Sách truyện", games: "Trò chơi", quests: "Nhiệm vụ hằng ngày", quiz: "Bài ôn tập", achievements: "Tường thành tích", reviews: "Đánh giá ứng dụng", forum: "Diễn đàn", faq: "Câu hỏi thường gặp", wardrobe: "Tủ đồ của Hero", language: "Ngôn ngữ", tutor: "Hỏi Hero", parents: "Góc phụ huynh", "parent-news": "Tin tức & LITTLE HERO", auth: "Tài khoản", pricing: "Gói Premium", payment: "Thanh toán Premium", arena: "Đấu trường" },
-        en: { home: "Home", map: "Island map", lessons: "Lessons", stories: "Stories", storybook: "Storybook", games: "Games", quests: "Daily quests", quiz: "Review activities", achievements: "Achievements", reviews: "App reviews", forum: "Community", faq: "FAQs", wardrobe: "Hero wardrobe", language: "Language", tutor: "Ask Hero", parents: "Parent corner", "parent-news": "News & LITTLE HERO", auth: "Account", pricing: "Premium plans", payment: "Premium payment", arena: "Challenge arena" }
+        vi: { home: "Trang chủ", map: "Bản đồ ốc đảo", lessons: "Kho bài học", stories: "Truyện tranh", storybook: "Sách truyện", games: "Trò chơi", quests: "Nhiệm vụ hằng ngày", quiz: "Bài ôn tập", achievements: "Tường thành tích", reviews: "Đánh giá ứng dụng", forum: "Diễn đàn", faq: "Câu hỏi thường gặp", language: "Ngôn ngữ", tutor: "Hỏi Hero", parents: "Góc phụ huynh", "parent-news": "Tin tức & LITTLE HERO", auth: "Tài khoản", pricing: "Gói Premium", payment: "Thanh toán Premium", arena: "Đấu trường" },
+        en: { home: "Home", map: "Island map", lessons: "Lessons", stories: "Stories", storybook: "Storybook", games: "Games", quests: "Daily quests", quiz: "Review activities", achievements: "Achievements", reviews: "App reviews", forum: "Community", faq: "FAQs", language: "Language", tutor: "Ask Hero", parents: "Parent corner", "parent-news": "News & LITTLE HERO", auth: "Account", pricing: "Premium plans", payment: "Premium payment", arena: "Challenge arena" }
       };
       const pageTitle = (name) => localizedTitles[state.language === "en" ? "en" : "vi"][name] || localizedTitles.vi[name] || name;
+      const englishUiText = new Map(Object.entries({
+        "Bạn có thể khám phá nội dung; đăng nhập để sử dụng chức năng và lưu tiến độ.": "Explore the content; sign in to use features and save your progress.",
+        "Tính năng truyện đang được đội ngũ LITTLE HERO xây dựng và phát triển.": "The story feature is being built and developed by the LITTLE HERO team.",
+        "Chia sẻ trải nghiệm thực tế của gia đình với Little Hero.": "Share your family's experience with Little Hero.",
+        "Chưa có đánh giá xác thực; các nội dung bên dưới được ghi nhãn là minh họa.": "There are no verified reviews yet; the examples below are labeled as samples.",
+        "Lưu cục bộ trên thiết bị. Tên và trải nghiệm chưa được xác minh; không đồng bộ hoặc đăng lên Google Play/App Store.": "Saved locally on this device. Names and experiences are unverified and are not synced or posted to Google Play or the App Store.",
+        "Chưa có phản hồi": "No reviews yet",
+        "Tổng quan đánh giá": "Review summary",
+        "Tên người đánh giá": "Reviewer name",
+        "Tóm tắt trải nghiệm": "Summarize your experience",
+        "Chia sẻ trải nghiệm thực tế của bạn…": "Share your experience…",
+        "Số sao": "Rating",
+        "Tiêu đề": "Title",
+        "Thế giới cảm xúc & bản thân": "Emotions & self-awareness",
+        "Kỹ năng xã hội & giao tiếp": "Social skills & communication",
+        "An toàn & tự bảo vệ": "Safety & self-protection",
+        "Sức khỏe & tự lập": "Health & independence",
+        "Tư duy & ra quyết định": "Thinking & decision-making",
+        "Trách nhiệm & môi trường": "Responsibility & the environment",
+        "Sáng tạo & khám phá": "Creativity & discovery",
+        "Gia đình, cộng đồng & mạng": "Family, community & online safety",
+        "Bé sẽ chọn cách nào?": "What do you think they should do?",
+        "Bé có thể trả lời bằng giọng nói hoặc chọn một phương án bên dưới.": "You can answer by voice or choose an option below.",
+        "Phương án": "Option",
+        "Đang nghe… khi bé ngừng nói, Hero sẽ tự xử lý câu trả lời.": "Listening… Hero will check your answer when you finish speaking.",
+        "Đến lượt bé trả lời nhé. Bé có thể nói hoặc chọn một phương án.": "Your turn! Say your answer or choose an option.",
+        "Trả lời bằng giọng nói": "Answer by voice",
+        "Dừng nghe": "Stop listening",
+        "Nội dung bài học": "Vietnamese lesson content",
+        "Nội dung bài học hiện có bằng tiếng Việt.": "Some lesson content is currently available only in Vietnamese.",
+        "Khi con có nhiều cảm xúc": "When feelings get big",
+        "Làm quen với một người bạn mới": "Making a new friend",
+        "Khi con bị lạc ở nơi đông người": "If you get lost in a busy place",
+        "Bàn tay sạch trước bữa ăn": "Clean hands before eating",
+        "Khi con mắc một lỗi nhỏ": "When you make a small mistake",
+        "Cùng giữ sân chơi sạch đẹp": "Keeping the playground clean",
+        "Thử một điều mới thật an toàn": "Trying something new safely",
+        "Tin nhắn lạ trên mạng": "A message from a stranger online",
+        "Khi con tức giận và muốn la hét": "When you feel angry and want to shout",
+        "Khi con cần nói lời xin lỗi": "When you need to say sorry",
+        "Khi người lạ cho con quà": "When a stranger offers you a gift",
+        "Khi con lo lắng trước điều mới": "When you feel nervous about something new",
+        "Nhận biết, gọi tên cảm xúc và thể hiện cảm xúc theo cách an toàn.": "Recognize and name feelings, and express them safely.",
+        "Bắt đầu một cuộc trò chuyện thân thiện và tôn trọng lựa chọn của bạn.": "Start a friendly conversation and respect your friend's choice.",
+        "Biết đứng ở nơi an toàn và tìm người lớn có trách nhiệm hỗ trợ.": "Stay in a safe place and ask a trusted staff member or adult for help.",
+        "Tạo thói quen vệ sinh cá nhân với sự hướng dẫn phù hợp.": "Build healthy hygiene habits with appropriate guidance.",
+        "Nhận trách nhiệm phù hợp và tìm người lớn hỗ trợ để sửa sai.": "Take responsibility and ask an adult to help make things right.",
+        "Thực hành trách nhiệm phù hợp với không gian chung.": "Take age-appropriate responsibility for shared spaces.",
+        "Gọi tên sự lo lắng và tìm sự hỗ trợ khi thử điều mới.": "Name your worries and ask for help when trying something new.",
+        "Bảo vệ thông tin cá nhân và báo cho người lớn đáng tin cậy.": "Protect personal information and tell a trusted adult.",
+        "Nhận ra dấu hiệu tức giận và chọn cách bình tĩnh, không làm tổn thương người khác.": "Notice signs of anger and calm down without hurting anyone.",
+        "Nhận trách nhiệm và đề nghị một cách sửa sai phù hợp.": "Take responsibility and offer an appropriate way to make things right.",
+        "Giữ khoảng cách an toàn và nhờ người lớn đáng tin cậy hỗ trợ.": "Keep a safe distance and ask a trusted adult for help.",
+        "Nhận biết nỗi lo và tìm sự hỗ trợ phù hợp trước một trải nghiệm mới.": "Notice your worries and find support before a new experience.",
+        "Hôm nay Na vui vì được cô khen bức tranh. Khi tranh bị rách, Na buồn và tức giận. Ngày mai lớp biểu diễn, Na lại thấy lo lắng.": "Na is happy when her teacher praises her picture. When it tears, she feels sad and angry. She feels nervous about tomorrow's class performance.",
+        "Nam mới đến lớp và đang ngồi xếp hình một mình. Hà muốn chơi cùng nhưng còn ngại chưa biết mở lời thế nào.": "Nam is new to class and is playing with blocks alone. Hà wants to join him but feels shy about what to say.",
+        "Ở siêu thị, Bin không nhìn thấy mẹ. Gần đó có quầy thông tin và một lối đi ra bãi xe.": "At the supermarket, Bin cannot see his mother. The information desk is nearby, as well as an exit to the parking lot.",
+        "Sau khi chơi ngoài sân, đến giờ ăn trưa. Đôi tay của Mia đã dính đất.": "After playing outside, it is time for lunch. Mia's hands are dirty.",
+        "An vô ý làm đổ nước lên bàn học và thấy vài quyển sách bị ướt. An lo bị mắng.": "An accidentally spills water on the desk and notices that some books are wet. An is worried about getting in trouble.",
+        "Sau giờ ăn nhẹ, Linh thấy vỏ bánh trên tay và một chiếc thùng rác ở gần đó.": "After snack time, Linh has a wrapper in hand and sees a bin nearby.",
+        "Bin muốn tập đi xe đạp nhưng lo sẽ mất thăng bằng. Bố đang ở bên cạnh và có thể giúp.": "Bin wants to learn to ride a bike but is worried about losing balance. Dad is nearby and can help.",
+        "Khi dùng máy tính bảng cùng bố, Mia nhận tin nhắn từ một tài khoản không quen hỏi địa chỉ nhà.": "While using a tablet with Dad, Mia gets a message from an unknown account asking for her home address.",
+        "Em của Bo vô tình làm đổ tòa lâu đài Bo vừa xây. Bo thấy mặt nóng lên, hai tay nắm chặt và muốn hét thật to.": "Bo's younger sibling accidentally knocks down the castle Bo built. Bo feels hot, clenches both fists, and wants to shout.",
+        "An vô tình làm đổ tòa tháp bạn Bình vừa xây. Bình buồn, còn An ngại xin lỗi vì sợ bạn giận.": "An accidentally knocks down the tower Bình built. Bình feels sad, and An is afraid to apologize in case Bình gets angry.",
+        "Ở gần cổng công viên, một người Mia không quen mời em đi theo để nhận một món quà. Mẹ đang ở bên trong khu vui chơi.": "Near the park gate, someone Mia does not know invites her to come along for a gift. Her mother is inside the play area.",
+        "Bin muốn tập đi xe đạp nhưng hơi sợ ngã. Bố đang ở cạnh và có thể giúp Bin chọn nơi tập an toàn.": "Bin wants to learn to ride a bike but is a little afraid of falling. Dad is nearby and can help find a safe place to practice.",
+        "Na nói: “Mình buồn vì tranh bị rách”, rồi nhờ cô giúp.": "Na says, “I'm sad because my picture tore,” and asks the teacher for help.",
+        "Na giấu cảm xúc và giật lại đồ của bạn.": "Na hides her feelings and grabs her friend's things.",
+        "Na tự trách mình và không nói với ai.": "Na blames herself and tells no one.",
+        "Mỉm cười chào bạn, hỏi bạn có muốn chơi cùng không.": "Smile, say hello, and ask if your friend would like to play.",
+        "Giật lấy đồ chơi để bạn phải chú ý.": "Grab the toy to get your friend's attention.",
+        "Bắt bạn phải chơi cùng mình ngay.": "Make your friend play with you right away.",
+        "Đứng ở nơi an toàn và nhờ nhân viên hoặc bảo vệ hỗ trợ.": "Stay somewhere safe and ask an employee or security guard for help.",
+        "Đi theo một người lạ tự nhận là quen với gia đình.": "Go with a stranger who says they know your family.",
+        "Tự đi ra bãi xe để tìm người thân.": "Go to the parking lot alone to look for your family.",
+        "Rửa tay với xà phòng trước khi ngồi vào bàn.": "Wash your hands with soap before sitting down to eat.",
+        "Lau tay qua loa vào áo rồi ăn luôn.": "Wipe your hands on your shirt and start eating.",
+        "Chờ đến khi ăn xong mới rửa tay.": "Wait until after eating to wash your hands.",
+        "Báo người lớn và xin giúp lau nước, kiểm tra sách.": "Tell an adult and ask for help drying the water and checking the books.",
+        "Giấu sự việc và để nước thấm thêm.": "Hide what happened and let the water soak in.",
+        "Tự dùng đồ điện gần chỗ nước để sấy sách.": "Use an electrical appliance near the water to dry the books.",
+        "Bỏ vỏ bánh vào thùng rác gần đó.": "Put the wrapper in the nearby bin.",
+        "Để vỏ bánh xuống sân vì sẽ có người khác dọn.": "Leave the wrapper on the ground because someone else will clean it up.",
+        "Ném vỏ bánh thật xa để khỏi phải cầm.": "Throw the wrapper far away so you do not have to hold it.",
+        "Nhờ người lớn hỗ trợ và dùng đồ bảo hộ phù hợp.": "Ask an adult for help and wear suitable safety gear.",
+        "Tập một mình ở con đường có nhiều xe.": "Practice alone on a busy road.",
+        "Không bao giờ thử và cũng không chia sẻ điều mình lo.": "Never try, and do not tell anyone what worries you.",
+        "Không trả lời và báo ngay cho người lớn đang đồng hành.": "Do not reply; tell the trusted adult with you right away.",
+        "Gửi địa chỉ để người lạ biết mình ở đâu.": "Send your address so the stranger knows where you live.",
+        "Tiếp tục trò chuyện và giữ bí mật với bố mẹ.": "Keep chatting and hide it from your parents.",
+        "Tạm dừng, thở chậm và nói rõ điều khiến mình buồn.": "Pause, breathe slowly, and explain what made you sad.",
+        "Đẩy em rồi hét thật to.": "Push your sibling and shout loudly.",
+        "Ném đồ chơi để mọi người biết mình đang giận.": "Throw toys so everyone knows you are angry.",
+        "Xin lỗi chân thành và hỏi bạn muốn được giúp thế nào.": "Apologize sincerely and ask how you can help.",
+        "Nói rằng bạn không nên buồn vì đó chỉ là đồ chơi.": "Tell your friend not to be sad because it is only a toy.",
+        "Ép bạn tha thứ ngay để hai người chơi tiếp.": "Make your friend forgive you immediately so you can keep playing.",
+        "Không đi theo, giữ khoảng cách và báo cho mẹ ngay.": "Do not go with them; keep your distance and tell Mom right away.",
+        "Đi theo người đó để xem có món quà gì.": "Go with the person to see what the gift is.",
+        "Giữ bí mật vì người đó đã dặn không kể.": "Keep it secret because the person told you not to tell.",
+        "Chia sẻ nỗi lo và thử từng bước ở nơi an toàn với người lớn.": "Share your worries and try one step at a time in a safe place with an adult.",
+        "Giấu nỗi lo và làm điều mình chưa sẵn sàng.": "Hide your worries and do something you are not ready for.",
+        "Ngôn ngữ giao diện": "App language",
+        "TÙY CHỌN NGÔN NGỮ": "LANGUAGE SETTINGS",
+        "Chọn ngôn ngữ giao diện. Nội dung bài học hiện có bằng tiếng Việt.": "Choose the language for the app, lessons, voice input, and Hero's AI replies.",
+        "Hero sẽ trả lời và nhận diện giọng nói theo ngôn ngữ đã chọn. Một số nội dung bài học hiện chỉ có tiếng Việt.": "Hero's AI replies and speech recognition follow the selected language. Some lesson content is currently available only in Vietnamese.",
+        "Trang chủ": "Home",
+        "Kho bài học": "Lesson library",
+        "Truyện tranh": "Stories",
+        "Truyện": "Stories",
+        "Đấu trường": "Challenge arena",
+        "Kiểm tra": "Review",
+        "Thêm": "More",
+        "Nhiệm vụ": "Quests",
+        "Gói Premium": "Premium",
+        "Phụ huynh": "Parents",
+        "Diễn đàn": "Community",
+        "Câu hỏi thường gặp": "FAQs",
+        "Đánh giá ứng dụng": "App reviews",
+        "Ngôn ngữ": "Language",
+        "Đăng nhập / đăng ký": "Sign in / Register",
+        "Đăng nhập": "Sign in",
+        "Đăng xuất": "Sign out",
+        "Tài khoản": "Account",
+        "Chào bạn nhỏ": "Hello, friend",
+        "Thời gian học trong phiên hôm nay": "Study time today",
+        "Chuỗi ngày hoàn thành bài học": "Learning streak",
+        "Điểm sao và cấp độ": "Stars and level",
+        "Bắt đầu bài học": "Start a lesson",
+        "Cùng gia đình học điều hay mỗi ngày": "Learn something good together every day",
+        "HỌC KỸ NĂNG SỐNG QUA TRẢI NGHIỆM · 3–10 TUỔI": "LIFE SKILLS THROUGH EXPERIENCE · AGES 3–10",
+        "Chào ": "Hello ",
+        "Cùng Hero ": "Let's ",
+        "khám phá": "explore",
+        " nhé.": "!",
+        "Cùng gia đình học điều hay mỗi ngày": "Learn something good together every day",
+        "LITTLE HERO là gì?": "What is LITTLE HERO?",
+        "Dễ hiểu": "Easy to understand",
+        "An toàn": "Safe",
+        "Hiệu quả": "Effective",
+        "Vì sao nên học kỹ năng sống từ sớm?": "Why learn life skills early?",
+        "Hành trình học tập cùng Little Hero": "The Little Hero learning journey",
+        "Học qua trò chơi tương tác vui nhộn.": "Learn through fun, interactive games.",
+        "Bắt đầu hành trình tuyệt vời cùng LITTLE HERO!": "Start an amazing journey with LITTLE HERO!",
+        "Góc chia sẻ gia đình": "Family stories",
+        "Phụ huynh nói gì về LITTLE HERO?": "What do parents think about LITTLE HERO?",
+        "Chia sẻ trải nghiệm thật": "Share your experience",
+        "Kho bài học": "Lesson library",
+        "Chọn bài học phù hợp với độ tuổi và chủ đề bé quan tâm.": "Choose a lesson suited to your child's age and interests.",
+        "Tất cả chủ đề": "All topics",
+        "Bắt đầu bài học": "Start lesson",
+        "Học lại": "Try again",
+        "Chọn ngôn ngữ giao diện. Nội dung bài học hiện có bằng tiếng Việt.": "Choose the language for the app, lessons, voice input, and Hero's AI replies.",
+        "Ngôn ngữ giao diện": "App language",
+        "Tiếng Việt": "Vietnamese",
+        "English": "English",
+        "Cập nhật lúc": "Updated at",
+        "Bảng xếp hạng minh họa · thứ hạng thật sẽ cập nhật khi có người chơi đồng ý chia sẻ điểm.": "Illustrative leaderboard · real rankings will appear when players consent to share their scores.",
+        "Chưa có người chơi trong phạm vi này. Thứ hạng thật sẽ hiện khi có người chơi đồng ý chia sẻ điểm.": "No players in this area yet. Real rankings will appear when players consent to share their scores.",
+        "Bảng xếp hạng có thể xem công khai. Đăng nhập hoặc đăng ký để chọn biệt danh và tham gia.": "The leaderboard is public. Sign in or register to choose a nickname and participate.",
+        "Hiện tại đây chỉ là giao diện demo, LITTLE HERO sẽ được phát triển và nâng cấp trong tương lai.": "This is currently a demo interface. LITTLE HERO will be developed and improved in the future.",
+        "Bảng vinh danh": "Leaderboard",
+        "Đánh giá của người dùng": "User reviews",
+        "Viết đánh giá": "Write a review",
+        "Tên hiển thị": "Display name",
+        "Nhận xét": "Review",
+        "Gửi đánh giá": "Submit review",
+        "Nội dung minh họa, không phải đánh giá đã xác minh.": "Sample content, not a verified review.",
+        "Nội dung minh họa · tên hư cấu": "Sample content · fictional names",
+        "Bé hào hứng học mỗi tối": "My child looks forward to learning",
+        "Các tình huống gần gũi nên con dễ hiểu và chịu kể lại cách mình sẽ làm. Gia đình mình thường cùng con chọn một bài trước giờ đi ngủ.": "The familiar situations are easy for my child to understand, and they enjoy telling us what they would do. We often choose a lesson together before bedtime.",
+        "Dễ học cùng con": "Easy to learn together",
+        "Bài học ngắn, phần lựa chọn giúp bố mẹ có thêm chủ đề để trò chuyện với con. Bé thích nhất các nhân vật trong câu chuyện.": "The short lessons and choices give us more to talk about. My child especially enjoys the characters in the stories.",
+        "Một hoạt động hữu ích cho cả nhà": "A helpful activity for the whole family",
+        "Nội dung nhẹ nhàng, phù hợp để bố mẹ cùng con luyện cách xử lý những tình huống thường gặp ở trường và khi đi chơi.": "The gentle content gives us a good way to practice handling everyday situations at school and when we're out together.",
+        "Con nhớ được điều đã học": "My child remembers what they learn",
+        "Sau khi học về an toàn, con chủ động nhắc lại cần tìm người lớn đáng tin cậy khi thấy lo lắng. Cả nhà có thêm cách ôn bài vui vẻ.": "After a safety lesson, my child remembered to find a trusted adult when feeling worried. It gives our family a fun way to review together.",
+        "Bài học tiếp theo": "Next lesson",
+        "Câu chuyện tiếp theo": "Next story",
+        "Đúng rồi!": "That's right!",
+        "Chưa phù hợp": "Not quite",
+        "Trả lời bằng giọng nói": "Answer by voice",
+        "Dừng nghe": "Stop listening",
+        "Đang nghe…": "Listening…",
+        "Hero nghe bé nói:": "Hero heard:",
+        "Trình duyệt này chưa hỗ trợ nhận diện giọng nói. Bé có thể chọn một phương án bên dưới nhé.": "This browser does not support speech recognition. Choose an answer below instead.",
+        "Nhật ký khám phá": "Learning journal",
+        "Bài đã hoàn thành": "Lessons completed",
+        "Sao bé tích lũy": "Stars earned",
+        "Ngày chăm chỉ": "Learning days",
+        "Gợi ý cho bước tiếp theo": "Suggested next step",
+        "Bài ôn tập": "Review activities",
+        "Tìm hiểu các lựa chọn đồng hành cùng hành trình học tập của bé. Hệ thống chưa xác minh giao dịch ngân hàng tự động.": "Explore ways to support your child's learning. Payments are not processed or verified by this app.",
+        "Tùy chọn ngôn ngữ": "Language settings",
+        "GIA ĐÌNH": "FAMILY",
+        "HỖ TRỢ GIA ĐÌNH": "FAMILY SUPPORT",
+        "ĐÁNH GIÁ ỨNG DỤNG": "APP REVIEWS",
+        "KHO BÀI HỌC": "LESSON LIBRARY",
+        "THỬ THÁCH": "CHALLENGES"
+      }).sort(([sourceA], [sourceB]) => sourceB.length - sourceA.length));
+      const localizedTextState = new WeakMap();
+      const localizedAttributeState = new WeakMap();
+      const translateString = (source) => {
+        if (state.language !== "en") return source;
+        const exactTranslation = englishUiText.get(source);
+        if (exactTranslation) return exactTranslation;
+        let translated = source;
+        for (const [vietnamese, english] of englishUiText) {
+          translated = translated.replaceAll(vietnamese, english);
+        }
+        return translated;
+      };
+      const translateNodeText = (node) => {
+        const current = node.nodeValue || "";
+        let source = localizedTextState.get(node);
+        if (source === undefined || current !== source.last) {
+          source = { original: current, last: current };
+          localizedTextState.set(node, source);
+        }
+        const translated = translateString(source.original);
+        if (translated !== current) node.nodeValue = translated;
+        source.last = translated;
+      };
+      const translateElement = (root) => {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          if (node.parentElement?.closest("script,style,textarea,[contenteditable='true']")) continue;
+          translateNodeText(node);
+        }
+        const elements = [root, ...root.querySelectorAll("*")];
+        for (const element of elements) {
+          if (!(element instanceof Element)) continue;
+          let attributes = localizedAttributeState.get(element);
+          if (!attributes) {
+            attributes = new Map();
+            localizedAttributeState.set(element, attributes);
+          }
+          for (const name of ["aria-label", "alt", "placeholder", "title"]) {
+            if (!element.hasAttribute(name)) continue;
+            const current = element.getAttribute(name) || "";
+            const source = attributes.get(name);
+            if (!source || current !== source.last) attributes.set(name, { original: current, last: current });
+            const original = attributes.get(name).original;
+            const translated = translateString(original);
+            if (translated !== current) element.setAttribute(name, translated);
+            attributes.get(name).last = translated;
+          }
+        }
+      };
+      const languageObserver = new MutationObserver((records) => {
+        for (const record of records) {
+          if (record.type === "characterData") translateNodeText(record.target);
+          for (const node of record.addedNodes) {
+            if (node.nodeType === Node.TEXT_NODE) translateNodeText(node);
+            else if (node.nodeType === Node.ELEMENT_NODE) translateElement(node);
+          }
+        }
+      });
+      languageObserver.observe(document.body, { childList: true, characterData: true, subtree: true });
+      translateElement(document.body);
       const routeLink = (name, label, icon = "") => `<a class="btn btn-light btn-small" href="#/${name}" data-route="${name}">${icon}${label}</a>`;
       const pageShell = (name, description, body, icon = "✦") => `
-        <button class="route-back" data-route="home">← ${pageTitle("home")}</button>
-        <div class="page-heading"><span class="kicker">LITTLE HERO · ${icon}</span><h1>${escapeHtml(pageTitle(name))}</h1><p>${description}</p></div>${body}`;
+        <button class="route-back" type="button" data-route-back>← Quay lại</button>
+        <div class="page-heading"><span class="kicker">LITTLE HERO · ${icon}</span><h1>${escapeHtml(pageTitle(name))}</h1>${description ? `<p>${description}</p>` : ""}</div>${body}`;
       const ensureGuestPreviewBanner = () => {
         const routeName = route.split("/")[0];
         const routeView = $("#routeView");
@@ -889,7 +1399,7 @@
       const guestPreviewObserver = new MutationObserver(ensureGuestPreviewBanner);
       guestPreviewObserver.observe($("#routeView"), { childList: true });
       const requestLoginForAction = (event) => {
-        if (state.authenticated) return false;
+        if (state.authenticated || event.target.closest("#lessonChoices [data-choice]")) return false;
         event.preventDefault();
         event.stopImmediatePropagation();
         pendingAuthRoute = route;
@@ -911,6 +1421,12 @@
       }, true);
       const setRoute = (nextRoute, options = {}) => {
         const targetRoute = String(nextRoute || "home").split("/")[0];
+        if (route !== nextRoute) stopSpeech();
+        if (activeLessonRecognition && route !== nextRoute) {
+          const recognition = activeLessonRecognition;
+          activeLessonRecognition = null;
+          recognition.abort();
+        }
         if (cleanupTutorSession && (targetRoute !== "tutor" || route.split("/")[0] === "tutor")) {
           cleanupTutorSession();
           cleanupTutorSession = null;
@@ -921,9 +1437,25 @@
           window.clearInterval(arenaMatchTimeout);
           arenaMatchTimeout = null;
         }
+        if (targetRoute !== "arena" && arenaLeaderboardInterval) {
+          window.clearInterval(arenaLeaderboardInterval);
+          arenaLeaderboardInterval = null;
+        }
         route = nextRoute || "home";
         const hash = `#/${route}`;
-        if (!options.pop && location.hash !== hash) history.pushState({ route }, "", hash);
+        if (!options.pop && location.hash !== hash) {
+          routeHistory = routeHistory.slice(0, routeHistoryIndex + 1);
+          routeHistory.push(route);
+          routeHistoryIndex = routeHistory.length - 1;
+          history.pushState({ route, littleHero: true }, "", hash);
+        } else if (options.pop) {
+          const historyIndex = routeHistory.lastIndexOf(route);
+          if (historyIndex >= 0) routeHistoryIndex = historyIndex;
+          else {
+            routeHistory = [route];
+            routeHistoryIndex = 0;
+          }
+        }
         const update = () => {
           document.body.classList.toggle("route-active", route !== "home");
           document.body.dataset.route = route.split("/")[0];
@@ -989,6 +1521,10 @@
           }
         } else update();
       };
+      const navigateBack = () => {
+        if (routeHistoryIndex > 0) history.back();
+        else setRoute("home");
+      };
 
       const renderLessonCatalog = () => {
         const selectedCategory = route.split("/")[1] || "";
@@ -997,17 +1533,161 @@
         const unavailableCategory = selectedCategory && !allowedCategories.some((category) => category.id === selectedCategory);
         const cards = available.map((lesson) => {
           const category = categories.find((item) => item.id === lesson.category);
-          return `<article class="catalog-card"><span class="catalog-icon" style="--tile:${category.color}">${lesson.icon}</span>
-            <div><span class="kicker">${category.name}</span><h3>${escapeHtml(lesson.title)}</h3>
+          const image = lessonImage(lesson.category);
+          const locked = isPremiumLesson(lesson) && !hasVerifiedPremium();
+          return `<article class="catalog-card"><div class="catalog-art" style="--lesson-color:${category.color}">
+              <img src="${image.src}" alt="${escapeHtml(image.alt)}" loading="lazy"><span aria-hidden="true">${lesson.icon}</span>
+            </div><div class="catalog-card-copy"><span class="kicker">${category.name}</span><h3>${escapeHtml(lesson.title)}</h3>
               <p>${escapeHtml(lesson.goal)}<br>${lesson.age} · ${lesson.duration}${state.completed.includes(lesson.id) ? " · ⭐ Đã hoàn thành" : ""}</p>
-            </div><button class="btn btn-mint btn-small" data-route="lesson/${lesson.id}">${state.completed.includes(lesson.id) ? "Học lại" : "Bắt đầu bài học"} →</button></article>`;
+            </div><button class="btn ${locked ? "btn-light" : "btn-mint"} btn-small" data-route="${locked ? "pricing" : `lesson/${lesson.id}`}">${locked ? "🔒 Xem gói Premium" : `${state.completed.includes(lesson.id) ? "Học lại" : "Bắt đầu bài học"} →`}</button></article>`;
         }).join("");
         const chips = allowedCategories.map((category) => routeLink(`lessons/${category.id}`, `${category.icon} ${category.name}`)).join("");
         const message = unavailableCategory ? "Chủ đề này chưa nằm trong nhóm tuổi của bé. Đây là các nội dung phù hợp hơn:" : "Chọn bài học phù hợp với độ tuổi và chủ đề bé quan tâm.";
         $("#routeView").innerHTML = pageShell("lessons", message, `<div class="page-actions">${routeLink("lessons", "Tất cả chủ đề", "🏝️")}${chips}</div><div class="lesson-catalog">${cards}</div>`, "KHO BÀI HỌC");
       };
 
-      const { getScene, renderSceneBackdrop, renderSceneActor } = window.createLittleHeroSceneModel({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, state });
+      const { getScene, renderSceneBackdrop, renderSceneActor } = window.createLittleHeroSceneModel({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, renderLessonCharacterSvg, state });
+      const lessonTravelAnimations = new WeakMap();
+      const moveLessonActor = (scene, actor, distance, options = {}) => {
+        const previous = lessonTravelAnimations.get(actor);
+        if (previous) previous.cancel();
+        if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || typeof actor.animate !== "function") return;
+        const sceneBounds = scene.getBoundingClientRect();
+        const actorBounds = actor.getBoundingClientRect();
+        const minX = sceneBounds.left + 8 - actorBounds.left;
+        const maxX = sceneBounds.right - 8 - actorBounds.right;
+        const deltaX = Math.max(minX, Math.min(maxX, distance));
+        if (Math.abs(deltaX) < 3 && !options.gesture) return;
+        const target = options.gesture === "retreat"
+          ? `translate(${deltaX}px,0) scale(.96)`
+          : `translate(${deltaX}px,-5px) scale(1.035)`;
+        const destinationX = options.destinationX === undefined
+          ? null
+          : Math.max(minX, Math.min(maxX, options.destinationX));
+        const frames = destinationX === null
+          ? [
+            { transform: "translate(0,0) scale(1)", offset: 0 },
+            { transform: target, offset: .24 },
+            { transform: target, offset: .76 },
+            { transform: "translate(0,0) scale(1)", offset: 1 }
+          ]
+          : [
+            { transform: "translate(0,0) scale(1)", offset: 0 },
+            { transform: target, offset: .27 },
+            { transform: target, offset: .42 },
+            { transform: `translate(${destinationX}px,-2px) scale(1.02)`, offset: .72 },
+            { transform: `translate(${destinationX}px,-2px) scale(1.02)`, offset: 1 }
+          ];
+        const animation = actor.animate(frames, {
+          duration: options.duration || (options.gesture === "retreat" ? 1350 : options.gesture === "meet" ? 1650 : 1500),
+          easing: "cubic-bezier(.25,.7,.2,1)",
+          fill: options.stayAtTarget ? "forwards" : "none"
+        });
+        lessonTravelAnimations.set(actor, animation);
+        return animation;
+      };
+      const choreographLessonAnswer = (scene, protagonist, partner, movement) => {
+        const p = protagonist.getBoundingClientRect();
+        const f = partner.getBoundingClientRect();
+        const gap = f.left + f.width / 2 - (p.left + p.width / 2);
+        const towardPartner = gap < 0 ? -1 : 1;
+        const meetDistance = Math.min(135, Math.max(95, Math.abs(gap) * .46));
+        const interactionDistance = Math.min(125, Math.max(90, Math.abs(gap) * .42));
+        const retreatPartner = scene.querySelector("#sceneThirdActor");
+        if (["action-greet", "action-handshake", "action-apologize"].includes(movement)) {
+          moveLessonActor(scene, protagonist, towardPartner * meetDistance, { gesture: "meet" });
+          moveLessonActor(scene, partner, -towardPartner * meetDistance, { gesture: "meet" });
+          return;
+        }
+        if (["action-pickup", "action-clean"].includes(movement)) {
+          const prop = scene.querySelector(".scene-prop");
+          const actorBounds = protagonist.getBoundingClientRect();
+          const propBounds = prop?.getBoundingClientRect();
+          const actorCenter = actorBounds.left + actorBounds.width / 2;
+          const propCenter = propBounds ? propBounds.left + propBounds.width / 2 : actorCenter + towardPartner * 110;
+          const sceneBounds = scene.getBoundingClientRect();
+          const direction = Math.sign(propCenter - actorCenter) || towardPartner;
+          const deltaX = propCenter - actorCenter - direction * 28;
+          const isLitterPickup = movement === "action-pickup" && scene.classList.contains("scene-litter");
+          const binDelta = sceneBounds.left + sceneBounds.width * .82 - actorCenter - direction * 34;
+          protagonist.classList.remove(movement);
+          protagonist.classList.add("action-walk");
+          moveLessonActor(scene, protagonist, deltaX, {
+            gesture: "meet",
+            duration: isLitterPickup ? 2400 : 1800,
+            destinationX: isLitterPickup ? binDelta : undefined,
+            stayAtTarget: true
+          });
+          if (prop) {
+            prop.style.opacity = "1";
+            const objectDestination = isLitterPickup
+              ? `translate(calc(-50% + ${sceneBounds.left + sceneBounds.width * .83 - propCenter}px), -35px) rotate(12deg) scale(.58)`
+              : `translate(calc(-50% + ${actorCenter - propCenter}px), -28px) scale(.62)`;
+            const objectFrames = isLitterPickup
+              ? [
+                { transform: "translateX(-50%) translateY(0) scale(1)", opacity: 1, offset: 0 },
+                { transform: "translateX(-50%) translateY(0) scale(1)", opacity: 1, offset: .38 },
+                { transform: objectDestination, opacity: 1, offset: .72 },
+                { transform: objectDestination, opacity: 0, offset: .84 },
+                { transform: objectDestination, opacity: 0, offset: 1 }
+              ]
+              : [
+                { transform: "translateX(-50%) translateY(0) scale(1)", opacity: 1, offset: 0 },
+                { transform: "translateX(-50%) translateY(0) scale(1)", opacity: 1, offset: .34 },
+                { transform: objectDestination, opacity: 1, offset: .5 },
+                { transform: objectDestination, opacity: 0, offset: .62 },
+                { transform: objectDestination, opacity: 0, offset: 1 }
+              ];
+            prop.animate(objectFrames, {
+              duration: isLitterPickup ? 2400 : 1800,
+              easing: "cubic-bezier(.2,.7,.3,1)",
+              fill: "forwards"
+            });
+          }
+          window.setTimeout(() => {
+            if (!protagonist.isConnected) return;
+            protagonist.classList.remove("action-walk");
+            protagonist.classList.add(movement);
+          }, isLitterPickup ? 650 : 520);
+          return;
+        }
+        if (["action-wash", "action-breathe", "action-listen", "action-search", "action-sit", "action-stay"].includes(movement)) {
+          return;
+        }
+        if (["action-report", "action-call", "action-assist"].includes(movement)) {
+          moveLessonActor(scene, protagonist, towardPartner * interactionDistance);
+          if (movement === "action-assist") moveLessonActor(scene, partner, -towardPartner * interactionDistance);
+          return;
+        }
+        if (movement === "action-protect") {
+          moveLessonActor(scene, protagonist, -towardPartner * 108);
+          moveLessonActor(scene, partner, -towardPartner * 86);
+          if (retreatPartner) {
+            const strangerBounds = retreatPartner.getBoundingClientRect();
+            const strangerCenter = strangerBounds.left + strangerBounds.width / 2;
+            const protagonistCenter = p.left + p.width / 2;
+            moveLessonActor(scene, retreatPartner, strangerCenter < protagonistCenter ? -100 : 100, { gesture: "retreat" });
+          }
+          return;
+        }
+        if (movement === "action-approach") {
+          moveLessonActor(scene, protagonist, towardPartner * 130);
+          moveLessonActor(scene, partner, -towardPartner * 95);
+          if (retreatPartner) {
+            const strangerBounds = retreatPartner.getBoundingClientRect();
+            const strangerCenter = strangerBounds.left + strangerBounds.width / 2;
+            const protagonistCenter = p.left + p.width / 2;
+            moveLessonActor(scene, retreatPartner, strangerCenter < protagonistCenter ? -54 : 54, { gesture: "retreat" });
+          }
+          return;
+        }
+        if (movement === "action-run" || movement === "action-ride") {
+          moveLessonActor(scene, protagonist, movement === "action-run" ? -towardPartner * 140 : towardPartner * 140);
+          return;
+        }
+        moveLessonActor(scene, protagonist, towardPartner * interactionDistance);
+        moveLessonActor(scene, partner, -towardPartner * interactionDistance);
+      };
       const playSceneEnvironment = (sceneId) => {
         const scene = $(`#${sceneId}`);
         const card = scene?.closest(".scene-card");
@@ -1017,61 +1697,155 @@
         card.classList.add("playing");
         window.setTimeout(() => { if (card.isConnected) card.classList.remove("playing"); }, 3400);
       };
-      const movementForChoice = (answer, correct) => {
-        const choice = answer.toLocaleLowerCase("vi");
-        if (correct && ["nhặt", "gom", "xếp lại", "xây lại"].some((phrase) => choice.includes(phrase))) return "action-pickup";
-        if (["chạy", "đi theo", "tự đi", "đi ra", "quay lại", "một mình"].some((phrase) => choice.includes(phrase))) return "action-run";
-        if (["chào", "rửa tay", "bỏ vỏ bánh", "bắt đầu", "tìm thùng", "đến nơi"].some((phrase) => choice.includes(phrase))) return "action-walk";
-        if (correct && ["chơi cùng", "vui vẻ", "cùng vui"].some((phrase) => choice.includes(phrase))) return "action-jump";
-        return correct ? "action-help" : "action-unsafe";
+      const actionForAnswer = (answer, correct, lesson) => {
+        const choice = answer.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .toLocaleLowerCase("vi").replace(/đ/g, "d");
+        if (/\b(giat|nem|het|quat|mang|do loi|ep ban|bat ban|lam dau|danh ban|su dung do dien|cam may say|bo mu)\b/.test(choice)) return "action-unsafe";
+        if (lesson.category === "community" && /\b(tra loi|phan hoi|gui anh|gui dia chi|tiep tuc tro chuyen)\b/.test(choice)) return "action-unsafe";
+        if (/\b(khong di theo|khong tra loi|khong phan hoi|khong gui|khong chia se|giu khoang cach|tu choi|chan tai khoan|khong cham|khong bao gio)\b/.test(choice)) return "action-protect";
+        if (/\b(di theo|theo nguoi|di voi nguoi la)\b/.test(choice)) return "action-approach";
+        if (/\b(chay|tu di|di ra|mot minh|tang toc)\b/.test(choice)) return "action-run";
+        if (/\b(giau|bi mat|khong noi|khong ke|gia vo khong thay)\b/.test(choice)) return "action-hide";
+        if (/\b(cho den khi|doi den khi|dung yen|dung lai|o lai)\b/.test(choice) || /\bo canh\b.*\bcho\b/.test(choice)) return "action-stay";
+        if (/\b(ngoi nghi|ngoi xuong|nghi mot chut)\b/.test(choice)) return "action-sit";
+        if (/\b(di bo|di den|buoc den|quay lai|bo di|di khoi|roi di|tranh xa)\b/.test(choice)) return "action-walk";
+        if (/\b(goi nguoi|keu nguoi lon|bao ngay)\b/.test(choice)) return "action-call";
+        if (/\b(nho (me|bo|nguoi lon)|bao (nguoi lon|me|bo|co|cho)|noi voi|noi ro|chia se|tam su|tra loi)\b/.test(choice) || /\bhoi\b.*\bcach\b/.test(choice)) return "action-report";
+        if (/\btim\b|\bkiem tra\b|\bxac dinh diem\b|\bquan sat\b/.test(choice)) return "action-search";
+        if (/\b(rua tay|xa phong|cha hai|rua sach bot)\b/.test(choice)) return "action-wash";
+        if (/\b(nhat|bo rac|bo vo banh|gom|xep lai|xay lai|dua lai|tra lai)\b/.test(choice)) return "action-pickup";
+        if (/\b(lau|khan|tham nuoc|don sach|lau kho)\b/.test(choice)) return "action-clean";
+        if (/\b(xin loi|sua sai|khac phuc)\b/.test(choice)) return "action-apologize";
+        if (/\b(tho|binh tinh|tam dung|hit tho)\b/.test(choice)) return "action-breathe";
+        if (/\b(lang nghe|cho .* thoi gian|dong y cho .* nghi|cho ban nghi|hoi .* cam thay)\b/.test(choice)) return "action-listen";
+        if (/\bbat tay\b/.test(choice)) return "action-handshake";
+        if (/\b(doi mu|do bao ho|tap xe|xe dap|giu thang bang)\b/.test(choice)) return "action-ride";
+        if (/\b(chao|mim cuoi|gioi thieu|hoi ban|choi cung|moi ban)\b/.test(choice)) return "action-greet";
+        if (/\b(cung|hop tac|chia nhau|can than|dua lai|tra lai)\b/.test(choice)) return "action-assist";
+        if (!correct) return "action-unsafe";
+        const categoryGestures = {
+          emotion: "action-breathe",
+          social: "action-greet",
+          safety: "action-report",
+          health: "action-wash",
+          thinking: "action-report",
+          care: "action-pickup",
+          creative: "action-ride",
+          community: "action-protect"
+        };
+        const lessonGestures = {
+          calm: "action-breathe",
+          sorry: "action-apologize",
+          stranger: "action-protect",
+          "new-thing": "action-ride"
+        };
+        return lessonGestures[lesson.id] || categoryGestures[lesson.category] || "action-greet";
+      };
+      const emotionForAnswer = (answer, correct, movement) => {
+        const choice = answer.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .toLocaleLowerCase("vi").replace(/đ/g, "d");
+        if (/\b(gian|tuc gian|het|quat|mang|giat|nem|do loi|ep ban|bat ban)\b/.test(choice)) return "angry";
+        if (/\b(buon|khoc|tiec)\b/.test(choice)) return "sad";
+        if (/\b(lo lang|so hai|hoi hop|boi roi|chua san sang)\b/.test(choice)) return "concerned";
+        if (/\b(vui|mim cuoi|hao hung|tu tin|cam on|chuc mung)\b/.test(choice)) return "happy";
+        if (correct && ["action-breathe", "action-listen", "action-protect", "action-report", "action-stay", "action-wash"].includes(movement)) return "calm";
+        return correct ? "happy" : "concerned";
+      };
+      const resolveChoiceActors = (answer, scene, protagonist, partner) => {
+        const text = answer.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("vi").replace(/[^a-z0-9]+/g, " ").trim();
+        const aliases = {
+          "me": ["me", "ma"],
+          "bo": ["bo", "ba", "cha"],
+          "co giao": ["co giao", "thay co"],
+          "nhan vien": ["nhan vien", "bao ve"],
+          "nguoi la": ["nguoi la", "nguoi do"],
+          "ban": ["ban"],
+          "em": ["em"],
+          "hero": ["hero"]
+        };
+        const actors = [...scene.querySelectorAll(".scene-actor")];
+        const tokensFor = (actor) => {
+          const label = actor.querySelector(".actor-name")?.textContent?.trim() || "";
+          const normalized = label.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("vi").replace(/[^a-z0-9]+/g, " ").trim();
+          return [...new Set([normalized, ...(aliases[normalized] || []), ...(actor === protagonist ? aliases.hero : [])].filter(Boolean))];
+        };
+        const matches = (actor, atStart = false) => tokensFor(actor).some((token) =>
+          atStart ? text === token || text.startsWith(`${token} `) : ` ${text} `.includes(` ${token} `)
+        );
+        const subject = actors.find((actor) => matches(actor, true));
+        const mentioned = actors.filter((actor) => matches(actor));
+        const lead = subject || protagonist;
+        const companion = mentioned.find((actor) => actor !== lead) ||
+          (lead === protagonist ? partner : protagonist);
+        return { lead, companion, mentioned };
       };
       const propForChoice = (answer, lesson) => {
         const choice = answer.toLocaleLowerCase("vi");
         if (choice.includes("sách")) return "📚";
         if (choice.includes("xếp") || choice.includes("xây lại") || choice.includes("khối")) return "🧱";
         if (choice.includes("rửa tay")) return "🫧";
-        if (choice.includes("rác") || choice.includes("vỏ bánh") || choice.includes("thùng")) return "🗑️";
+        if (/\brác\b/.test(choice) || choice.includes("vỏ bánh") || choice.includes("thùng")) return "🗑️";
         if (choice.includes("xin lỗi")) return "💛";
         return lesson.category === "emotion" ? "💬" : lesson.category === "social" ? "🤝" : "✨";
       };
       const animateSceneChoice = (sceneId, heroId, friendId, propId, answer, lesson, correct) => {
         const scene = $(`#${sceneId}`);
         if (!scene) return;
-        if (lesson.id === "safety" && scene.querySelector(".scene-illustration")) {
-          scene.classList.remove("safety-helping");
-          playSceneEnvironment(sceneId);
-          if (correct) {
-            scene.classList.add("safety-helping");
-            window.setTimeout(() => { if (scene.isConnected) scene.classList.remove("safety-helping"); }, 3400);
-          }
-          return;
-        }
-        const hero = $(`#${heroId}`);
-        const friend = $(`#${friendId}`);
-        if (!hero || !friend) return;
-        [hero, friend].forEach((actor) => {
-          actor.classList.remove("action-wave", "action-help", "action-calm", "action-unsafe", "action-approach", "action-celebrate", "action-walk", "action-run", "action-jump", "action-pickup", "action-receive");
+        const protagonist = $(`#${heroId}`);
+        const partner = $(`#${friendId}`);
+        if (!protagonist || !partner) return;
+        const { lead, companion, mentioned } = resolveChoiceActors(answer, scene, protagonist, partner);
+        const actors = [...scene.querySelectorAll(".scene-actor")];
+        actors.forEach((actor) => {
+          [...actor.classList].forEach((className) => {
+            if (className.startsWith("action-")) actor.classList.remove(className);
+            if (className.startsWith("mood-")) actor.classList.remove(className);
+          });
           void actor.offsetWidth;
         });
         playSceneEnvironment(sceneId);
-        const safetyHelp = lesson.id === "safety" && correct;
-        if (scene) {
-          scene.classList.remove("safety-helping");
-          if (safetyHelp) {
-            scene.classList.add("safety-helping");
-            window.setTimeout(() => { if (scene.isConnected) scene.classList.remove("safety-helping"); }, 3400);
-          }
+        const movement = actionForAnswer(answer, correct, lesson);
+        const partnerMovement = correct
+          ? ({
+            "action-wash": "action-guide",
+            "action-pickup": "action-assist",
+            "action-clean": "action-assist",
+            "action-apologize": "action-forgive",
+            "action-breathe": "action-mirror-breathe",
+            "action-greet": "action-greet",
+            "action-handshake": "action-handshake-partner",
+            "action-report": "action-listen",
+            "action-protect": "action-guide",
+            "action-ride": "action-guide"
+          }[movement] || "action-encourage")
+          : ({
+            "action-approach": "action-protect",
+            "action-run": "action-call",
+            "action-hide": "action-search",
+            "action-pause": "action-encourage"
+          }[movement] || "action-warn");
+        const responseEmotion = correct
+          ? ["action-apologize", "action-assist", "action-greet", "action-handshake", "action-pickup"].includes(movement) ? "happy" : "calm"
+          : emotionForAnswer(answer, false, movement);
+        const involvedActors = new Set([lead, companion, ...mentioned]);
+        involvedActors.forEach((actor) => {
+          const actorMovement = actor === lead ? movement : partnerMovement;
+          const actorEmotion = actor === lead ? emotionForAnswer(answer, correct, movement) : responseEmotion;
+          actor.classList.add(actorMovement, `mood-${actorEmotion}`);
+          setCharacterExpression(actor, actorEmotion);
+        });
+        if (lead.querySelector(".lesson-character-svg")) {
+          choreographLessonAnswer(scene, lead, companion, movement);
         }
-        const movement = movementForChoice(answer, correct);
-        if (safetyHelp) {
-          hero.classList.add("action-safety-ask");
-          friend.classList.add("action-safety-guide");
-        } else {
-          hero.classList.add(movement);
-          friend.classList.add(correct ? (movement === "action-pickup" ? "action-receive" : "action-wave") : "action-unsafe");
+        const stranger = scene.querySelector("#sceneThirdActor");
+        if (stranger?.querySelector(".actor-name")?.textContent.trim() === "Người lạ") {
+          stranger.classList.remove("action-protect", "action-stay", "mood-happy", "mood-sad", "mood-concerned");
+          stranger.classList.add(
+            ["action-protect", "action-approach"].includes(movement) || !correct ? "action-step-back" : "action-stay",
+            "mood-concerned"
+          );
+          setCharacterExpression(stranger, "concerned");
         }
-        setCharacterExpression(hero, correct ? "happy" : "sad");
-        setCharacterExpression(friend, correct ? "happy" : (friend.classList.contains("adult-actor") ? "angry" : "sad"));
         $(`#${propId}`).textContent = correct ? propForChoice(answer, lesson) : "⚡";
       };
 
@@ -1082,6 +1856,10 @@
           return;
         }
         if (!sourceLesson) { $("#routeView").innerHTML = pageShell("lessons", "Không tìm thấy bài học này.", routeLink("lessons", "Xem kho bài học", "🏝️")); return; }
+        if (isPremiumLesson(sourceLesson) && !hasVerifiedPremium()) {
+          renderLockedPlanPage("Bài học này thuộc thư viện Premium", "Chọn gói tháng hoặc năm để mở khóa các bài học nâng cao sau khi thanh toán được xác minh.");
+          return;
+        }
         const lesson = { ...sourceLesson, age: currentAgeLabel() };
         const category = categories.find((item) => item.id === lesson.category);
         const scene = getScene(lesson);
@@ -1093,17 +1871,19 @@
         const done = state.completed.includes(lesson.id);
         const prior = state.lessonMistakes?.[lesson.id] || 0;
         $("#routeView").innerHTML = pageShell("lessons", `${category.icon} ${category.name} · ${lesson.age} · ${lesson.duration}`, `
+          <p class="lesson-demo-notice" role="note">Hiện tại đây chỉ là giao diện demo, LITTLE HERO sẽ được phát triển và nâng cấp trong tương lai.</p>
           <div class="lesson-layout">
             <div>
               <div class="lesson-progress"><span>📖 Mạch câu chuyện</span><span id="questionProgress">Câu hỏi 1/3${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}</span></div>
               <article class="scene-card">
-                <div class="scene ${scene.type} scene-${scene.variant}" id="lessonScene">
-                  ${renderSceneBackdrop(scene)}
-                  ${scene.variant === "lost" ? "" : `
-                    <span class="scene-kicker">📍 ${scene.place}</span><span class="scene-prop" id="sceneProp">${scene.prop}</span>
-                    ${renderSceneActor("heroActor", "Hero", true)}
-                    ${renderSceneActor("friendActor", scene.friend.name, false, scene.friend)}
-                  `}
+                <div class="scene ${scene.type} scene-${scene.variant} scene-lesson-${lesson.category}${scene.thirdCharacter ? " scene-with-third-character" : ""}${lessonSceneImages[lesson.id] ? " has-illustration" : ""}" id="lessonScene">
+                    ${lessonSceneImages[lesson.id]
+                      ? `<img class="lesson-scene-illustration" src="${lessonSceneImages[lesson.id].src}" alt="${escapeHtml(lessonSceneImages[lesson.id].alt)}">`
+                      : `${renderSceneBackdrop(scene)}
+                        <span class="scene-kicker">📍 ${scene.place}</span><span class="scene-prop" id="sceneProp">${scene.prop}</span>
+                        ${scene.thirdCharacter ? renderSceneActor("sceneThirdActor", scene.thirdCharacter.name, false, scene.thirdCharacter, true) : ""}
+                        ${renderSceneActor("lessonProtagonist", scene.protagonist.name, false, scene.protagonist, true)}
+                        ${renderSceneActor("lessonPartner", scene.friend.name, false, scene.friend, true)}`}
                 </div>
               </article>
             </div>
@@ -1112,7 +1892,12 @@
                 <div class="lesson-progress"><span><strong>${escapeHtml(lesson.title)}</strong></span><span>⭐ +3 mỗi câu đúng · lần đầu hoàn thành +${lesson.reward}</span></div>
                 <p id="questionStory" class="lesson-story"></p>
                 <p id="questionPrompt" class="lesson-prompt"></p>
-                <div class="page-actions"><button class="btn btn-light btn-small" id="lessonSpeak">♫ Nghe đề bài và các phương án</button></div>
+                <div class="page-actions lesson-voice-controls">
+                  <button class="btn btn-light btn-small" id="lessonSpeak" type="button">🔊 Nghe đề bài và các phương án</button>
+                  <button class="btn btn-light btn-small" id="lessonStopSpeech" type="button" aria-label="Dừng giọng đọc" aria-pressed="false" disabled>⏹ Dừng đọc</button>
+                  <button class="btn btn-mint btn-small" id="lessonVoiceAnswer" type="button" aria-pressed="false">🎙️ Trả lời bằng giọng nói</button>
+                </div>
+                <p class="lesson-voice-status" id="lessonVoiceStatus" aria-live="polite"></p>
                 <div class="lesson-choices" id="lessonChoices"></div>
                 <p class="lesson-feedback" id="lessonRouteFeedback" aria-live="polite">${prior ? `Bé đã thử ${prior} lựa chọn chưa phù hợp. Hãy bình tĩnh suy nghĩ lại nhé.` : "Bé hãy chọn phương án mình nghĩ là phù hợp."}</p>
                 <details class="lesson-hint">
@@ -1129,49 +1914,144 @@
             <strong>🌱 Thử thách ngoài đời</strong><p>${escapeHtml(lesson.activity)}</p>
           </div>
         `, "BÀI HỌC TƯƠNG TÁC");
-        const lessonHero = $("#heroActor");
-        if (lessonHero) {
-          lessonHero.style.setProperty("--hero-shirt", safeWardrobe(state.closet).shirt);
-          lessonHero.style.setProperty("--hero-pants", safeWardrobe(state.closet).pants);
-          lessonHero.style.setProperty("--hero-shoes", safeWardrobe(state.closet).shoes);
-        }
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const voiceStatus = $("#lessonVoiceStatus");
+        const voiceButton = $("#lessonVoiceAnswer");
+        let voiceSilenceTimer = 0;
+        let voiceNoSpeechTimer = 0;
+        let voiceMaxDurationTimer = 0;
+        const clearLessonVoiceTimers = () => {
+          window.clearTimeout(voiceSilenceTimer);
+          window.clearTimeout(voiceNoSpeechTimer);
+          window.clearTimeout(voiceMaxDurationTimer);
+          voiceSilenceTimer = 0;
+          voiceNoSpeechTimer = 0;
+          voiceMaxDurationTimer = 0;
+        };
+        const setLessonVoiceListening = (listening) => {
+          voiceButton.classList.toggle("is-listening", listening);
+          voiceButton.setAttribute("aria-pressed", String(listening));
+          voiceButton.textContent = listening ? "⏹ Dừng nghe" : "🎙️ Trả lời bằng giọng nói";
+          voiceStatus.classList.toggle("is-listening", listening);
+        };
+        const stopLessonRecognition = () => {
+          if (!activeLessonRecognition) return;
+          const recognition = activeLessonRecognition;
+          activeLessonRecognition = null;
+          clearLessonVoiceTimers();
+          recognition.abort();
+          setLessonVoiceListening(false);
+        };
+        const normalizeVoiceText = (text) => String(text).toLocaleLowerCase("vi")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+          .replace(/[^\p{L}\p{N}\s]/gu, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        const matchSpokenAnswer = (transcript, answers) => {
+          const normalizedTranscript = normalizeVoiceText(transcript);
+          const normalizedAnswers = answers.map(normalizeVoiceText);
+          const statedChoice = normalizedTranscript.match(/\b(?:phuong an|dap an|cau tra loi|option|answer|choice|choose|pick|select|number)\s+(?:so\s+)?(1|2|3|mot|hai|ba|one|two|three|a|b|c)\b/)
+            || normalizedTranscript.match(/\b(?:lua chon|cach|y|chon|chose|choose|pick|select)\s+(?:(?:phuong an|dap an|cach|y)\s+)?(?:cai\s+)?(?:thu\s+)?(?:the\s+)?(1|2|3|mot|hai|ba|nhat|nhi|one|two|three|first|second|third|a|b|c)(?:\s+one)?\b/)
+            || normalizedTranscript.match(/\b(?:phuong an|dap an|lua chon|cach|y|option|answer|choice)\s+(?:thu\s+)?(dau tien|thu nhat|thu hai|thu ba|first|second|third)\b/)
+            || normalizedTranscript.match(/^(1|2|3|mot|hai|ba|nhat|nhi|one|two|three|first|second|third|a|b|c)$/);
+          if (statedChoice) {
+            const choiceIndex = { "1": 0, "mot": 0, "nhat": 0, "dau tien": 0, "thu nhat": 0, one: 0, first: 0, a: 0, "2": 1, "hai": 1, "nhi": 1, "thu hai": 1, two: 1, second: 1, b: 1, "3": 2, "ba": 2, "thu ba": 2, three: 2, third: 2, c: 2 }[statedChoice[1]];
+            if (choiceIndex < answers.length) return choiceIndex;
+          }
+          const exactMatches = normalizedAnswers
+            .map((answer, index) => ({ answer, index }))
+            .filter(({ answer }) => answer && normalizedTranscript.includes(answer))
+            .sort((left, right) => right.answer.length - left.answer.length);
+          if (exactMatches.length && (exactMatches.length === 1 || exactMatches[0].answer.length > exactMatches[1].answer.length)) return exactMatches[0].index;
+
+          const ignoredWords = new Set(["va", "la", "thi", "be", "con", "cach", "nao", "gi", "nhu", "the", "de", "co", "mot", "nguoi", "em", "cho", "giup", "minh", "se", "can", "neu", "voi", "tai", "sao", "hay", "hoac", "ngay", "cung", "duoc"]);
+          const answerWords = normalizedAnswers.map((answer) => new Set(
+            answer.split(" ").filter((word) => word.length > 2 && !ignoredWords.has(word))
+          ));
+          const transcriptWords = normalizedTranscript.split(" ").filter(Boolean);
+          const distinguishingWords = answerWords.map((words, index) => new Set(
+            [...words].filter((word) => answerWords.every((otherWords, otherIndex) => otherIndex === index || !otherWords.has(word)))
+          ));
+          const keywordsByAnswer = answerWords.map((words, index) =>
+            distinguishingWords[index].size ? distinguishingWords[index] : words
+          );
+          const scores = answerWords.map((words, index) => {
+            const keywords = keywordsByAnswer[index];
+            const matched = [...keywords].filter((word) => transcriptWords.some((spokenWord) =>
+              spokenWord === word
+              || (Math.min(spokenWord.length, word.length) >= 4
+                && (spokenWord.startsWith(word) || word.startsWith(spokenWord)))
+            )).length;
+            return { index, matched, coverage: matched / Math.max(1, keywords.size) };
+          }).sort((left, right) => right.matched - left.matched || right.coverage - left.coverage);
+          const [best, second] = scores;
+          if (!best || best.matched < Math.min(2, keywordsByAnswer[best.index].size) || best.matched <= (second?.matched || 0)) return null;
+          return best.index;
+        };
         const renderQuestion = () => {
+          stopLessonRecognition();
+          const sceneProp = $("#sceneProp");
+          if (sceneProp) {
+            sceneProp.getAnimations().forEach((animation) => animation.cancel());
+            sceneProp.style.opacity = "";
+            sceneProp.style.transform = "";
+            sceneProp.textContent = scene.prop;
+          }
           const question = questions[questionIndex];
           $("#questionProgress").textContent = `Câu hỏi ${questionIndex + 1}/${questions.length}${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}`;
           $("#questionStory").textContent = question.story;
           $("#questionPrompt").textContent = question.prompt;
+          voiceStatus.textContent = "";
           $("#lessonChoices").innerHTML = question.answers.map((answer, index) =>
             `<button type="button" class="lesson-choice" data-choice="${index}"><span class="choice-letter">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(answer)}</span></button>`
           ).join("");
           $("#lessonRouteFeedback").textContent = "Bé hãy chọn phương án mình nghĩ là phù hợp.";
           $("#lessonChoices").querySelectorAll("[data-choice]").forEach((button) => button.addEventListener("click", () => {
             if (button.disabled) return;
+            stopLessonRecognition();
             const choice = Number(button.dataset.choice);
             const correct = choice === question.correct;
-            recordLearningAttempt(lesson, choice, questionIndex, question.correct);
+            if (state.authenticated) recordLearningAttempt(lesson, choice, questionIndex, question.correct);
             const choices = [...$("#lessonChoices").querySelectorAll("[data-choice]")];
             choices.forEach((option) => { option.disabled = true; });
             const selectedAnswer = question.answers[choice];
-            animateSceneChoice("lessonScene", "heroActor", "friendActor", "sceneProp", selectedAnswer, lesson, correct);
-            speak(correct
-              ? `Tuyệt vời! Con đã chọn cách phù hợp: ${question.answers[question.correct]}. ${lesson.prompts[2] || lesson.goal}`
-              : `Không sao, con hãy thử lại nhé. Cách "${selectedAnswer}" chưa phù hợp vì ${lesson.prompts[1] || lesson.goal} Con có thể chọn một cách khác an toàn hơn.`);
+            const selectedAnswerText = translateString(selectedAnswer);
+            animateSceneChoice("lessonScene", "lessonProtagonist", "lessonPartner", "sceneProp", selectedAnswer, lesson, correct);
+            speak(state.language === "en"
+              ? correct
+                ? `Great job! You chose a safe and helpful response: ${selectedAnswerText}.`
+                : `Not quite. Let's try again. "${selectedAnswerText}" may not be the safest choice. Choose another option.`
+              : correct
+                ? `Tuyệt vời! Con đã chọn cách phù hợp: ${selectedAnswer}. ${lesson.prompts[2] || lesson.goal}`
+                : `Không sao, con hãy thử lại nhé. Cách "${selectedAnswer}" chưa phù hợp vì ${lesson.prompts[1] || lesson.goal} Con có thể chọn một cách khác an toàn hơn.`);
             window.setTimeout(() => {
               if (!button.isConnected) return;
               if (!correct) {
                 button.classList.add("incorrect");
-                state.lessonMistakes = state.lessonMistakes || {};
-                state.lessonMistakes[lesson.id] = (state.lessonMistakes[lesson.id] || 0) + 1;
-                persist();
-                $("#lessonRouteFeedback").textContent = `Chưa phù hợp, mình thử lại nhé. ${lesson.prompts[1] || "Bé hãy suy nghĩ lại và thử một lựa chọn khác nhé."}`;
+                if (state.authenticated) {
+                  state.lessonMistakes = state.lessonMistakes || {};
+                  state.lessonMistakes[lesson.id] = (state.lessonMistakes[lesson.id] || 0) + 1;
+                  persist();
+                }
+                $("#lessonRouteFeedback").textContent = state.language === "en"
+                  ? "Not quite. Think about what would keep everyone safe, then try another answer."
+                  : `Chưa phù hợp, mình thử lại nhé. ${lesson.prompts[1] || "Bé hãy suy nghĩ lại và thử một lựa chọn khác nhé."}`;
                 choices.forEach((option) => { option.disabled = false; });
                 return;
               }
               button.classList.add("correct");
-              state.xp += 3;
+              if (state.authenticated) state.xp += 3;
               $("#lessonChoices").querySelectorAll("[data-choice]").forEach((option) => { option.disabled = true; });
               if (questionIndex < questions.length - 1) {
-                $("#lessonRouteFeedback").textContent = `Đúng rồi! ${lesson.prompts[2] || "Con đã chọn cách phù hợp."} +3 sao 🌟`;
+                $("#lessonRouteFeedback").textContent = state.language === "en"
+                  ? state.authenticated
+                    ? "That's right! You chose a helpful and safe response. +3 stars 🌟"
+                    : "That's right! Sign in to save your learning progress and stars."
+                  : state.authenticated
+                    ? `Đúng rồi! ${lesson.prompts[2] || "Con đã chọn cách phù hợp."} +3 sao 🌟`
+                    : `Đúng rồi! ${lesson.prompts[2] || "Con đã chọn cách phù hợp."} Đăng nhập để lưu tiến độ nhé.`;
                 const nextQuestion = document.createElement("button");
                 nextQuestion.className = "btn btn-mint btn-small";
                 nextQuestion.id = "nextQuestion";
@@ -1183,7 +2063,11 @@
                   nextQuestion.remove();
                 });
                 $("#lessonChoices").insertAdjacentElement("afterend", nextQuestion);
-                persist();
+                if (state.authenticated) persist();
+                return;
+              }
+              if (!state.authenticated) {
+                $("#lessonRouteFeedback").textContent = "Đúng rồi! Đăng nhập để lưu tiến độ học và nhận sao nhé.";
                 return;
               }
               const firstCompletion = !state.completed.includes(lesson.id);
@@ -1210,129 +2094,134 @@
               continueButton.textContent = nextLesson ? "Chọn bài học tiếp theo →" : "Xem kho bài học →";
               continueButton.addEventListener("click", () => setRoute(nextLesson ? `lessons/${nextLesson.category}` : "lessons"));
               $("#lessonChoices").insertAdjacentElement("afterend", continueButton);
-              const recommendation = document.createElement("section");
-              recommendation.className = "lesson-story-recommendation";
-              recommendation.innerHTML = `<div><span class="kicker">HERO GỢI Ý</span><strong>Con có muốn đọc truyện liên quan để hiểu bài học hơn không?</strong></div><div class="page-actions"><button class="btn btn-mint btn-small" type="button" data-route="storybook/${lesson.id}">📖 Có, đọc truyện nhé</button><button class="btn btn-light btn-small" type="button" data-dismiss-recommendation>Để sau</button></div>`;
-              $("#lessonChoices").insertAdjacentElement("afterend", recommendation);
-              recommendation.querySelector("[data-dismiss-recommendation]").addEventListener("click", () => recommendation.remove());
             }, 620);
           }));
+          const spokenOptionLabel = state.language === "en" ? "Option" : "Phương án";
+          speak(`${translateString(question.story)} ${translateString(question.prompt)} ${question.answers.map((answer, index) => `${spokenOptionLabel} ${index + 1}: ${translateString(answer)}`).join(". ")} ${state.language === "en" ? "You can answer by voice or choose an option below." : "Bé có thể trả lời bằng giọng nói hoặc chọn một phương án bên dưới."}`, () => {
+            if (voiceStatus.isConnected && !activeLessonRecognition) voiceStatus.textContent = "Đến lượt bé trả lời nhé. Bé có thể nói hoặc chọn một phương án.";
+          });
         };
         renderQuestion();
         $("#lessonSpeak").addEventListener("click", () => {
           const question = questions[questionIndex];
-          speak(`${question.story} ${question.prompt} ${question.answers.map((answer, index) => `Phương án ${index + 1}: ${answer}`).join(". ")}`);
+          const spokenOptionLabel = state.language === "en" ? "Option" : "Phương án";
+          speak(`${translateString(question.story)} ${translateString(question.prompt)} ${question.answers.map((answer, index) => `${spokenOptionLabel} ${index + 1}: ${translateString(answer)}`).join(". ")}`);
+        });
+        $("#lessonStopSpeech").addEventListener("click", stopSpeech);
+        voiceButton.addEventListener("click", () => {
+          if (!SpeechRecognition) {
+            voiceStatus.textContent = "Trình duyệt này chưa hỗ trợ nhận diện giọng nói. Bé có thể chọn một phương án bên dưới nhé.";
+            return;
+          }
+          if (activeLessonRecognition) {
+            voiceStatus.textContent = "Đang dừng micro và xử lý câu trả lời…";
+            activeLessonRecognition.stop();
+            return;
+          }
+
+          const recognition = new SpeechRecognition();
+          let handledResult = false;
+          let transcript = "";
+          let speechCandidates = [];
+          let receivedSpeech = false;
+          let recognitionFailed = false;
+          recognition.lang = state.language === "en" ? "en-US" : "vi-VN";
+          recognition.continuous = false;
+          recognition.interimResults = true;
+          recognition.maxAlternatives = 3;
+          recognition.onstart = () => {
+            setLessonVoiceListening(true);
+            voiceStatus.textContent = "Đang nghe… khi bé ngừng nói, Hero sẽ tự xử lý câu trả lời.";
+            voiceNoSpeechTimer = window.setTimeout(() => {
+              if (activeLessonRecognition !== recognition || receivedSpeech) return;
+              voiceStatus.textContent = "Hết thời gian chờ. Hero đang dừng micro…";
+              recognition.stop();
+            }, 20000);
+            voiceMaxDurationTimer = window.setTimeout(() => {
+              if (activeLessonRecognition !== recognition) return;
+              voiceStatus.textContent = "Đã nghe đủ lâu. Hero đang xử lý phần bé vừa nói…";
+              recognition.stop();
+            }, 45000);
+          };
+          recognition.onresult = (event) => {
+            if (handledResult || activeLessonRecognition !== recognition) return;
+            const results = Array.from(event.results);
+            transcript = results
+              .map((result) => result[0]?.transcript?.trim() || "")
+              .filter(Boolean)
+              .join(" ");
+            if (!transcript) return;
+            speechCandidates = results.flatMap((result) => Array.from(result)
+              .map((alternative) => alternative.transcript?.trim() || ""))
+              .filter(Boolean);
+            receivedSpeech = true;
+            window.clearTimeout(voiceNoSpeechTimer);
+            window.clearTimeout(voiceSilenceTimer);
+            voiceStatus.textContent = `Đang nhận diện: “${transcript}”`;
+            const hasFinalResult = Array.from(event.results).some((result) => result.isFinal);
+            if (!hasFinalResult) return;
+            voiceSilenceTimer = window.setTimeout(() => {
+              if (activeLessonRecognition !== recognition) return;
+              voiceStatus.textContent = "Bé vừa ngừng nói. Hero đang xử lý câu trả lời…";
+              recognition.stop();
+            }, 2200);
+          };
+          recognition.onerror = (event) => {
+            if (event.error === "aborted") return;
+            recognitionFailed = true;
+            clearLessonVoiceTimers();
+            const messages = {
+              "no-speech": "Hero chưa nghe thấy tiếng nói. Bé thử lại ở nơi yên tĩnh hơn nhé.",
+              "not-allowed": "Micro chưa được cấp quyền. Hãy bật quyền micro trong trình duyệt rồi thử lại nhé.",
+              "service-not-allowed": "Micro chưa được cấp quyền. Hãy bật quyền micro trong trình duyệt rồi thử lại nhé.",
+              "audio-capture": "Hero chưa tìm thấy micro. Bé có thể chọn một phương án bên dưới nhé.",
+              network: "Trình duyệt bị mất kết nối với dịch vụ nhận diện giọng nói. Hãy kiểm tra kết nối mạng rồi thử lại, hoặc chọn một phương án nhé."
+            };
+            const message = messages[event.error] || "Hero chưa nhận diện được giọng nói. Bé hãy thử lại nhé.";
+            voiceStatus.textContent = message;
+            if (event.error === "no-speech") speak(message);
+          };
+          recognition.onend = () => {
+            const wasActive = activeLessonRecognition === recognition;
+            if (wasActive) activeLessonRecognition = null;
+            clearLessonVoiceTimers();
+            setLessonVoiceListening(false);
+            if (!wasActive || handledResult || recognitionFailed) return;
+            if (transcript) {
+              handledResult = true;
+              const answerOptions = questions[questionIndex].answers.map(translateString);
+              const matchedAnswer = [transcript, ...speechCandidates]
+                .filter((candidate, index, candidates) => candidate && candidates.indexOf(candidate) === index)
+                .map((candidate) => ({ transcript: candidate, answerIndex: matchSpokenAnswer(candidate, answerOptions) }))
+                .find((candidate) => candidate.answerIndex !== null);
+              if (!matchedAnswer) {
+                voiceStatus.textContent = `Hero nghe bé nói: “${transcript}”. Bé có thể trả lời về tình huống này hoặc chọn một phương án bên dưới nhé.`;
+                speak("Không sao, Hero chưa hiểu rõ câu trả lời. Bé có thể nói ngắn gọn điều con nghĩ về tình huống này, hoặc chọn một phương án bên dưới nhé.");
+                return;
+              }
+              voiceStatus.textContent = `Hero nghe bé nói: “${matchedAnswer.transcript}”. Đang kiểm tra câu trả lời…`;
+              $("#lessonChoices").querySelector(`[data-choice="${matchedAnswer.answerIndex}"]`)?.click();
+              return;
+            }
+            voiceStatus.textContent = "Hero chưa nghe thấy tiếng nói. Bé thử lại ở nơi yên tĩnh hơn nhé.";
+            speak(voiceStatus.textContent);
+          };
+          activeLessonRecognition = recognition;
+          try {
+            if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+            recognition.start();
+          } catch (error) {
+            activeLessonRecognition = null;
+            clearLessonVoiceTimers();
+            setLessonVoiceListening(false);
+            voiceStatus.textContent = "Không thể bật micro lúc này. Bé thử lại hoặc chọn một phương án nhé.";
+            console.warn("Không thể bắt đầu nhận diện giọng nói cho bài học.", error);
+          }
         });
       };
 
-      const renderStoriesPage = () => {
-        const storyImages = {
-          emotion: ["photo-1503454537195-1dcabb73ffb9", "Bạn nhỏ đang vui chơi"],
-          social: ["photo-1516627145497-ae6968895b74", "Các bạn nhỏ vui chơi cùng nhau"],
-          safety: ["photo-1511497584788-876760111969", "Con đường trong khu rừng xanh"],
-          health: ["photo-1584820927498-cfe5211fd8bf", "Rửa tay sạch với xà phòng"],
-          thinking: ["photo-1503676260728-1c00da094a0b", "Bé học tập và suy nghĩ"],
-          care: ["photo-1476231682828-37e571bc172f", "Khu rừng xanh cần được chăm sóc"],
-          creative: ["photo-1470770841072-f978cf4d019e", "Phong cảnh thiên nhiên để khám phá"],
-          community: ["photo-1511895426328-dc8714191300", "Gia đình cùng nhau khám phá"]
-        };
-        const storyImageUrl = (categoryId) => {
-          const [photo, alt] = storyImages[categoryId] || storyImages.creative;
-          return { src: `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=1100&q=85`, alt };
-        };
-        const stories = ageAppropriateLessons().map((lesson) => {
-          const category = categories.find((item) => item.id === lesson.category);
-          const image = storyImageUrl(lesson.category);
-          return `<article class="storybook-card">
-            <div class="storybook-cover" style="--book-bg:${category.color}"><img src="${image.src}" alt="${escapeHtml(image.alt)}" loading="lazy"><span class="storybook-cover-icon" aria-hidden="true">${lesson.icon}</span><span class="story-label">TRUYỆN TRANH · ${escapeHtml(lesson.duration)}</span></div>
-            <div class="storybook-card-copy"><span class="kicker">${category.icon} ${escapeHtml(category.name)}</span><h2>${escapeHtml(lesson.title)}</h2><p>${escapeHtml(lesson.story)}</p>
-              <button class="btn btn-mint btn-small" data-route="storybook/${lesson.id}">📖 Mở sách truyện</button></div></article>`;
-        }).join("");
-        $("#routeView").innerHTML = pageShell("stories", "Mỗi câu chuyện ngắn được chia thành từng trang. Cùng bé lật sách, quan sát và sau đó thử tình huống tương tác.", `<div class="storybook-grid">${stories}</div>`, "GÓC TRUYỆN");
-      };
-
-      const storybookPages = new Map();
-      const storybookTurnDirections = new Map();
-      const renderStorybookPage = (lessonId) => {
-        const sourceLesson = lessonById(lessonId);
-        if (!sourceLesson || !ageCategories[currentAgeGroup()].includes(sourceLesson.category)) {
-          $("#routeView").innerHTML = pageShell("stories", "Không tìm thấy câu chuyện này.", routeLink("stories", "← Về thư viện truyện"));
-          return;
-        }
-        const lesson = { ...sourceLesson, age: currentAgeLabel() };
-        const category = categories.find((item) => item.id === lesson.category);
-        const imageIds = {
-          emotion: "photo-1503454537195-1dcabb73ffb9",
-          social: "photo-1516627145497-ae6968895b74",
-          safety: "photo-1511497584788-876760111969",
-          health: "photo-1584820927498-cfe5211fd8bf",
-          thinking: "photo-1503676260728-1c00da094a0b",
-          care: "photo-1476231682828-37e571bc172f",
-          creative: "photo-1470770841072-f978cf4d019e",
-          community: "photo-1511895426328-dc8714191300"
-        };
-        const pageImage = `https://images.unsplash.com/${imageIds[lesson.category] || imageIds.creative}?auto=format&fit=crop&w=1200&q=85`;
-        const pages = [
-          { kicker: "BÌA TRUYỆN", title: lesson.title, text: lesson.goal, icon: lesson.icon },
-          { kicker: "TRANG 1 · MỘT CHUYỆN NHỎ", title: "Chuyện bắt đầu", text: lesson.story, icon: lesson.icon },
-          { kicker: "TRANG 2 · LẮNG NGHE", title: "Nhân vật đang nghĩ gì?", text: `${lesson.prompts[0]} ${lesson.prompts[1]}`, icon: "💭" },
-          { kicker: "TRANG 3 · CÙNG NGHĨ", title: "Mình có thể làm gì?", text: `${lesson.prompts[2]} ${lesson.prompts[3] || ""}`.trim(), icon: "✨" }
-        ];
-        const pageIndex = Math.max(0, Math.min(pages.length - 1, storybookPages.get(lessonId) || 0));
-        storybookPages.set(lessonId, pageIndex);
-        const page = pages[pageIndex];
-        $("#routeView").innerHTML = pageShell("storybook", `Truyện ${escapeHtml(category.name)} · ${escapeHtml(lesson.duration)} · Dùng nút hoặc phím mũi tên để lật trang.`, `
-          <div class="storybook" id="storybook" tabindex="0" aria-label="Sách truyện ${escapeHtml(lesson.title)}">
-            <div class="storybook-spread${storybookTurnDirections.has(lessonId) ? ` turn-${storybookTurnDirections.get(lessonId)}` : ""}" id="storybookSpread" aria-live="polite">
-              <div class="storybook-picture" style="--book-bg:${category.color}">
-                <img src="${pageImage}" alt="Minh họa truyện ${escapeHtml(lesson.title)}" loading="lazy">
-                <span class="storybook-picture-icon" aria-hidden="true">${page.icon}</span>
-              </div>
-              <article class="storybook-page-copy">
-                <span class="kicker">${page.kicker}</span><h2>${escapeHtml(page.title)}</h2><p>${escapeHtml(page.text)}</p>
-                <span class="storybook-page-number">LITTLE HERO · ${String(pageIndex + 1).padStart(2, "0")} / ${String(pages.length).padStart(2, "0")}</span>
-              </article>
-            </div>
-            <div class="storybook-controls">
-              <button class="btn btn-light btn-small" type="button" data-story-page="-1" ${pageIndex === 0 ? "disabled" : ""}>← Trang trước</button>
-              <span class="storybook-counter">Trang ${pageIndex + 1} / ${pages.length}</span>
-              ${pageIndex < pages.length - 1
-                ? `<button class="btn btn-mint btn-small" type="button" data-story-page="1">Lật trang →</button>`
-                : `<button class="btn btn-mint btn-small" type="button" data-route="lesson/${lesson.id}">Cùng Hero vào truyện →</button>`}
-            </div>
-          </div>
-          <div class="page-actions">${routeLink("stories", "← Về thư viện truyện")}</div>`, "SÁCH TRUYỆN");
-        const book = $("#storybook");
-        const turnStoryPage = (direction) => {
-          const nextPage = Math.max(0, Math.min(pages.length - 1, pageIndex + direction));
-          if (nextPage === pageIndex) return;
-          storybookTurnDirections.set(lessonId, direction > 0 ? "next" : "previous");
-          storybookPages.set(lessonId, nextPage);
-          renderStorybookPage(lessonId);
-          $("#storybook").focus();
-        };
-        book.addEventListener("click", (event) => {
-          const turn = event.target.closest("[data-story-page]");
-          if (!turn || turn.disabled) return;
-          turnStoryPage(Number(turn.dataset.storyPage));
-        });
-        let swipeStartX = null;
-        book.addEventListener("pointerdown", (event) => {
-          if (event.target.closest("button, a")) return;
-          swipeStartX = event.clientX;
-        });
-        book.addEventListener("pointerup", (event) => {
-          if (swipeStartX === null) return;
-          const swipeDistance = event.clientX - swipeStartX;
-          swipeStartX = null;
-          if (Math.abs(swipeDistance) >= 55) turnStoryPage(swipeDistance < 0 ? 1 : -1);
-        });
-        book.addEventListener("pointercancel", () => { swipeStartX = null; });
-        book.addEventListener("keydown", (event) => {
-          if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-          event.preventDefault();
-          turnStoryPage(event.key === "ArrowRight" ? 1 : -1);
-        });
+      const renderStoriesPage = (page = "stories") => {
+        $("#routeView").innerHTML = pageShell(page, "", storyComingSoonNotice, "GÓC TRUYỆN");
       };
 
       const miniGames = {
@@ -1736,7 +2625,7 @@
 
       const renderFaqPage = () => {
         const questions = [
-          ["Little Hero phù hợp với độ tuổi nào?", "Nội dung hướng đến trẻ 4–8 tuổi. Phụ huynh nên đồng hành và điều chỉnh hoạt động theo khả năng của mỗi bé."],
+          ["Little Hero phù hợp với độ tuổi nào?", "Nội dung hướng đến trẻ 3–10 tuổi. Phụ huynh nên đồng hành và điều chỉnh hoạt động theo khả năng của mỗi bé."],
           ["Làm sao để lưu tiến độ?", "Tiến độ học được lưu trong trình duyệt trên thiết bị hiện tại; tài khoản đăng nhập lưu ở máy chủ nhưng tiến độ chưa đồng bộ giữa các thiết bị."],
             ["Làm sao để khôi phục mật khẩu?", "Tại trang đăng nhập, chọn “Quên mật khẩu?” rồi nhận mã xác minh qua email hoặc số điện thoại đã đăng ký. Máy chủ cần được cấu hình dịch vụ gửi email hoặc SMS."],
           ["Các tình huống có thay thế tư vấn chuyên gia không?", "Không. Nội dung là gợi ý giáo dục tổng quát, không thay thế tư vấn của chuyên gia giáo dục, tâm lý hoặc y tế."],
@@ -1750,26 +2639,28 @@
       const renderReviewsPage = () => {
         const saved = state.reviews || [];
         const average = saved.length ? saved.reduce((sum, review) => sum + Number(review.stars || 0), 0) / saved.length : 0;
+        const displayedReviews = [...saved.slice().reverse(), ...(!saved.length ? sampleReviews : [])];
         const ratingBreakdown = [5,4,3,2,1].map((stars) => {
           const count = saved.filter((review) => Number(review.stars) === stars).length;
           const width = saved.length ? Math.round(count / saved.length * 100) : 0;
           return `<div class="rating-bar"><span>${stars} ★</span><span class="rating-bar-track"><i style="width:${width}%"></i></span><span>${count}</span></div>`;
         }).join("");
-        const reviews = saved.slice().reverse().map((review, index) => {
+        const reviews = displayedReviews.map((review, index) => {
           const reviewId = review.id || `review-${index}`;
           return `<article class="store-review ${review.isSample ? "is-sample" : ""}">
             <span class="review-stars" aria-label="${Number(review.stars)} trên 5 sao">${"★".repeat(Number(review.stars) || 0)}${"☆".repeat(5 - (Number(review.stars) || 0))}</span>
             <h3>${escapeHtml(review.title || "Đánh giá Little Hero")}</h3>
             <p>${escapeHtml(review.body)}</p>
             <small>${escapeHtml(review.author)}</small>
-            <div class="page-actions"><button class="btn btn-light btn-small" type="button" data-review-helpful="${escapeHtml(reviewId)}">👍 Hữu ích (${Number(review.helpful) || 0})</button></div>
+            ${review.isSample ? '<small class="sample-review-note">Nội dung minh họa, không phải đánh giá đã xác minh.</small>' : ""}
+            ${review.isSample ? "" : `<div class="page-actions"><button class="btn btn-light btn-small" type="button" data-review-helpful="${escapeHtml(reviewId)}">👍 Hữu ích (${Number(review.helpful) || 0})</button></div>`}
           </article>`;
         }).join("");
         $("#routeView").innerHTML = pageShell("reviews", "Chia sẻ trải nghiệm thực tế của gia đình với Little Hero.", `
           <div class="social-column">
             <section class="store-rating" aria-label="Tổng quan đánh giá">
               <div class="store-rating-score"><strong>${saved.length ? average.toFixed(1) : "—"}</strong><span>${saved.length ? `${saved.length} phản hồi từ gia đình` : "Chưa có phản hồi"}</span><div class="review-stars">${saved.length ? "★".repeat(Math.round(average)) + "☆".repeat(5 - Math.round(average)) : "☆☆☆☆☆"}</div></div>
-              <div>${ratingBreakdown}${saved.length ? "" : '<p class="note" style="margin:8px 0 0">Phản hồi sẽ xuất hiện tại đây sau khi được gửi.</p>'}</div>
+              <div>${ratingBreakdown}${saved.length ? "" : '<p class="note" style="margin:8px 0 0">Chưa có đánh giá xác thực; các nội dung bên dưới được ghi nhãn là minh họa.</p>'}</div>
             </section>
             <div class="social-layout">
               <div class="social-column">
@@ -1812,102 +2703,74 @@
         }));
       };
 
-      const renderWardrobePage = () => {
-        state.closet = { ...freshState().closet, ...(state.closet || {}) };
-        const closet = state.closet;
-        const choices = (name, title, options) => `<div class="wardrobe-field"><strong>${title}</strong><div class="avatar-picks">${options.map(([id, label, value]) => `<button type="button" class="pick-card" data-wardrobe="${name}" data-value="${value}" aria-pressed="${closet[name] === value}"><span class="pick-icon">${label}</span><span>${id}</span></button>`).join("")}</div></div>`;
-        $("#routeView").innerHTML = pageShell("wardrobe", "Phối tóc, áo, quần, giày và chọn nhân vật. Lựa chọn lưu trên thiết bị này.", `
-          <div class="wardrobe-grid"><div class="wardrobe-preview">
-            <div class="avatar-stage" style="--hero-shirt:${closet.shirt};--hero-pants:${closet.pants};--hero-shoes:${closet.shoes};--hero-cape:${closet.accessory === "cape" ? closet.shirt : "#f49a69"}" data-gender="${closet.gender}" aria-label="Nhân vật Hero có thể tùy chỉnh">
-              ${renderHeroCharacterSvg(closet, { ariaLabel: closet.gender === "boy" ? "Hero Bin" : "Hero Mia" })}
-            </div>
-            <p>${closet.gender === "boy" ? "Hero Bin" : "Hero Mia"} · Bộ đồ anh hùng</p></div>
-          <div class="wardrobe-controls">
-            ${choices("gender", "Giới tính nhân vật", [["Nam","👦🏻","boy"],["Nữ","👧🏻","girl"]])}
-            ${choices("outfit", "Phong cách trang phục nguyên bản", [["Áo choàng Hero","🦸","hero"],["Ninja cam phiêu lưu","🥷","anime-orange"],["Ninja xanh đêm","🌙","anime-navy"],["Học viện hoa anh đào","🌸","anime-rose"],["Áo choàng bóng đêm","🕶️","anime-shadow"],["Bạn robot xanh","🤖","robot-blue"],["Nhà du hành","🚀","space"],["Cổ tích lấp lánh","🧚","fairy"],["Khủng long vui nhộn","🦖","dino"],["Nhà thám hiểm cổ điển","⭐","classic"]])}
-            ${choices("hair", "Kiểu tóc", [["Ngắn","✂️","short"],["Xoăn","〰️","curly"],["Dài","💇🏻","long"],["Buộc đuôi ngựa","🎀","ponytail"],["Tết hai bên","🌼","braids"]])}
-            ${choices("hairColor", "Màu tóc", [["Nâu","🤎","#624337"],["Đen","⚫","#302820"],["Hung","🟠","#b76532"],["Vàng mật ong","🟡","#d7a33e"],["Tím","🟣","#7257a5"]])}
-            ${choices("shirt", "Màu áo", [["Xanh mint","🟢","#53b99d"],["Cam nắng","🟠","#f48665"],["Tím sao","🟣","#8d82d4"],["Xanh biển","🔵","#568fc7"],["Hồng","🩷","#e96fa2"],["Vàng","🟡","#f1c34e"]])}
-            ${choices("pants", "Màu quần / váy", [["Xanh đậm","🔹","#5e7296"],["Tím","🟣","#8d82d4"],["Xanh lá","🟢","#578f72"],["Hồng","🩷","#e96fa2"]])}
-            ${choices("shoes", "Màu giày", [["Vàng","🟡","#f3a552"],["Cam","🟠","#e98257"],["Xanh","🔵","#568fc7"],["Hồng","🩷","#e96fa2"]])}
-            ${choices("accessory", "Phụ kiện", [["Ngôi sao","⭐","star"],["Áo choàng","🦸","cape"],["Kính","👓","glasses"],["Không dùng","○","none"]])}
-          </div></div>`, "CÁ NHÂN HÓA NHÂN VẬT");
-        $("#routeView").querySelectorAll("[data-wardrobe]").forEach((button) => button.addEventListener("click", () => {
-          const field = button.dataset.wardrobe;
-          state.closet[field] = button.dataset.value;
-          if (field === "outfit") {
-            const presets = {
-              classic: ["#53b99d", "#536f92", "#e98257", "cape"],
-              hero: ["#398bc8", "#345f7b", "#de6549", "cape"],
-              "anime-orange": ["#e87836", "#354d62", "#d85e42", "cape"],
-              "anime-navy": ["#3d536f", "#30384a", "#5a6676", "cape"],
-              "anime-rose": ["#c77ba4", "#425c71", "#c56978", "cape"],
-              "anime-shadow": ["#594b60", "#343344", "#53464a", "cape"],
-              "robot-blue": ["#4ba6c5", "#386b83", "#448eaa", "none"],
-              space: ["#568fc7", "#465d7b", "#568fc7", "glasses"],
-              fairy: ["#d37eb1", "#806bb1", "#f3a552", "cape"],
-              dino: ["#619b64", "#526b72", "#e98257", "cape"]
-            }[button.dataset.value];
-            [state.closet.shirt, state.closet.pants, state.closet.shoes, state.closet.accessory] = presets;
-          }
-          persist(); renderWardrobePage();
-        }));
-      };
-
       const renderLanguagePage = () => {
         $("#routeView").innerHTML = pageShell("language", "Chọn ngôn ngữ giao diện. Nội dung bài học hiện có bằng tiếng Việt.", `
           <div class="score-card"><h3 style="font-size:15px">Ngôn ngữ giao diện</h3><div class="language-options">
             <button class="pick-card" data-language="vi" aria-pressed="${state.language === "vi"}"><span class="pick-icon">🇻🇳</span><strong>Tiếng Việt</strong><span class="note">Nội dung bài học</span></button>
-            <button class="pick-card" data-language="en" aria-pressed="${state.language === "en"}"><span class="pick-icon">🇬🇧</span><strong>English</strong><span class="note">Menu and page labels</span></button>
-          </div><p class="note" style="margin-top:12px">Lựa chọn tiếng Anh dịch các nhãn điều hướng và tên trang; truyện và bài học vẫn bằng tiếng Việt.</p></div>`, "TÙY CHỌN NGÔN NGỮ");
+            <button class="pick-card" data-language="en" aria-pressed="${state.language === "en"}"><span class="pick-icon">🇬🇧</span><strong>English</strong><span class="note">AI replies and voice input/output</span></button>
+          </div><p class="note" style="margin-top:12px">Hero sẽ trả lời và nhận diện giọng nói theo ngôn ngữ đã chọn. Một số nội dung bài học hiện chỉ có tiếng Việt.</p></div>`, "TÙY CHỌN NGÔN NGỮ");
         $("#routeView").querySelectorAll("[data-language]").forEach((button) => button.addEventListener("click", () => {
-          state.language = button.dataset.language;
+          state.language = button.dataset.language === "en" ? "en" : "vi";
+          document.documentElement.lang = state.language;
+          translateElement(document.body);
           persist(); setRoute(route, { restore: true, pop: true });
         }));
       };
 
       const renderArenaPage = () => {
         const ageGroup = currentAgeGroup();
-        const contestantsByMode = {
-          duel: [{ name: "Minh Khang", level: "Lv 2 · 1v1" }, { name: "Bảo An", level: "Lv 1 · 1v1" }, { name: "Gia Hân", level: "Lv 3 · 1v1" }],
-          region: [{ name: "Khánh Linh", level: "Đà Nẵng · Lv 2" }, { name: "Quang Huy", level: "Quảng Nam · Lv 1" }, { name: "An Nhiên", level: "Huế · Lv 3" }],
-          city: [{ name: "Gia Hân", level: "Đà Nẵng · Lv 3" }, { name: "Bảo An", level: "Đà Nẵng · Lv 2" }, { name: "Khánh Linh", level: "Đà Nẵng · Lv 2" }],
-          nation: [{ name: "Minh Khang", level: "Miền Bắc · Lv 2" }, { name: "Gia Hân", level: "Miền Trung · Lv 3" }, { name: "Bảo An", level: "Miền Nam · Lv 1" }],
-        };
-        const youngerOpponentNames = {
-          duel: ["Bé Mây", "Bé Sóc", "Bé Na"], region: ["Bé Cún", "Bé Thỏ", "Bé Bông"],
-          city: ["Bé Gấu", "Bé Mít", "Bé Nấm"], nation: ["Bé Cáo", "Bé Kem", "Bé Mơ"]
-        };
-        const contestants = Object.fromEntries(Object.entries(contestantsByMode).map(([mode, players]) => [
-          mode,
-          players.map((player, index) => ({
-            ...player,
-            name: ageGroup === "3-6" ? youngerOpponentNames[mode][index] : player.name,
-            level: `Nhóm ${ageGroup.replace("-", "–")} tuổi · ${player.level}`
-          }))
-        ]));
-        const modes = [["duel", "Đấu 1v1"], ["region", "Khu vực"], ["city", "Thành phố"], ["nation", "Toàn quốc"]];
+        const provinces = window.LittleHeroLocations.provinces;
+        const modes = [["duel", "Cùng nhóm tuổi"], ["region", "Miền"], ["city", "Tỉnh/thành"], ["nation", "Toàn quốc"]];
+        const provinceOptions = provinces.map(({ name }) =>
+          `<option value="${escapeHtml(name)}" ${state.leaderboardProvince === name ? "selected" : ""}>${escapeHtml(name)}</option>`
+        ).join("");
         $("#routeView").innerHTML = pageShell("arena", `Đấu trường nhóm ${ageGroup.replace("-", "–")} tuổi · nội dung và câu hỏi được chọn theo độ tuổi của bé.`, `
           <div class="arena-grid">
             <article class="arena-card">
               <span class="kicker">HERO ARENA · NHÓM ${ageGroup.replace("-", "–")} TUỔI</span><h3>Thi đấu qua tình huống kỹ năng</h3>
-              <p>Mỗi lượt có một tình huống, hoạt cảnh nhân vật 2D và một lần chọn đáp án. Chọn sai thì câu đấu sẽ khóa.</p>
+              <p>Mỗi lượt là một tình huống kỹ năng cùng Hero. Điểm RP được xếp hạng theo nhóm tuổi, tỉnh/thành, miền hoặc toàn quốc.</p>
+              <div class="rank-big"><strong>${Number(state.rp).toLocaleString("vi-VN")}</strong><span>RP của bé</span></div>
               <div class="arena-tabs" id="arenaPageTabs">${modes.map(([id, label]) => `<button class="arena-tab ${arenaMode === id ? "active" : ""}" data-mode="${id}" aria-pressed="${arenaMode === id}">${label}</button>`).join("")}</div>
-              <h4 style="margin:16px 0 5px;font-size:12px">Các bạn cùng thử thách</h4>
-              <div class="arena-opponents" id="arenaOpponents"></div>
-              <div class="arena-search" id="arenaSearchStatus" aria-live="polite"><p class="note">Chọn một phạm vi rồi bắt đầu thử thách cùng Hero.</p></div>
+              <div class="arena-search" id="arenaSearchStatus" aria-live="polite"><p class="note">Sẵn sàng luyện tập? Mỗi câu đúng giúp bé tích lũy RP.</p></div>
               <button class="btn btn-mint" id="arenaFindOpponent">🔎 Bắt đầu thử thách</button>
             </article>
-            <article class="leader-card"><div class="leader-title"><h3>🏆 Bảng vinh danh</h3><span id="leaderScope">Bạn nhỏ · tuần này</span></div><div id="leaderboard"></div><div class="leader-you" id="leaderYou"></div></article>
+            <article class="leader-card">
+              <div class="leader-title"><h3>🏆 Bảng vinh danh</h3><span id="leaderScope"></span></div>
+              <div class="leader-controls">
+                ${leaderboardLocationControl("arenaLeaderboardProvince")}
+                <form id="leaderboardPreferencesForm" class="leaderboard-preferences">
+                  ${state.authenticated && !state.demoAccount ? `
+                    <label>Biệt danh hiển thị
+                      <input name="displayName" maxlength="24" value="${escapeHtml(state.leaderboardName || "")}" placeholder="Ví dụ: Bé Mây" ${state.leaderboardOptIn ? "required" : ""}>
+                    </label>
+                    <label>Tỉnh/thành
+                      <select name="province" required><option value="">Chọn tỉnh/thành</option>${provinceOptions}</select>
+                    </label>
+                    <label class="leaderboard-consent"><input type="checkbox" name="optIn" ${state.leaderboardOptIn ? "checked" : ""}>
+                      <span>Phụ huynh đồng ý công khai biệt danh và điểm RP trong bảng xếp hạng.</span>
+                    </label>
+                    <button class="btn btn-primary btn-small" type="submit">Lưu lựa chọn</button>
+                  ` : `<p class="note">Bảng xếp hạng có thể xem công khai. Đăng nhập hoặc đăng ký để chọn biệt danh và tham gia.</p><a class="btn btn-primary btn-small" href="#/auth" data-route="auth">Đăng nhập / đăng ký</a>`}
+                </form>
+              </div>
+              <p class="leaderboard-status" id="leaderboardStatus" aria-live="polite"></p>
+              <div class="leaderboard-podium" id="leaderboardPodium"></div>
+              <div id="leaderboard"></div><div class="leader-you" id="leaderYou"></div>
+            </article>
           </div>`, "THỬ THÁCH");
-        const renderOpponents = () => {
-          $("#arenaOpponents").innerHTML = contestants[arenaMode].map((player) =>
-            `<div class="opponent-card"><strong>🧒 ${player.name}</strong><small>${player.level}</small></div>`
-          ).join("");
-          $("#leaderScope", $("#routeView")).textContent = `${modes.find(([id]) => id === arenaMode)[1]} · tuần này`;
+        const setLeaderboardScope = () => {
+          $("#leaderScope", $("#routeView")).textContent = leaderboardScopeLabel(arenaMode);
+          $("#arenaLeaderboardProvinceWrap").hidden = !["region", "city"].includes(arenaMode);
+        };
+        const refreshLeaderboard = () => {
+          setLeaderboardScope();
           renderLeaderboard($("#routeView"), arenaMode);
         };
-        renderOpponents();
+        refreshLeaderboard();
+        if (arenaLeaderboardInterval) window.clearInterval(arenaLeaderboardInterval);
+        arenaLeaderboardInterval = window.setInterval(() => {
+          if (route === "arena" && document.visibilityState === "visible") refreshLeaderboard();
+        }, 10000);
         if (arenaMatchTimeout) { window.clearInterval(arenaMatchTimeout); arenaMatchTimeout = null; }
         $("#arenaPageTabs").addEventListener("click", (event) => {
           const tab = event.target.closest("[data-mode]");
@@ -1915,14 +2778,49 @@
           if (arenaMatchTimeout) { window.clearInterval(arenaMatchTimeout); arenaMatchTimeout = null; }
           arenaOpponent = null;
           $("#arenaFindOpponent").disabled = false;
-          $("#arenaSearchStatus").innerHTML = '<p class="note">Chọn một phạm vi rồi bắt đầu thử thách cùng Hero.</p>';
+          $("#arenaSearchStatus").innerHTML = '<p class="note">Sẵn sàng luyện tập? Mỗi câu đúng giúp bé tích lũy RP.</p>';
           arenaMode = tab.dataset.mode;
+          $("#arenaLeaderboardProvinceWrap").hidden = !["region", "city"].includes(arenaMode);
           $("#arenaPageTabs").querySelectorAll("[data-mode]").forEach((item) => {
             const active = item === tab;
             item.classList.toggle("active", active);
             item.setAttribute("aria-pressed", String(active));
           });
-          renderOpponents();
+          refreshLeaderboard();
+        });
+        $("#arenaLeaderboardProvince").addEventListener("change", (event) => {
+          leaderboardViewProvince = event.currentTarget.value;
+          syncLeaderboardLocationControls();
+          refreshLeaderboard();
+        });
+        const preferencesForm = $("#leaderboardPreferencesForm");
+        if (preferencesForm) preferencesForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          if (!state.authenticated || state.demoAccount || !leaderboardToken()) {
+            leaderboardStatus($("#routeView"), "Hãy đăng nhập tài khoản thật để lưu lựa chọn bảng xếp hạng.", true);
+            return;
+          }
+          const formData = new FormData(preferencesForm);
+          const optIn = formData.get("optIn") === "on";
+          const displayName = String(formData.get("displayName") || "").trim();
+          const province = String(formData.get("province") || "");
+          if (!window.LittleHeroLocations.regionByProvince[province]) {
+            preferencesForm.elements.province.focus();
+            return;
+          }
+          if (optIn && (!displayName || displayName.length > 24)) {
+            preferencesForm.elements.displayName.focus();
+            return;
+          }
+          state.leaderboardName = displayName;
+          state.leaderboardProvince = province;
+          leaderboardViewProvince = province;
+          state.leaderboardOptIn = optIn;
+          persist();
+          window.clearTimeout(leaderboardSyncTimer);
+          syncLeaderboardLocationControls();
+          setLeaderboardScope();
+          syncLeaderboardScore();
         });
         $("#arenaFindOpponent").addEventListener("click", (event) => {
           if (arenaMatchTimeout) window.clearInterval(arenaMatchTimeout);
@@ -1938,9 +2836,8 @@
             if (elapsed < 5) return;
             window.clearInterval(arenaMatchTimeout);
             arenaMatchTimeout = null;
-            const pool = contestants[arenaMode];
-            arenaOpponent = pool[Math.floor(Math.random() * pool.length)];
-            $("#arenaSearchStatus").innerHTML = `<div class="arena-result">✨ Sẵn sàng luyện tập cùng ${escapeHtml(arenaOpponent.name)} · ${escapeHtml(arenaOpponent.level)}<br><button class="btn btn-mint btn-small" id="startArenaMatch" style="margin-top:9px">Vào thử thách →</button></div>`;
+            arenaOpponent = { name: "Hero", level: "Cùng luyện tập" };
+            $("#arenaSearchStatus").innerHTML = `<div class="arena-result">✨ Tình huống đã sẵn sàng · ${modes.find(([id]) => id === arenaMode)[1]}<br><button class="btn btn-mint btn-small" id="startArenaMatch" style="margin-top:9px">Vào thử thách →</button></div>`;
             button.disabled = false;
           }, 1000);
         });
@@ -2004,56 +2901,108 @@
 
       const renderAuthPage = () => {
         $("#routeView").innerHTML = pageShell("auth", "Đăng nhập để tiếp tục hành trình; nếu chưa có tài khoản, chọn đăng ký bên dưới.", `
-          <div class="auth-layout"><article class="settings-card auth-card">
-            <section id="loginPanel">
-              <h3 style="font-size:17px">Đăng nhập Little Hero</h3>
-              <form class="simple-form" id="loginForm" autocomplete="on" novalidate>
-                <label class="form-label">Email đã đăng ký<input name="email" type="email" autocomplete="username" required maxlength="254" placeholder="ten@example.com"></label>
-                <label class="form-label">Mật khẩu<input name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="Nhập mật khẩu đã tạo"></label>
-                <button class="btn btn-mint btn-small" type="submit">Đăng nhập</button>
-              </form>
-              <p id="loginError" class="auth-form-error" role="alert" aria-live="polite" hidden></p>
-              <p><button class="auth-switch" type="button" data-auth-toggle="recover">Quên mật khẩu?</button></p>
-              <p class="note">Dùng email và mật khẩu bạn đã đăng ký. Nếu chưa có tài khoản, hãy chọn “Đăng ký” bên dưới. Không chia sẻ mật khẩu cho người khác.</p>
-              <button class="btn btn-light btn-small" id="demoAccountLogin" type="button">Vào với tài khoản trải nghiệm</button>
-              <p class="note">Tài khoản trải nghiệm lưu tiến độ riêng trên trình duyệt này.</p>
-              <p><button class="auth-switch" type="button" data-auth-toggle="register">Chưa có tài khoản? Đăng ký</button></p>
-            </section>
-            <section id="registrationPanel" hidden>
-              <h3 style="font-size:17px">Đăng ký tài khoản phụ huynh</h3>
-              <p class="note">Các trường có dấu * là bắt buộc. Mỗi email và số điện thoại chỉ dùng cho một tài khoản.</p>
-              <form class="simple-form" id="registrationForm" autocomplete="on" novalidate>
-                <label class="form-label">Họ và tên phụ huynh *<input name="fullName" autocomplete="name" required minlength="2" maxlength="80" placeholder="Ví dụ: Nguyễn Minh An"></label>
-                <label class="form-label">Email *<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="ten@example.com"></label>
-                <label class="form-label">Số điện thoại *<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="16" placeholder="+84901234567"></label>
-                <label class="form-label">Mật khẩu *<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Từ 8 đến 128 ký tự"></label>
-                <label class="form-label">Nhập lại mật khẩu *<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Nhập lại chính xác mật khẩu"></label>
-                <button class="btn btn-mint btn-small" type="submit">Đăng ký tài khoản</button>
-              </form>
-              <p id="registrationError" class="auth-form-error" role="alert" aria-live="polite" hidden></p>
-              <p class="note">Mật khẩu được xử lý ở máy chủ; Little Hero không lưu mật khẩu dưới dạng văn bản thường.</p>
-              <p><button class="auth-switch" type="button" data-auth-toggle="login">Đã có tài khoản? Đăng nhập</button></p>
-            </section>
-            <section id="recoveryPanel" hidden>
-              <h3 style="font-size:17px">Khôi phục mật khẩu</h3>
-              <p class="note">Nhận mã xác minh qua email hoặc số điện thoại đã đăng ký để đặt mật khẩu mới.</p>
-              <form class="simple-form" id="recoveryRequestForm" novalidate>
-                <label class="form-label">Nhận mã qua
-                  <select name="channel" required><option value="email">Email</option><option value="phone">Số điện thoại</option></select>
-                </label>
-                <label class="form-label">Thông tin đã đăng ký<input name="identifier" type="text" autocomplete="email" required maxlength="254" placeholder="ten@example.com"></label>
-                <button class="btn btn-mint btn-small" type="submit">Gửi mã xác minh</button>
-              </form>
-              <p id="recoveryMessage" class="auth-form-error" role="status" aria-live="polite" hidden></p>
-              <form class="simple-form" id="recoveryCompleteForm" autocomplete="off" novalidate hidden>
-                <label class="form-label">Mã xác minh<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" required maxlength="6" placeholder="Nhập mã 6 chữ số"></label>
-                <label class="form-label">Mật khẩu mới<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Từ 8 đến 128 ký tự"></label>
-                <label class="form-label">Nhập lại mật khẩu mới<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Nhập lại mật khẩu"></label>
-                <button class="btn btn-mint btn-small" type="submit">Đặt mật khẩu mới</button>
-              </form>
-              <p><button class="auth-switch" type="button" data-auth-toggle="login">Quay lại đăng nhập</button></p>
-            </section>
-          </article></div>`, "TÀI KHOẢN");
+          <main class="auth-scene">
+            <div class="auth-cloud auth-cloud-one" aria-hidden="true"></div>
+            <div class="auth-cloud auth-cloud-two" aria-hidden="true"></div>
+            <div class="auth-hills" aria-hidden="true"><span></span><span></span></div>
+            ${localFileAuthMessage ? `<aside class="auth-local-warning" role="note"><strong>Không thể xác thực khi mở tệp cục bộ</strong><span>${escapeHtml(localFileAuthMessage)}</span><a href="https://littlehero.id.vn">Mở website</a></aside>` : ""}
+            <div class="auth-card-wrap">
+              <img class="auth-logo" src="./frontend/assets/little-hero-logo.png" alt="Little Hero">
+              <article class="auth-card">
+                <section id="loginPanel" aria-labelledby="loginHeading">
+                  <h2 id="loginHeading" class="auth-heading">Chào mừng trở lại!</h2>
+                  <p class="auth-subheading">Đăng nhập để tiếp tục hành trình cùng Hero</p>
+                  <form class="auth-form" id="loginForm" autocomplete="on" novalidate>
+                    <div class="auth-field">
+                      <label class="visually-hidden" for="loginEmail">Email đã đăng ký</label>
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3.5 6.5h17v12h-17zM4 7l8 6 8-6" /></svg>
+                      <input id="loginEmail" name="email" type="email" autocomplete="username" required maxlength="254" placeholder="Email đã đăng ký">
+                    </div>
+                    <div class="auth-field">
+                      <label class="visually-hidden" for="loginPassword">Mật khẩu</label>
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+                      <input id="loginPassword" name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="Mật khẩu">
+                      <button class="auth-password-toggle" type="button" data-password-toggle="loginPassword" aria-label="Hiện mật khẩu">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg>
+                      </button>
+                    </div>
+                    <div class="auth-form-options">
+                      <label><input type="checkbox" name="rememberEmail"> <span>Ghi nhớ email</span></label>
+                      <button class="auth-text-button" type="button" data-auth-toggle="recover">Quên mật khẩu?</button>
+                    </div>
+                    <button class="auth-submit" type="submit">Đăng nhập</button>
+                  </form>
+                  <p id="loginError" class="auth-form-error" role="alert" aria-live="polite" hidden></p>
+                  <p class="auth-switch-caption">Bạn chưa có tài khoản?</p>
+                  <button class="auth-outline-button" type="button" data-auth-toggle="register">Đăng ký ngay</button>
+                  <button class="auth-demo-button" id="demoAccountLogin" type="button">Hoặc vào với tài khoản trải nghiệm</button>
+                </section>
+                <section id="registrationPanel" aria-labelledby="registrationHeading" hidden>
+                  <h2 id="registrationHeading" class="auth-heading">Tạo tài khoản mới</h2>
+                  <p class="auth-subheading">Cùng bé bắt đầu hành trình khám phá nhé!</p>
+                  <form class="auth-form auth-registration-form" id="registrationForm" autocomplete="on" novalidate>
+                    <div class="auth-field">
+                      <label class="visually-hidden" for="registerName">Họ và tên phụ huynh</label>
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20a7.5 7.5 0 0 1 15 0" /></svg>
+                      <input id="registerName" name="fullName" autocomplete="name" required minlength="2" maxlength="80" placeholder="Họ và tên phụ huynh">
+                    </div>
+                    <div class="auth-field">
+                      <label class="visually-hidden" for="registerEmail">Email</label>
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3.5 6.5h17v12h-17zM4 7l8 6 8-6" /></svg>
+                      <input id="registerEmail" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="Email">
+                    </div>
+                    <div class="auth-field">
+                      <label class="visually-hidden" for="registerPhone">Số điện thoại</label>
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3.5h10a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H7A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5Z" /><path d="M10 17.5h4" /></svg>
+                      <input id="registerPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="16" placeholder="Số điện thoại (+84)">
+                    </div>
+                    <div class="auth-field">
+                      <label class="visually-hidden" for="registerPassword">Mật khẩu</label>
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+                      <input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Mật khẩu (từ 8 ký tự)">
+                      <button class="auth-password-toggle" type="button" data-password-toggle="registerPassword" aria-label="Hiện mật khẩu">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg>
+                      </button>
+                    </div>
+                    <div class="auth-field">
+                      <label class="visually-hidden" for="registerConfirmPassword">Nhập lại mật khẩu</label>
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+                      <input id="registerConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Nhập lại mật khẩu">
+                      <button class="auth-password-toggle" type="button" data-password-toggle="registerConfirmPassword" aria-label="Hiện mật khẩu">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg>
+                      </button>
+                    </div>
+                    <p class="auth-field-note">Số điện thoại là bắt buộc để hỗ trợ khôi phục tài khoản.</p>
+                    <button class="auth-submit" type="submit">Đăng ký tài khoản</button>
+                  </form>
+                  <p id="registrationError" class="auth-form-error" role="alert" aria-live="polite" hidden></p>
+                  <p class="auth-privacy-note">Mật khẩu được xử lý an toàn ở máy chủ, không lưu dưới dạng văn bản thường.</p>
+                  <p class="auth-switch-caption">Đã có tài khoản?</p>
+                  <button class="auth-outline-button" type="button" data-auth-toggle="login">Đăng nhập</button>
+                </section>
+                <section id="recoveryPanel" aria-labelledby="recoveryHeading" hidden>
+                  <h2 id="recoveryHeading" class="auth-heading">Khôi phục mật khẩu</h2>
+                  <p class="auth-subheading">Nhận mã xác minh qua email hoặc số điện thoại đã đăng ký</p>
+                  <form class="auth-form auth-recovery-form" id="recoveryRequestForm" novalidate>
+                    <label class="auth-recovery-label">Nhận mã qua
+                      <select name="channel" required><option value="email">Email</option><option value="phone">Số điện thoại</option></select>
+                    </label>
+                    <label class="auth-recovery-label">Thông tin đã đăng ký<input name="identifier" type="text" autocomplete="email" required maxlength="254" placeholder="ten@example.com"></label>
+                    <button class="auth-submit" type="submit">Gửi mã xác minh</button>
+                  </form>
+                  <p id="recoveryMessage" class="auth-form-error" role="status" aria-live="polite" hidden></p>
+                  <form class="auth-form auth-recovery-form" id="recoveryCompleteForm" autocomplete="off" novalidate hidden>
+                    <label class="auth-recovery-label">Mã xác minh<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" required maxlength="6" placeholder="Nhập mã 6 chữ số"></label>
+                    <label class="auth-recovery-label">Mật khẩu mới<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Từ 8 đến 128 ký tự"></label>
+                    <label class="auth-recovery-label">Nhập lại mật khẩu mới<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Nhập lại mật khẩu"></label>
+                    <button class="auth-submit" type="submit">Đặt mật khẩu mới</button>
+                  </form>
+                  <p class="auth-switch-caption">Bạn nhớ lại mật khẩu rồi?</p>
+                  <button class="auth-outline-button" type="button" data-auth-toggle="login">Quay lại đăng nhập</button>
+                </section>
+              </article>
+            </div>
+          </main>`, "TÀI KHOẢN");
         const showAuthPanel = (panel) => {
           const register = panel === "register";
           $("#loginPanel").hidden = panel !== "login";
@@ -2067,6 +3016,31 @@
         };
         $("#routeView").querySelectorAll("[data-auth-toggle]").forEach((button) => {
           button.addEventListener("click", () => showAuthPanel(button.dataset.authToggle));
+        });
+        $("#routeView").querySelectorAll("[data-password-toggle]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const input = document.getElementById(button.dataset.passwordToggle);
+            const isVisible = input.type === "password";
+            input.type = isVisible ? "text" : "password";
+            button.setAttribute("aria-label", isVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu");
+          });
+        });
+        const loginForm = $("#loginForm");
+        const rememberedEmailKey = "littleHeroRememberedEmail";
+        const rememberEmail = loginForm.elements.rememberEmail;
+        try {
+          const rememberedEmail = localStorage.getItem(rememberedEmailKey);
+          if (rememberedEmail) {
+            loginForm.elements.email.value = rememberedEmail;
+            rememberEmail.checked = true;
+          }
+        } catch (error) {
+          console.warn("Không thể đọc email đã ghi nhớ.", error);
+        }
+        rememberEmail.addEventListener("change", () => {
+          if (rememberEmail.checked) return;
+          try { localStorage.removeItem(rememberedEmailKey); }
+          catch (error) { console.warn("Không thể xóa email đã ghi nhớ.", error); }
         });
         const enterDemoAccount = () => {
           state.authenticated = true;
@@ -2096,9 +3070,14 @@
           loginError.hidden = false;
           if (field) $(`#loginForm [name="${field}"]`).focus();
         };
-        $("#loginForm").addEventListener("input", () => {
+        loginForm.addEventListener("input", () => {
           loginError.textContent = "";
           loginError.hidden = true;
+        });
+        loginForm.addEventListener("submit", () => {
+          if (!rememberEmail.checked) return;
+          try { localStorage.setItem(rememberedEmailKey, loginForm.elements.email.value.trim()); }
+          catch (error) { console.warn("Không thể lưu email đã ghi nhớ.", error); }
         });
         $("#registrationForm").addEventListener("input", () => {
           registrationError.textContent = "";
@@ -2247,6 +3226,7 @@
           if (email.length > 254 || !validEmail(email)) { showLoginError("Hãy nhập đúng email đã dùng khi đăng ký, ví dụ ten@example.com.", "email"); return; }
           if (!password) { showLoginError("Vui lòng nhập mật khẩu.", "password"); return; }
           if (password.length > 128) { showLoginError("Mật khẩu không được dài quá 128 ký tự.", "password"); return; }
+          if (localFileAuthMessage) { showLoginError(localFileAuthMessage); return; }
           const submitButton = form.querySelector('button[type="submit"]');
           submitButton.disabled = true;
           try {
@@ -2257,6 +3237,11 @@
             });
             const result = await response.json();
             if (!response.ok) { showLoginError(result.error || "Email hoặc mật khẩu chưa chính xác. Hãy kiểm tra lại hoặc đăng ký tài khoản mới."); return; }
+            try { sessionStorage.setItem(leaderboardTokenKey(result.user.email), result.token); }
+            catch (error) {
+              console.warn("Không thể lưu phiên đăng nhập bảng xếp hạng.", error);
+              toast("Đã đăng nhập, nhưng trình duyệt không lưu được phiên bảng xếp hạng. Hãy bật lưu trữ phiên để tham gia.");
+            }
             persist();
             loadAccountProgress(result.user.email, result.user.name);
             const nextRoute = pendingAuthRoute || "home";
@@ -2288,6 +3273,7 @@
           if (!/^\+84(?:[ ()-]?\d){9,10}$/.test(phone)) { showRegistrationError("Số điện thoại chưa đúng định dạng. Hãy nhập +84 và 9–10 chữ số tiếp theo.", "phone"); return; }
           if (password.length < 8 || password.length > 128) { showRegistrationError("Mật khẩu phải có ít nhất 8 ký tự (tối đa 128 ký tự).", "password"); return; }
           if (password !== confirmPassword) { showRegistrationError("Hai mật khẩu chưa khớp. Hãy kiểm tra lại nhé.", "confirmPassword"); return; }
+          if (localFileAuthMessage) { showRegistrationError(localFileAuthMessage); return; }
           const submitButton = form.querySelector('button[type="submit"]');
           submitButton.disabled = true;
           try {
@@ -2316,44 +3302,46 @@
         });
       };
 
-      const renderPaymentPage = () => {
-        const configured = Boolean(PAYMENT_CONFIG.bankCode && PAYMENT_CONFIG.accountNumber && PAYMENT_CONFIG.accountName);
-        const qrPanel = configured
-          ? `<div class="qr-placeholder"><img src="./little-hero-payment-qr.svg" width="220" height="220" alt="Mã VietQR MB Bank: 99.000 đồng, nội dung LITTLE HERO"><span class="note">Mã QR được lưu cục bộ cùng trang, không gửi số tài khoản tới dịch vụ tạo QR bên ngoài. Vui lòng kiểm tra tên người nhận LITTLE HERO trong ứng dụng ngân hàng trước khi xác nhận.</span></div>`
-          : `<div class="qr-placeholder"><span class="qr-icon" aria-hidden="true">QR<br>CHƯA CẤU HÌNH</span><strong style="font-size:12px">Chưa thể tạo mã QR thanh toán</strong><span class="note">Cần thông tin ngân hàng và tài khoản công ty đã xác minh.</span></div>`;
-        $("#routeView").innerHTML = pageShell("payment", "Gói Premium 99.000đ. Kiểm tra kỹ người nhận và số tiền trong ứng dụng ngân hàng trước khi chuyển.", `
-          <div class="payment-grid"><article class="settings-card"><h3 style="font-size:15px">Thông tin thanh toán</h3>
+      const renderPaymentPage = (planId = "monthly") => {
+        const plan = subscriptionPlans[planId] || subscriptionPlans.monthly;
+        const transferNote = planId === "yearly" ? "LITTLEHERO NAM" : "LITTLEHERO THANG";
+        const featureList = plan.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join("");
+        $("#routeView").innerHTML = pageShell("payment", `Gói đã chọn: ${plan.name} · ${plan.price.toLocaleString("vi-VN")}đ`, `
+          <article class="settings-card checkout-pending">
+            <span class="catalog-icon" aria-hidden="true">💳</span>
+            <h2>${escapeHtml(plan.name)}</h2>
+            <p class="price">${plan.price.toLocaleString("vi-VN")}đ <span>/${planId === "yearly" ? "năm" : "tháng"}</span></p>
+            <ul class="features">${featureList}</ul>
+            <h3 class="payment-section-title">Thông tin chuyển khoản</h3>
             <div class="payment-details">
-              <div class="payment-row"><span>Đơn vị thụ hưởng</span><strong>${escapeHtml(PAYMENT_CONFIG.accountName || "Chưa cấu hình tên công ty")}</strong></div>
-              <div class="payment-row"><span>Ngân hàng</span><strong>${escapeHtml(PAYMENT_CONFIG.bankName || "Chưa cấu hình ngân hàng")}</strong></div>
-              <div class="payment-row"><span>Số tài khoản</span><strong>${escapeHtml(PAYMENT_CONFIG.accountNumber || "Chưa cấu hình số tài khoản")}</strong></div>
-              <div class="payment-row"><span>Số tiền</span><strong>${PAYMENT_CONFIG.amount.toLocaleString("vi-VN")}đ</strong></div>
-              <div class="payment-row"><span>Nội dung chuyển khoản</span><strong>${escapeHtml(PAYMENT_CONFIG.transferNote)}</strong></div>
+              <div class="payment-row"><span>Ngân hàng</span><strong>${PAYMENT_CONFIG.bankName}</strong></div>
+              <div class="payment-row"><span>Người nhận</span><strong>${PAYMENT_CONFIG.accountName}</strong></div>
+              <div class="payment-row"><span>Số tài khoản</span><strong id="paymentAccountNumber">${PAYMENT_CONFIG.accountNumber}</strong></div>
+              <div class="payment-row"><span>Số tiền</span><strong>${plan.price.toLocaleString("vi-VN")}đ</strong></div>
+              <div class="payment-row"><span>Nội dung</span><strong id="paymentTransferNote">${transferNote}</strong></div>
             </div>
-            <p class="payment-note">${configured ? "Trang chỉ cung cấp thông tin chuyển khoản; chưa kết nối hệ thống xác nhận giao dịch. Vui lòng đối chiếu đúng tên người nhận, ngân hàng và số tiền trước khi xác nhận." : "Chưa có thông tin tài khoản để tạo QR thanh toán."}</p>
-            <form class="payment-confirm" id="paymentConfirmForm">
-              <label><input type="checkbox" name="transferred" required><span>Tôi đã tự chuyển khoản và kiểm tra đúng người nhận, số tiền, nội dung chuyển khoản. Đây là xác nhận của người dùng; website chưa kiểm tra giao dịch.</span></label>
-              <button class="btn btn-primary" ${configured ? "" : "disabled"}>Xác nhận và tiếp tục đến Premium</button>
-              <p class="note" style="margin:0">Thao tác này chỉ ghi nhận trạng thái trên thiết bị; không xác nhận tiền đã vào tài khoản và không kích hoạt quyền lợi Premium.</p>
-            </form>
-          </article><article>${qrPanel}<div class="page-actions">${routeLink("pricing", "Quay lại gói Premium", "←")}${routeLink("faq", "Hỏi đáp thanh toán", "❔")}</div></article></div>`, "THANH TOÁN AN TOÀN");
-        $("#paymentConfirmForm").addEventListener("submit", (event) => {
-          event.preventDefault();
-          if (!configured) { toast("Chưa có thông tin thanh toán được cấu hình."); return; }
-          if (!event.currentTarget.elements.transferred.checked) { toast("Hãy xác nhận đã kiểm tra thông tin trước khi tiếp tục."); return; }
-          state.premium = true;
-          state.premiumRequestedAt = currentDay();
-          persist();
-          setRoute("premium-success");
-        });
+            <div class="page-actions payment-copy-actions"><button class="btn btn-light btn-small" id="copyPaymentAccount" type="button">Sao chép số tài khoản</button><button class="btn btn-light btn-small" id="copyPaymentNote" type="button">Sao chép nội dung</button></div>
+            <div class="payment-note" role="status">Sau khi chuyển khoản, giao dịch cần được xác minh. Hiện chưa có đối soát tự động; quyền Premium vẫn khóa cho đến khi máy chủ xác nhận thanh toán thành công. Vui lòng kiểm tra kỹ người nhận và số tiền trước khi chuyển.</div>
+            <div class="page-actions">${routeLink("pricing", "Chọn gói khác", "←")}${routeLink("faq", "Hỏi đáp thanh toán", "❔")}</div>
+          </article>`, "THANH TOÁN AN TOÀN");
+        const copyPaymentValue = async (value, label) => {
+          try {
+            await navigator.clipboard.writeText(value);
+            toast(`${label} đã được sao chép.`);
+          } catch (error) {
+            toast("Không thể sao chép tự động trên trình duyệt này. Bạn có thể chọn và sao chép thông tin thủ công.");
+          }
+        };
+        $("#copyPaymentAccount").addEventListener("click", () => copyPaymentValue(PAYMENT_CONFIG.accountNumber, "Số tài khoản"));
+        $("#copyPaymentNote").addEventListener("click", () => copyPaymentValue(transferNote, "Nội dung chuyển khoản"));
       };
 
       const renderPremiumSuccessPage = () => {
         $("#routeView").innerHTML = pageShell("pricing", "Thông tin gói Premium của bé.", `
           <article class="score-card" style="max-width:680px;text-align:center">
-            <div style="font-size:42px">♛</div><h2 style="margin:4px 0">Đã ghi nhận trạng thái Premium</h2>
-            <p>${state.premium ? "Trạng thái được lưu cục bộ trên trình duyệt này." : "Chưa có xác nhận Premium trên thiết bị này."}</p>
-            <div class="story-box">Lưu ý: website chưa kết nối ngân hàng hoặc cổng thanh toán để xác minh giao dịch. Đây không phải biên nhận và không xác nhận tiền đã được nhận; quyền lợi Premium thật chưa được cấp.</div>
+            <div style="font-size:42px">♛</div><h2 style="margin:4px 0">${hasVerifiedPremium() ? "Gói Premium đang hoạt động" : "Chưa có thanh toán được xác minh"}</h2>
+            <p>${hasVerifiedPremium() ? `Gói ${escapeHtml(subscriptionPlans[state.premiumPlan].name)} có hiệu lực đến ${new Date(state.premiumExpiresAt).toLocaleDateString("vi-VN")}.` : "Quyền lợi vẫn khóa cho đến khi máy chủ xác nhận giao dịch thành công."}</p>
+            <div class="story-box">Không thể kích hoạt quyền Premium bằng xác nhận trên trình duyệt. Website cần nhận trạng thái thanh toán đã xác minh từ cổng thanh toán.</div>
             <div class="page-actions" style="justify-content:center">${routeLink("home", "Về trang chủ", "⌂")}${routeLink("lessons", "Tiếp tục học", "📚")}</div>
           </article>`, "TRẠNG THÁI GÓI");
       };
@@ -2361,12 +3349,11 @@
       const answerAssistantQuestion = (question) => {
         const normalized = question.toLocaleLowerCase("vi").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
         const routes = [
-          { route: "parents", label: "Mở khu vực phụ huynh", words: ["phu huynh", "cha me", "ba me", "ho so", "tien do", "bao cao", "bieu do", "nhat ky", "thoi gian hoc", "ky nang cua con", "nhieu be", "profile"] },
-          { route: "parent-news", label: "Xem bài viết cho phụ huynh", words: ["tin tuc", "bai viet", "cam nang", "nuoi day", "thuong hieu", "little hero la gi", "ve little hero"] },
-          { route: "map", label: "Mở bản đồ ốc đảo", words: ["ban do", "oc dao", "island", "kham pha cac vung", "hanh trinh", "hero world"] },
-          { route: "wardrobe", label: "Tùy chỉnh nhân vật Hero", words: ["nhan vat", "doi hero", "trang phuc", "tu do", "ca nhan hoa", "avatar", "doi mau ao"] },
-          { route: "lessons", label: "Mở kho bài học", words: ["bai hoc", "khoa hoc", "hoc gi", "chu de ky nang", "ky nang song"] },
-          { route: "stories", label: "Mở truyện tương tác", words: ["truyen", "doc truyen", "truyen tranh"] },
+          { route: "parents", label: "Mở khu vực phụ huynh", words: ["phu huynh", "cha me", "ba me", "ho so", "tien do", "bao cao", "bieu do", "nhat ky", "thoi gian hoc", "ky nang cua con", "nhieu be", "profile", "parent", "progress"] },
+          { route: "parent-news", label: "Xem bài viết cho phụ huynh", words: ["tin tuc", "bai viet", "cam nang", "nuoi day", "thuong hieu", "little hero la gi", "ve little hero", "parent guide", "news"] },
+          { route: "map", label: "Mở bản đồ ốc đảo", words: ["ban do", "oc dao", "island", "kham pha cac vung", "hanh trinh", "hero world", "map"] },
+          { route: "lessons", label: "Mở kho bài học", words: ["bai hoc", "khoa hoc", "hoc gi", "chu de ky nang", "ky nang song", "lesson", "course"] },
+          { route: "stories", label: "Mở truyện tương tác", words: ["truyen", "doc truyen", "truyen tranh", "story"] },
           { route: "games", label: "Mở trò chơi", words: ["tro choi", "mini game", "game"] },
           { route: "quiz", label: "Mở bài kiểm tra", words: ["kiem tra", "quiz", "bai test"] },
           { route: "quests", label: "Xem nhiệm vụ hằng ngày", words: ["nhiem vu", "thu thach hang ngay", "nhiem vu hang ngay"] },
@@ -2374,11 +3361,37 @@
           { route: "pricing", label: "Xem các gói dịch vụ", words: ["premium", "goi dich vu", "gia tien", "phi", "dang ky goi", "nang cap"] },
           { route: "payment", label: "Xem thông tin thanh toán", words: ["thanh toan", "mua hang", "don hang", "mua goi"] },
           { route: "auth", label: "Mở trang tài khoản", words: ["dang nhap", "dang ky", "tai khoan", "mat khau"] },
-          { route: "reviews", label: "Gửi đánh giá hoặc góp ý", words: ["danh gia", "gop y", "phan hoi", "nhan xet"] },
+          { route: "reviews", label: "Gửi đánh giá hoặc góp ý", words: ["danh gia", "gop y", "phan hoi", "nhan xet", "review", "feedback"] },
           { route: "faq", label: "Mở hướng dẫn và hỗ trợ", words: ["tro giup", "ho tro", "lien he", "cau hoi", "quyen rieng tu", "bao loi"] },
           { route: "language", label: "Đổi ngôn ngữ", words: ["ngon ngu", "tieng anh", "english"] }
         ];
         const destination = routes.find((item) => item.words.some((word) => normalized.includes(word)));
+        if (state.language === "en") {
+          if (/(danger|unsafe|hurt|lost|stranger|bully|harm myself)/.test(normalized)) {
+            return { text: "If you or someone else may be in immediate danger, find a trusted adult nearby and contact local emergency services. Hero can offer general guidance but cannot replace in-person help.", route: "parent-news", label: "Open the safety guide" };
+          }
+          const englishResponses = {
+            parents: ["Parents can manage child profiles, review learning activity, and find ideas for practicing together.", "Open parent area"],
+            "parent-news": ["The parent area includes articles and practical guidance for families.", "Open parent articles"],
+            map: ["The skill map is available as a separate activity; you can also browse lessons directly.", "Open skill map"],
+            lessons: ["Browse short lessons about emotions, communication, safety, independence, and discovery.", "Browse lessons"],
+            stories: ["Explore interactive stories and choose what the characters do next.", "Open stories"],
+            games: ["Open the games page to explore the available activities.", "Open games"],
+            quiz: ["Try a short review activity to practice what you have learned.", "Open review activities"],
+            quests: ["See the daily learning activities and rewards.", "Open daily quests"],
+            achievements: ["See the badges and milestones you have earned.", "Open achievements"],
+            pricing: ["You can review the available plans. Payments are not processed in this app.", "View plans"],
+            payment: ["Payment details are informational; this app does not verify or process payments.", "View payment information"],
+            auth: ["Open your account page to sign in or register.", "Open account"],
+            reviews: ["You can share feedback from the app reviews page.", "Open app reviews"],
+            faq: ["Find answers and support information on the help page.", "Open help"],
+            language: ["Choose Vietnamese or English for AI replies and voice recognition.", "Change language"]
+          };
+          const response = destination && englishResponses[destination.route];
+          return response
+            ? { text: response[0], route: destination.route, label: response[1] }
+            : { text: "I couldn't connect to the online AI right now. You can ask about lessons, stories, games, your character, or try again later.", route: "faq", label: "Open help" };
+        }
         if (/(nguy hiem|bi danh|bi bat nat|bi lac|nguoi la|khong an toan|muon tu lam dau)/.test(normalized)) {
           return { text: "Nếu con hoặc ai đó đang gặp nguy hiểm ngay lúc này, hãy tìm người lớn đáng tin cậy ở gần và liên hệ dịch vụ khẩn cấp tại nơi con sống. Hero chỉ có thể chia sẻ hướng dẫn chung, không thay thế người hỗ trợ trực tiếp.", route: "parent-news", label: "Xem cẩm nang an toàn" };
         }
@@ -2387,9 +3400,6 @@
         }
         if (destination?.route === "map") {
           return { text: "Bản đồ có 8 ốc đảo kỹ năng. Chọn một điểm dừng để mở tình huống và bắt đầu bài học.", ...destination };
-        }
-        if (destination?.route === "wardrobe") {
-          return { text: "Trong tủ đồ, ba mẹ có thể chọn nhân vật, kiểu tóc, màu áo/quần/giày và phụ kiện. Hero cá nhân hóa cũng sẽ cập nhật trên trang chủ.", ...destination };
         }
         if (destination?.route === "pricing" || destination?.route === "payment") {
           return { text: "Ba mẹ có thể xem thông tin gói. Trang chưa kết nối cổng thanh toán hoặc xác nhận giao dịch.", ...destination };
@@ -2569,6 +3579,7 @@
               signal: (activeChatController = new AbortController()).signal,
               body: JSON.stringify({
                 messages: conversation.slice(-8),
+                language: state.language,
                 attachments: await Promise.all(selectedFiles.map(encodeAttachment))
               })
             });
@@ -2691,7 +3702,7 @@
           if (!voiceListening || !Recognition) return;
           recognition = new Recognition();
           const activeRecognition = recognition;
-          activeRecognition.lang = "vi-VN";
+          activeRecognition.lang = state.language === "en" ? "en-US" : "vi-VN";
           activeRecognition.continuous = true;
           activeRecognition.interimResults = true;
           activeRecognition.onstart = () => {
@@ -2862,23 +3873,35 @@
           },
           lessons: renderLessonCatalog,
           stories: renderStoriesPage,
-          storybook: () => renderStorybookPage(param),
-          games: renderGamesPage,
+          storybook: () => renderStoriesPage("storybook"),
+          games: () => {
+            if (!hasVerifiedPremium()) {
+              renderLockedPlanPage("Trò chơi thuộc thư viện Premium", "Thanh toán cần được xác minh trước khi mở các trò chơi Premium.");
+              return;
+            }
+            renderGamesPage();
+          },
           quests: renderQuestPage,
           quiz: renderQuizPage,
           achievements: renderAchievementsPage,
           reviews: renderReviewsPage,
           forum: renderForumPage,
           faq: renderFaqPage,
-          wardrobe: renderWardrobePage,
           language: renderLanguagePage,
           auth: renderAuthPage,
-          pricing: () => { $("#routeView").innerHTML = pageShell("pricing", "Tìm hiểu các lựa chọn đồng hành cùng hành trình học tập của bé. Hệ thống chưa xác minh giao dịch ngân hàng tự động.", `
-            <div class="pricing-grid">
-              <article class="plan-card"><h3>🌱 Free</h3><p>Dành cho gia đình muốn bắt đầu.</p><div class="price">0đ <span>/ mãi mãi</span></div><ul class="features"><li>Bài học kỹ năng cơ bản</li><li>Truyện và hoạt cảnh tương tác</li><li>Tiến độ lưu trên thiết bị</li><li>Nhiệm vụ và sao thưởng</li></ul><button class="btn btn-light btn-small" data-route="lessons">Xem bài học</button></article>
-              <article class="plan-card premium"><span class="popular">GÓI DỰ KIẾN</span><h3>♛ Đồng hành Premium</h3><p>Thông tin dự kiến theo đề án.</p><div class="price">99.000đ <span>/ tháng</span></div><ul class="features"><li>Thư viện hướng tới 80 bài học</li><li>Truyện và hoạt động bổ sung</li><li>Nhật ký học tập mở rộng</li></ul><button class="btn btn-primary btn-small" data-route="payment">Tiếp tục đến thông tin thanh toán →</button></article>
-            </div>`, "GÓI HỌC"); },
-          payment: renderPaymentPage,
+          pricing: () => {
+            const planRows = Object.entries(subscriptionPlans).map(([id, plan]) => `
+              <article class="subscription-row ${id === "yearly" ? "is-yearly" : "is-monthly"}">
+                <div class="subscription-art"><img src="${plan.image}" alt="${escapeHtml(plan.imageAlt)}" loading="lazy"><span class="course-art-badge">${escapeHtml(plan.badge)}</span></div>
+                <div class="subscription-copy"><span class="course-plan-kicker">${escapeHtml(plan.caption)}</span><h3>${escapeHtml(plan.title)}</h3><ul class="features">${plan.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join("")}</ul></div>
+                <div class="subscription-action"><strong>${plan.price.toLocaleString("vi-VN")}đ <span>/${id === "yearly" ? "năm" : "tháng"}</span></strong><button class="btn btn-primary btn-small" data-route="payment/${id}">Chọn hành trình</button></div>
+              </article>`).join("");
+            $("#routeView").innerHTML = pageShell("pricing", "Chọn thời hạn phù hợp. Quyền lợi chỉ được mở sau khi giao dịch được máy chủ xác minh.", `
+              <div class="subscription-list">${planRows}</div>
+              <div class="free-plan-note"><span>8 bài học nền tảng luôn miễn phí.</span><button class="text-link" id="freePlanBtn">Khám phá nội dung miễn phí →</button></div>`, "GÓI HỌC");
+            $("#freePlanBtn").addEventListener("click", () => setRoute("lessons"));
+          },
+          payment: () => renderPaymentPage(param),
           "premium-success": renderPremiumSuccessPage,
           arena: renderArenaPage,
           "arena-match": renderArenaMatchPage,
@@ -2895,7 +3918,13 @@
               `, "GIA ĐÌNH");
               return;
             }
-            requestParentAccess(renderParentRoute);
+            requestParentAccess(() => {
+              if (!hasYearlyPremium()) {
+                renderLockedPlanPage("Báo cáo phụ huynh thuộc gói năm", "Báo cáo tiến độ chi tiết chỉ mở sau khi gói năm được thanh toán và xác minh.");
+                return;
+              }
+              renderParentRoute();
+            });
           },
           "parent-news": renderParentNews,
           lesson: () => renderLessonRoute(param)
@@ -3240,6 +4269,11 @@
       };
 
       document.addEventListener("click", (event) => {
+        if (event.target.closest("[data-route-back]")) {
+          event.preventDefault();
+          navigateBack();
+          return;
+        }
         const startMiniGameButton = event.target.closest("[data-mini-game-start]");
         if (startMiniGameButton) {
           startMiniGame(startMiniGameButton.dataset.miniGameStart);
@@ -3471,11 +4505,16 @@
         renderFeatured(lesson);
         toast(`Hero gợi ý: ${lesson.title}`);
       });
-      $("#upgradeBtn").addEventListener("click", () => setRoute("payment"));
-      $("#premiumBtn").addEventListener("click", () => setRoute("payment"));
-      $("#freePlanBtn").addEventListener("click", () => setRoute("map"));
+      $("#upgradeBtn").addEventListener("click", () => setRoute("pricing"));
+      $("#monthlyPlanBtn").addEventListener("click", () => setRoute("payment/monthly"));
+      $("#yearlyPlanBtn").addEventListener("click", () => setRoute("payment/yearly"));
+      $("#freePlanBtn").addEventListener("click", () => setRoute("lessons"));
       $("#accountBtn").addEventListener("click", () => setRoute("auth"));
       $("#logoutBtn").addEventListener("click", () => {
+        if (state.accountEmail) {
+          try { sessionStorage.removeItem(leaderboardTokenKey(state.accountEmail)); }
+          catch (error) { console.warn("Không thể xóa phiên đăng nhập bảng xếp hạng.", error); }
+        }
         const preferences = { darkMode: state.darkMode, sound: state.sound, language: state.language };
         state = freshState();
         Object.assign(state, preferences);
@@ -3497,8 +4536,11 @@
       });
       $("#heroMascot").addEventListener("click", () => {
         if (!("speechSynthesis" in window)) { toast("Trình duyệt chưa hỗ trợ giọng đọc tiếng Việt."); return; }
-        const utterance = new SpeechSynthesisUtterance(`Xin chào ${state.childName || "bạn nhỏ"}! Cùng Hero khám phá thế giới hôm nay nhé!`);
-        utterance.lang = "vi-VN";
+        const greeting = state.language === "en"
+          ? `Hello ${state.childName || "friend"}! Let's explore the world with Hero today!`
+          : `Xin chào ${state.childName || "bạn nhỏ"}! Cùng Hero khám phá thế giới hôm nay nhé!`;
+        const utterance = new SpeechSynthesisUtterance(greeting);
+        utterance.lang = state.language === "en" ? "en-US" : "vi-VN";
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
       });
@@ -3514,12 +4556,19 @@
         const tab = event.target.closest("[data-mode]");
         if (!tab) return;
         arenaMode = tab.dataset.mode;
+        $("#homeLeaderboardLocation").hidden = !["region", "city"].includes(arenaMode);
         $("#arenaTabs").querySelectorAll(".arena-tab").forEach((item) => {
           const active = item === tab;
           item.classList.toggle("active", active);
           item.setAttribute("aria-pressed", String(active));
         });
-        $("#leaderScope").textContent = `${tab.textContent} · tuần này`;
+        $("#leaderScope").textContent = leaderboardScopeLabel(arenaMode);
+        renderLeaderboard(document, arenaMode);
+      });
+      $("#homeLeaderboardProvince").addEventListener("change", (event) => {
+        leaderboardViewProvince = event.currentTarget.value;
+        syncLeaderboardLocationControls();
+        $("#leaderScope").textContent = leaderboardScopeLabel(arenaMode);
         renderLeaderboard(document, arenaMode);
       });
       $("#arenaStart").addEventListener("click", openQuiz);
@@ -3554,11 +4603,12 @@
           }
         });
       });
-      const previousCloset = safeWardrobe(previousHeroCloset);
-      if (JSON.stringify(safeWardrobe(state.closet)) === JSON.stringify(previousCloset)) {
-        state.closet = freshState().closet;
-        const activeChild = state.children.find((child) => child.id === state.activeChildId);
-        if (activeChild) activeChild.closet = state.closet;
+      const defaultCloset = safeWardrobe(freshState().closet);
+      const hasCustomizedCloset = [state.closet, ...state.children.map((child) => child.closet)]
+        .some((closet) => JSON.stringify(safeWardrobe(closet)) !== JSON.stringify(defaultCloset));
+      if (hasCustomizedCloset) {
+        state.closet = defaultCloset;
+        state.children.forEach((child) => { child.closet = defaultCloset; });
         persist();
       }
       renderDropdown();
@@ -3571,9 +4621,11 @@
       $(".mascot").innerHTML = renderHeroCharacterSvg(state.closet, { ariaLabel: "Hero cá nhân hóa" });
       renderStats();
       const initialRoute = location.hash.startsWith("#/") ? location.hash.slice(2) : "home";
+      routeHistory = [initialRoute];
       if (initialRoute !== "home") setRoute(initialRoute, { pop: true });
       else if (!location.hash.startsWith("#/") && state.lastRoute && state.lastRoute !== "home") setRoute(state.lastRoute, { pop: true, restore: true });
       else setRoute("home", { pop: true });
+      queueLeaderboardSync();
       showOnboardingIfNeeded();
       window.setInterval(() => {
         refreshDay();
