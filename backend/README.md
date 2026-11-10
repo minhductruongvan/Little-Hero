@@ -17,7 +17,11 @@ Máy chủ Node.js phục vụ website, xác thực tài khoản và chuyển c�
 
 3. Mở `http://127.0.0.1:31377/`. Backend Node.js sẽ phục vụ website cùng API Gemini và tài khoản.
 
-Cổng mặc định là `3000`; đặt `PORT=31377` trong PowerShell trước khi chạy để dùng địa chỉ trên. API gồm `GET /api/health`, `POST /api/chat`, `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/recovery/request`, `POST /api/auth/recovery/reset`, `GET /api/leaderboard`, `POST /api/leaderboard/score` và `DELETE /api/leaderboard/score`.
+Cổng mặc định là `3000`; đặt `PORT=31377` trong PowerShell trước khi chạy để dùng địa chỉ trên. API gồm `GET /api/health`, `POST /api/chat`, `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/recovery/request`, `POST /api/auth/recovery/reset`, `GET /api/premium/status`, `POST /api/premium/receipt`, `GET /api/leaderboard`, `POST /api/leaderboard/score` và `DELETE /api/leaderboard/score`.
+
+### Ảnh bill và Premium
+
+`POST /api/premium/receipt?plan=monthly` hoặc `?plan=yearly` yêu cầu phiên đăng nhập Bearer và ảnh PNG/JPEG/WebP tối đa 5 MB. Khi nhận ảnh hợp lệ, máy chủ lưu ảnh bill mới nhất của tài khoản và kích hoạt gói Premium ngay (30 hoặc 365 ngày); ảnh cũ được thay thế. **Endpoint không xác minh giao dịch ngân hàng**: bất kỳ ảnh đúng định dạng nào cũng kích hoạt gói. Không coi trạng thái này là bằng chứng đã thanh toán; chỉ dùng nếu chấp nhận quy trình tự xác nhận này.
 
 ### Dùng giao diện qua VS Code Live Server ở cổng 5500
 
@@ -32,7 +36,7 @@ GitHub Pages chỉ phục vụ file tĩnh, không chạy được API Node.js. R
 3. Frontend dùng `https://little-hero-api.onrender.com` trong `frontend/js/config.js`. Nếu Render cấp hostname khác, thay URL ở tệp đó bằng URL đang hiển thị trong trang dịch vụ Render. Backend cho phép yêu cầu từ `https://littlehero.id.vn` và `https://www.littlehero.id.vn`.
 4. Kiểm tra URL API bằng cách mở `<URL-Render>/api/health`, rồi thử đăng ký trên website. Có thể cấu hình custom domain `api.littlehero.id.vn` sau; khi đó cần cập nhật DNS CNAME và URL trong `frontend/js/config.js`.
 
-Gói miễn phí tự dừng khi không có lưu lượng trong một thời gian và dùng filesystem tạm. Tài khoản được lưu trong SQLite cục bộ để đăng ký rồi đăng nhập khi dịch vụ đang chạy, nhưng tài khoản có thể mất khi dịch vụ ngủ, khởi động lại hoặc triển khai lại. Không dùng cấu hình này nếu cần giữ tài khoản ổn định lâu dài; việc đó cần một nơi lưu dữ liệu bền vững.
+Gói miễn phí tự dừng khi không có lưu lượng trong một thời gian và dùng filesystem tạm. Tài khoản được lưu trong SQLite cục bộ để đăng ký rồi đăng nhập khi dịch vụ đang chạy, nhưng tài khoản, gói Premium và ảnh bill có thể mất khi dịch vụ ngủ, khởi động lại hoặc triển khai lại. Không dùng cấu hình này nếu cần giữ dữ liệu ổn định lâu dài; việc đó cần một nơi lưu dữ liệu bền vững.
 
 Không đổi bản ghi của domain gốc `littlehero.id.vn`; domain đó tiếp tục phục vụ GitHub Pages. Không triển khai API trên gói không có ổ lưu trữ bền vững, vì dữ liệu tài khoản có thể mất khi dịch vụ khởi động lại. Nếu cần dùng Gemini, cấu hình `GEMINI_API_KEY` riêng trong Render Environment; không đưa key vào repository.
 

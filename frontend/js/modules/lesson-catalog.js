@@ -13,7 +13,7 @@
 
       const lessons = [
         {
-          id: "emotion", category: "emotion", title: "Khi con có nhiều cảm xúc", icon: "🎭", age: "3–10 tuổi", duration: "3–5 phút",
+          id: "emotion", category: "emotion", ageGroup: "3-6", premium: false, title: "Khi con có nhiều cảm xúc", icon: "🎭", age: "3–6 tuổi", duration: "3–5 phút",
           goal: "Nhận biết, gọi tên cảm xúc và thể hiện cảm xúc theo cách an toàn.",
           story: "Hôm nay Na vui vì được cô khen bức tranh. Khi tranh bị rách, Na buồn và tức giận. Ngày mai lớp biểu diễn, Na lại thấy lo lắng.",
           prompts: ["Na có thể đang vui, buồn, giận dữ hoặc lo lắng.", "Điều gì đã khiến mỗi cảm xúc xuất hiện?", "Na có thể nói cảm xúc và nhờ cô giúp thay vì làm đau bạn.", "Chọn một cảm xúc bé từng trải qua và kể với người lớn."],
@@ -21,7 +21,7 @@
           correct: 0, reward: 10, color: "#fff0d9", activity: "Cùng bé chọn một biểu tượng cảm xúc và kể: “Hôm nay con cảm thấy… vì…”"
         },
         {
-          id: "social", category: "social", title: "Làm quen với một người bạn mới", icon: "🧒", age: "3–10 tuổi", duration: "3–5 phút",
+          id: "social", category: "social", ageGroup: "3-6", premium: false, title: "Làm quen với một người bạn mới", icon: "🧒", age: "3–6 tuổi", duration: "3–5 phút",
           goal: "Bắt đầu một cuộc trò chuyện thân thiện và tôn trọng lựa chọn của bạn.",
           story: "Nam mới đến lớp và đang ngồi xếp hình một mình. Hà muốn chơi cùng nhưng còn ngại chưa biết mở lời thế nào.",
           prompts: ["Hà muốn kết bạn nhưng cũng hơi lo lắng.", "Nam có thể cần thời gian để làm quen với lớp.", "Hà có thể chào bạn, giới thiệu mình và hỏi: “Mình chơi cùng được không?”", "Bé thử chào một người bạn và tôn trọng câu trả lời của bạn."],
@@ -29,7 +29,7 @@
           correct: 0, reward: 10, color: "#e2f4ea", activity: "Cùng bé tập nói lời chào và một câu hỏi thân thiện."
         },
         {
-          id: "safety", category: "safety", title: "Khi con bị lạc ở nơi đông người", icon: "🛡️", age: "3–10 tuổi", duration: "4 phút",
+          id: "safety", category: "safety", ageGroup: "3-6", premium: false, title: "Khi con bị lạc ở nơi đông người", icon: "🛡️", age: "3–6 tuổi", duration: "4 phút",
           goal: "Biết đứng ở nơi an toàn và tìm người lớn có trách nhiệm hỗ trợ.",
           story: "Ở siêu thị, Bin không nhìn thấy mẹ. Gần đó có quầy thông tin và một lối đi ra bãi xe.",
           prompts: ["Bin có thể thấy sợ hãi hoặc bối rối.", "Chạy lung tung có thể khiến Bin khó tìm người thân hơn.", "Bin đứng ở chỗ an toàn, nhờ nhân viên siêu thị hoặc bảo vệ giúp gọi người thân.", "Cùng người lớn xác định một điểm hẹn an toàn ở nơi đông người."],
@@ -37,7 +37,7 @@
           correct: 0, reward: 12, color: "#e8eaff", activity: "Cùng phụ huynh chọn điểm hẹn an toàn khi đi nơi đông người."
         },
         {
-          id: "health", category: "health", title: "Bàn tay sạch trước bữa ăn", icon: "🧼", age: "3–10 tuổi", duration: "3 phút",
+          id: "health", category: "health", ageGroup: "3-6", premium: false, title: "Bàn tay sạch trước bữa ăn", icon: "🧼", age: "3–6 tuổi", duration: "3 phút",
           goal: "Tạo thói quen vệ sinh cá nhân với sự hướng dẫn phù hợp.",
           story: "Sau khi chơi ngoài sân, đến giờ ăn trưa. Đôi tay của Mia đã dính đất.",
           prompts: ["Mia có thể đang đói và muốn ăn ngay.", "Vi trùng nhỏ có thể bám trên bàn tay sau khi chơi.", "Mia rửa tay với xà phòng và nhờ người lớn giúp nếu cần.", "Cùng hát một bài ngắn trong lúc rửa tay."],
@@ -45,7 +45,7 @@
           correct: 0, reward: 10, color: "#e0f5ed", activity: "Cùng bé thực hành sáu bước rửa tay và hát một bài ngắn."
         },
         {
-          id: "thinking", category: "thinking", title: "Khi con mắc một lỗi nhỏ", icon: "🧩", age: "3–10 tuổi", duration: "4 phút",
+          id: "thinking", category: "thinking", ageGroup: "3-6", premium: false, title: "Khi con mắc một lỗi nhỏ", icon: "🧩", age: "3–6 tuổi", duration: "4 phút",
           goal: "Nhận trách nhiệm phù hợp và tìm người lớn hỗ trợ để sửa sai.",
           story: "An vô ý làm đổ nước lên bàn học và thấy vài quyển sách bị ướt. An lo bị mắng.",
           prompts: ["An có thể đang lo lắng hoặc xấu hổ.", "Nếu báo người lớn sớm, sách có thể được lau khô.", "An nói thật và nhờ người lớn giúp khắc phục.", "Bé nghĩ một câu nói khi cần báo người lớn về lỗi nhỏ."],
@@ -53,7 +53,7 @@
           correct: 0, reward: 10, color: "#f1eafa", activity: "Cùng bé luyện nói: “Con lỡ làm… Ba/mẹ giúp con sửa nhé?”"
         },
         {
-          id: "care", category: "care", title: "Cùng giữ sân chơi sạch đẹp", icon: "🌿", age: "3–10 tuổi", duration: "3 phút",
+          id: "care", category: "care", ageGroup: "3-6", premium: false, title: "Cùng giữ sân chơi sạch đẹp", icon: "🌿", age: "3–6 tuổi", duration: "3 phút",
           goal: "Thực hành trách nhiệm phù hợp với không gian chung.",
           story: "Sau giờ ăn nhẹ, Linh thấy vỏ bánh trên tay và một chiếc thùng rác ở gần đó.",
           prompts: ["Linh có thể đang muốn chạy đi chơi.", "Vỏ bánh để trên sân có thể làm bẩn nơi mọi người cùng vui chơi.", "Linh bỏ rác đúng nơi quy định rồi quay lại trò chơi.", "Bé cùng người lớn nhặt một món rác an toàn và bỏ đúng thùng."],
@@ -61,7 +61,7 @@
           correct: 0, reward: 10, color: "#e6f2dc", activity: "Cùng bé tìm thùng rác và phân loại một món rác phù hợp."
         },
         {
-          id: "creative", category: "creative", title: "Thử một điều mới thật an toàn", icon: "💡", age: "3–10 tuổi", duration: "4 phút",
+          id: "creative", category: "creative", ageGroup: "3-6", premium: false, title: "Thử một điều mới thật an toàn", icon: "💡", age: "3–6 tuổi", duration: "4 phút",
           goal: "Gọi tên sự lo lắng và tìm sự hỗ trợ khi thử điều mới.",
           story: "Bin muốn tập đi xe đạp nhưng lo sẽ mất thăng bằng. Bố đang ở bên cạnh và có thể giúp.",
           prompts: ["Bin vừa háo hức vừa có thể lo lắng.", "Đây là kỹ năng mới nên Bin có thể cần thời gian luyện tập.", "Bin nhờ bố hỗ trợ, đội mũ bảo hiểm và tập ở nơi an toàn.", "Bé kể về một điều mới muốn thử và ai có thể đồng hành."],
@@ -69,7 +69,7 @@
           correct: 0, reward: 10, color: "#fff2c8", activity: "Cùng bé chọn một điều mới, nhỏ và phù hợp để thử với người lớn."
         },
         {
-          id: "community", category: "community", title: "Tin nhắn lạ trên mạng", icon: "🌐", age: "3–10 tuổi", duration: "4 phút",
+          id: "community", category: "community", ageGroup: "7-10", premium: false, title: "Tin nhắn lạ trên mạng", icon: "🌐", age: "7–10 tuổi", duration: "4 phút",
           goal: "Bảo vệ thông tin cá nhân và báo cho người lớn đáng tin cậy.",
           story: "Khi dùng máy tính bảng cùng bố, Mia nhận tin nhắn từ một tài khoản không quen hỏi địa chỉ nhà.",
           prompts: ["Mia có thể tò mò hoặc hơi lo lắng.", "Địa chỉ nhà là thông tin riêng tư cần được bảo vệ.", "Mia không trả lời, không gửi thông tin và báo ngay cho bố.", "Cùng người lớn nhắc lại ba thông tin cá nhân không chia sẻ với người lạ."],
@@ -77,7 +77,7 @@
           correct: 0, reward: 12, color: "#e4f0fa", activity: "Cùng bé nhắc lại: không chia sẻ địa chỉ, mật khẩu hoặc thông tin riêng tư."
         },
         {
-          id: "calm", category: "emotion", title: "Khi con tức giận và muốn la hét", icon: "🌬️", age: "3–10 tuổi", duration: "4 phút",
+          id: "calm", category: "emotion", ageGroup: "7-10", premium: false, title: "Khi con tức giận và muốn la hét", icon: "🌬️", age: "7–10 tuổi", duration: "4 phút",
           goal: "Nhận ra dấu hiệu tức giận và chọn cách bình tĩnh, không làm tổn thương người khác.",
           story: "Em của Bo vô tình làm đổ tòa lâu đài Bo vừa xây. Bo thấy mặt nóng lên, hai tay nắm chặt và muốn hét thật to.",
           prompts: ["Bo có thể đang tức giận hoặc thất vọng.", "Bo buồn vì đã dành nhiều thời gian xây lâu đài.", "Bo tạm dừng, hít thở chậm rồi nói cảm xúc và nhờ em giúp xây lại.", "Bé chọn một cách an toàn giúp mình bình tĩnh khi khó chịu."],
@@ -85,7 +85,7 @@
           correct: 0, reward: 10, color: "#fff0d9", activity: "Cùng bé chọn ba cách bình tĩnh: thở chậm, uống nước hoặc nhờ người lớn."
         },
         {
-          id: "sorry", category: "social", title: "Khi con cần nói lời xin lỗi", icon: "💛", age: "3–10 tuổi", duration: "4 phút",
+          id: "sorry", category: "social", ageGroup: "7-10", premium: false, title: "Khi con cần nói lời xin lỗi", icon: "💛", age: "7–10 tuổi", duration: "4 phút",
           goal: "Nhận trách nhiệm và đề nghị một cách sửa sai phù hợp.",
           story: "An vô tình làm đổ tòa tháp bạn Bình vừa xây. Bình buồn, còn An ngại xin lỗi vì sợ bạn giận.",
           prompts: ["An có thể cảm thấy áy náy hoặc lo lắng.", "Hành động của An làm Bình buồn dù đó không phải cố ý.", "An xin lỗi, nói rõ việc đã xảy ra và hỏi xem có thể giúp xây lại không.", "Bé nghĩ cách sửa sai nếu vô tình làm ảnh hưởng đến người khác."],
@@ -93,7 +93,7 @@
           correct: 0, reward: 10, color: "#e2f4ea", activity: "Cùng bé tập nói lời xin lỗi và đề nghị một cách khắc phục."
         },
         {
-          id: "stranger", category: "safety", title: "Khi người lạ cho con quà", icon: "🎁", age: "3–10 tuổi", duration: "4 phút",
+          id: "stranger", category: "safety", ageGroup: "3-6", premium: true, title: "Khi người lạ cho con quà", icon: "🎁", age: "3–6 tuổi", duration: "4 phút",
           goal: "Giữ khoảng cách an toàn và nhờ người lớn đáng tin cậy hỗ trợ.",
           story: "Ở gần cổng công viên, một người Mia không quen mời em đi theo để nhận một món quà. Mẹ đang ở bên trong khu vui chơi.",
           prompts: ["Mia có thể thấy tò mò hoặc ngại từ chối.", "Mia không biết người lạ là ai và không nên tự đi theo.", "Mia từ chối, đi về phía mẹ hoặc nhân viên nơi công cộng và kể lại sự việc.", "Bé xác định người lớn đáng tin cậy có thể tìm đến khi cần."],
@@ -101,7 +101,7 @@
           correct: 0, reward: 12, color: "#e8eaff", activity: "Cùng bé nhắc lại người lớn đáng tin cậy bé có thể tìm đến ở nơi công cộng."
         },
         {
-          id: "new-thing", category: "health", title: "Khi con lo lắng trước điều mới", icon: "🚲", age: "3–10 tuổi", duration: "4 phút",
+          id: "new-thing", category: "health", ageGroup: "3-6", premium: true, title: "Khi con lo lắng trước điều mới", icon: "🚲", age: "3–6 tuổi", duration: "4 phút",
           goal: "Nhận biết nỗi lo và tìm sự hỗ trợ phù hợp trước một trải nghiệm mới.",
           story: "Bin muốn tập đi xe đạp nhưng hơi sợ ngã. Bố đang ở cạnh và có thể giúp Bin chọn nơi tập an toàn.",
           prompts: ["Bin có thể vừa hào hứng vừa lo lắng.", "Đây là trải nghiệm mới nên Bin chưa biết điều gì sẽ xảy ra.", "Bin chia sẻ nỗi lo, đội mũ bảo hiểm và nhờ bố hỗ trợ.", "Bé kể về một điều mới muốn thử cùng người lớn."],

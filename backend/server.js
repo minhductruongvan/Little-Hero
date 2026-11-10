@@ -94,6 +94,15 @@ accountDatabase.exec(`
         points INTEGER NOT NULL CHECK (points >= 0),
         updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS premium_subscriptions (
+        email TEXT PRIMARY KEY COLLATE NOCASE,
+        plan TEXT NOT NULL CHECK (plan IN ('monthly', 'yearly')),
+        status TEXT NOT NULL CHECK (status IN ('active', 'inactive')),
+        expires_at TEXT NOT NULL,
+        receipt_mime TEXT NOT NULL,
+        receipt_data BLOB NOT NULL,
+        uploaded_at TEXT NOT NULL
+    );
 `);
 const scrypt = promisify(crypto.scrypt);
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -102,6 +111,7 @@ const passwordRecoveryChallenges = new Map();
 const passwordRecoveryRequests = new Map();
 const leaderboardSessions = new Map();
 const leaderboardSessionLifetime = 30 * 24 * 60 * 60 * 1000;
+const receiptMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 const getLeaderboardSession = (req) => {
     const token = /^Bearer ([A-Za-z0-9_-]+)$/.exec(req.get('authorization') || '')?.[1];
@@ -113,6 +123,17 @@ const getLeaderboardSession = (req) => {
         return null;
     }
     return session;
+};
+const getPremiumSubscription = (email) => accountDatabase.prepare(`
+    SELECT plan, status, expires_at AS expiresAt, uploaded_at AS uploadedAt
+    FROM premium_subscriptions
+    WHERE email = ?
+`).get(email) || null;
+const detectReceiptMimeType = (buffer) => {
+    if (buffer.length >= 8 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'image/png';
+    if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return 'image/jpeg';
+    if (buffer.length >= 12 && buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP') return 'image/webp';
+    return '';
 };
 
 const withAuthUsers = (operation) => {
@@ -230,6 +251,60 @@ app.post('/api/auth/login', async (req, res) => {
     } catch (error) {
         console.error('Lỗi đăng nhập Little Hero:', error);
         res.status(500).json({ error: 'Không thể đăng nhập lúc này. Vui lòng thử lại.' });
+    }
+});
+
+app.get('/api/premium/status', (req, res) => {
+    const session = getLeaderboardSession(req);
+    if (!session) return res.status(401).json({ error: 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.' });
+    res.json({ subscription: getPremiumSubscription(session.email) });
+});
+
+app.post('/api/premium/receipt', (req, res, next) => {
+    const session = getLeaderboardSession(req);
+    if (!session) return res.status(401).json({ error: 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.' });
+    req.authenticatedSession = session;
+    next();
+}, express.raw({ type: [...receiptMimeTypes], limit: '5mb' }), (req, res) => {
+    const plan = req.query.plan;
+    if (!['monthly', 'yearly'].includes(plan)) {
+        return res.status(400).json({ error: 'Gói Premium không hợp lệ.' });
+    }
+    const mimeType = String(req.get('content-type') || '').split(';')[0].trim().toLowerCase();
+    if (!receiptMimeTypes.has(mimeType)) {
+        return res.status(415).json({ error: 'Chỉ chấp nhận ảnh bill PNG, JPEG hoặc WebP.' });
+    }
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+        return res.status(400).json({ error: 'Hãy chọn ảnh bill trước khi xác nhận.' });
+    }
+    if (detectReceiptMimeType(req.body) !== mimeType) {
+        return res.status(400).json({ error: 'Tệp tải lên không phải ảnh PNG, JPEG hoặc WebP hợp lệ.' });
+    }
+
+    try {
+        const email = req.authenticatedSession.email;
+        const previous = getPremiumSubscription(email);
+        const previousExpiry = previous?.status === 'active' ? Date.parse(previous.expiresAt) : NaN;
+        const startsAt = Number.isFinite(previousExpiry) && previousExpiry > Date.now() ? previousExpiry : Date.now();
+        const durationDays = plan === 'yearly' ? 365 : 30;
+        const uploadedAt = new Date().toISOString();
+        const expiresAt = new Date(startsAt + durationDays * 24 * 60 * 60 * 1000).toISOString();
+        accountDatabase.prepare(`
+            INSERT INTO premium_subscriptions
+                (email, plan, status, expires_at, receipt_mime, receipt_data, uploaded_at)
+            VALUES (?, ?, 'active', ?, ?, ?, ?)
+            ON CONFLICT(email) DO UPDATE SET
+                plan = excluded.plan,
+                status = excluded.status,
+                expires_at = excluded.expires_at,
+                receipt_mime = excluded.receipt_mime,
+                receipt_data = excluded.receipt_data,
+                uploaded_at = excluded.uploaded_at
+        `).run(email, plan, expiresAt, mimeType, req.body, uploadedAt);
+        res.status(201).json({ subscription: getPremiumSubscription(email) });
+    } catch (error) {
+        console.error('Lỗi lưu bill và kích hoạt gói Premium:', error);
+        res.status(500).json({ error: 'Không thể lưu ảnh bill và kích hoạt Premium lúc này. Vui lòng thử lại.' });
     }
 });
 
@@ -635,7 +710,10 @@ app.post('/api/chat', async (req, res) => {
 
 app.use((error, req, res, next) => {
     if (error?.type === 'entity.too.large') {
-        return res.status(413).json({ error: 'Yêu cầu quá lớn. Hãy giảm kích thước tệp đính kèm.' });
+        const message = req.path === '/api/premium/receipt'
+            ? 'Ảnh bill vượt quá dung lượng tối đa 5 MB.'
+            : 'Yêu cầu quá lớn. Hãy giảm kích thước tệp đính kèm.';
+        return res.status(413).json({ error: message });
     }
     if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
         return res.status(400).json({ error: 'Dữ liệu gửi lên không hợp lệ.' });

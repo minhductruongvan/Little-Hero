@@ -63,7 +63,11 @@
         { id: "sample-review-progress", author: "Phạm Thảo Nhi", stars: 5, title: "Con nhớ được điều đã học", body: "Sau khi học về an toàn, con chủ động nhắc lại cần tìm người lớn đáng tin cậy khi thấy lo lắng. Cả nhà có thêm cách ôn bài vui vẻ." }
       ].map((review) => ({ ...review, isSample: true, helpful: 0 }));
       const { categories, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
-      const lessons = [...window.LittleHeroLessonCatalog.lessons, ...window.LittleHeroAdditionalLessons];
+      const lessons = [
+        ...window.LittleHeroLessonCatalog.lessons,
+        ...window.LittleHeroAdditionalLessons,
+        ...window.LittleHeroSocialCreativeLessons
+      ];
       const freshState = () => ({
         childName: "",
         leaderboardName: "",
@@ -116,7 +120,7 @@
         closet: { gender: "boy", hair: "curly", hairColor: "#624337", shirt: "#4ba6c5", pants: "#386b83", shoes: "#de6549", accessory: "cape", outfit: "classic" }
       });
       let state = freshState();
-      let verifiedSubscription = null;
+      let activeSubscription = null;
       const forumMediaUrls = new Map();
       let activeLessonRecognition = null;
       try {
@@ -417,17 +421,19 @@
         else closeDialog();
       };
       const lessonById = (id) => lessons.find((lesson) => lesson.id === id);
-      const ageCategories = {
-        "3-6": ["emotion", "social", "safety", "health", "care", "creative"],
-        "7-10": ["emotion", "social", "safety", "thinking", "care", "creative", "community"]
-      };
+      const ageCategories = Object.fromEntries(["3-6", "7-10"].map((group) => [
+        group,
+        [...new Set(lessons.filter((lesson) => lesson.ageGroup === group).map((lesson) => lesson.category))]
+      ]));
       const currentAgeGroup = () => state.age <= 6 ? "3-6" : "7-10";
       const currentAgeLabel = () => currentAgeGroup() === "3-6" ? "3–6 tuổi" : "7–10 tuổi";
-      const ageAppropriateCategories = () => categories.filter((category) => ageCategories[currentAgeGroup()].includes(category.id));
+      const ageAppropriateCategories = () => state.authenticated
+        ? categories.filter((category) => ageCategories[currentAgeGroup()].includes(category.id))
+        : categories;
       const ageAppropriateLessons = () => {
         const available = lessons
-          .filter((lesson) => ageCategories[currentAgeGroup()].includes(lesson.category))
-          .map((lesson) => ({ ...lesson, age: currentAgeLabel() }));
+          .filter((lesson) => !state.authenticated || lesson.ageGroup === currentAgeGroup())
+          .map((lesson) => ({ ...lesson, age: state.authenticated ? currentAgeLabel() : lesson.age }));
         return available.sort((a, b) => Number(state.interests.includes(b.category)) - Number(state.interests.includes(a.category)));
       };
       const completedCount = () => state.completed.length;
@@ -446,7 +452,7 @@
           imageAlt: "Hero và bạn cùng học trong lớp mỹ thuật",
           price: 49000,
           durationDays: 30,
-          features: ["12 bài học kỹ năng cốt lõi", "Truyện tương tác và trò chơi", "Sao thưởng sau mỗi bài"]
+          features: ["Mở khóa toàn bộ bài học Premium", "Truyện tương tác và trò chơi", "Sao thưởng sau mỗi bài"]
         },
         yearly: {
           name: "Cùng Hero Mỗi Ngày – Gói năm",
@@ -465,14 +471,39 @@
         accountName: "LITTLE HERO",
         accountNumber: "16030616032006"
       };
-      const freeLessonIds = new Set(categories.map((category) => category.lesson));
-      const hasVerifiedPremium = () => Boolean(verifiedSubscription
-        && verifiedSubscription.status === "active"
-        && ["monthly", "yearly"].includes(verifiedSubscription.plan)
-        && Number.isFinite(Date.parse(verifiedSubscription.expiresAt || ""))
-        && Date.parse(verifiedSubscription.expiresAt) > Date.now());
-      const hasYearlyPremium = () => hasVerifiedPremium() && verifiedSubscription.plan === "yearly";
-      const isPremiumLesson = (lesson) => !freeLessonIds.has(lesson.id);
+      const refreshActiveSubscription = async () => {
+        if (!state.authenticated || state.demoAccount || !state.accountEmail) {
+          activeSubscription = null;
+          return null;
+        }
+        const email = state.accountEmail;
+        const token = leaderboardToken();
+        if (!token) {
+          activeSubscription = null;
+          return null;
+        }
+        const response = await fetch(apiUrl("/api/premium/status"), {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await response.json();
+        if (response.status === 401) {
+          activeSubscription = null;
+          try { sessionStorage.removeItem(leaderboardTokenKey(email)); }
+          catch (error) { console.warn("Không thể xóa phiên đăng nhập đã hết hạn.", error); }
+          throw new Error(result.error || "Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.");
+        }
+        if (!response.ok) throw new Error(result.error || "Không thể tải trạng thái gói Premium.");
+        if (state.accountEmail !== email || leaderboardToken() !== token) return activeSubscription;
+        activeSubscription = result.subscription;
+        return activeSubscription;
+      };
+      const hasActivePremium = () => Boolean(activeSubscription
+        && activeSubscription.status === "active"
+        && ["monthly", "yearly"].includes(activeSubscription.plan)
+        && Number.isFinite(Date.parse(activeSubscription.expiresAt || ""))
+        && Date.parse(activeSubscription.expiresAt) > Date.now());
+      const hasYearlyPremium = () => hasActivePremium() && activeSubscription.plan === "yearly";
+      const isPremiumLesson = (lesson) => lesson.premium === true;
       const renderLockedPlanPage = (title, description) => {
         $("#routeView").innerHTML = pageShell("pricing", description, `
           <article class="locked-plan-panel">
@@ -976,8 +1007,8 @@
 
       const openPricing = () => {
         showDialog(`<div class="dialog-head"><div><span class="kicker">GÓI HỌC PREMIUM</span><h2 id="dialogTitle">Mở rộng hành trình khám phá</h2><p>49.000đ/tháng hoặc 399.000đ/năm.</p></div><button class="close-btn" data-close aria-label="Đóng">×</button></div>
-          <div class="story-box"><strong>👑 Gói tháng:</strong> 12 bài học và trò chơi Premium.<br><strong>👑 Gói năm:</strong> toàn bộ quyền lợi gói tháng và báo cáo tiến độ phụ huynh.</div>
-          <p class="note">Cổng thanh toán và xác minh giao dịch chưa được kết nối. Không có quyền lợi nào được kích hoạt trước khi máy chủ xác nhận thanh toán.</p>
+          <div class="story-box"><strong>👑 Gói tháng:</strong> mở toàn bộ bài học Premium (khoảng một nửa thư viện) và trò chơi.<br><strong>👑 Gói năm:</strong> toàn bộ quyền lợi gói tháng và báo cáo tiến độ phụ huynh.</div>
+          <p class="note">Tải ảnh bill ở bước thanh toán để mở Premium ngay. Hệ thống hiện chưa đối soát giao dịch với ngân hàng.</p>
           <button class="btn btn-primary" id="pricingOk">Đã hiểu</button>`);
         $("#pricingOk").addEventListener("click", closeDialog);
       };
@@ -1319,7 +1350,29 @@
         "Ngày chăm chỉ": "Learning days",
         "Gợi ý cho bước tiếp theo": "Suggested next step",
         "Bài ôn tập": "Review activities",
-        "Tìm hiểu các lựa chọn đồng hành cùng hành trình học tập của bé. Hệ thống chưa xác minh giao dịch ngân hàng tự động.": "Explore ways to support your child's learning. Payments are not processed or verified by this app.",
+        "Chọn gói tháng hoặc năm, tải ảnh bill lên ở bước thanh toán để mở khóa nội dung.": "Choose a monthly or yearly plan and upload a receipt image at checkout to unlock this content.",
+        "Báo cáo tiến độ chi tiết chỉ mở sau khi tải ảnh bill của gói năm lên.": "Detailed progress reports unlock after you upload a receipt image for the yearly plan.",
+        "Có thể chuyển khoản theo thông tin tại trang thanh toán. Sau khi chuyển, tải ảnh bill lên để mở Premium ngay. Hệ thống chưa đối soát ảnh với ngân hàng.": "You can transfer using the payment details on the checkout page. Upload a receipt image after transferring to unlock Premium immediately. The image is not checked against bank records.",
+        "Ba mẹ có thể xem thông tin gói. Tải ảnh bill lên để mở Premium ngay; giao dịch chưa được đối soát tự động với ngân hàng.": "You can review the plans. Upload a receipt image to unlock Premium immediately; transfers are not automatically checked with the bank.",
+        "Chọn thời hạn phù hợp. Tải ảnh bill lên ở bước thanh toán để mở Premium ngay.": "Choose a plan duration. Upload a receipt image at checkout to unlock Premium immediately.",
+        "Sau khi chuyển khoản, tải ảnh bill lên và nhấn xác nhận để mở Premium ngay. Ảnh được lưu riêng theo tài khoản; hệ thống chưa đối soát ảnh với ngân hàng, nên chỉ tải bill của giao dịch thực tế. Hãy kiểm tra kỹ người nhận và số tiền trước khi chuyển.": "After transferring, upload your receipt image and confirm to unlock Premium immediately. The image is stored with your account but is not checked against bank records; only upload a receipt for a real transfer. Check the recipient and amount before sending money.",
+        "Họ tên phụ huynh, email, số điện thoại, trạng thái Premium và ảnh bill mới nhất được lưu trong SQLite trên máy chủ; ảnh cũ được thay thế khi tải ảnh mới. Hồ sơ và tiến độ học của bé vẫn lưu cục bộ trên trình duyệt. Hosting miễn phí hiện dùng dữ liệu tạm nên thông tin máy chủ có thể mất khi khởi động lại hoặc triển khai lại.": "A parent's name, email, phone number, Premium status, and latest receipt image are stored in server-side SQLite; uploading a new image replaces the old one. A child's profile and learning progress remain in this browser. The current free hosting uses temporary storage, so server data may be lost on restart or redeployment.",
+        "Tải ảnh bill chuyển khoản": "Upload transfer receipt",
+        "🖼️ Chọn ảnh bill từ thiết bị": "🖼️ Choose a receipt image",
+        "Chọn ảnh bill PNG, JPEG hoặc WebP (tối đa 5 MB). Sau khi gửi ảnh, Premium được mở ngay.": "Choose a PNG, JPEG, or WebP receipt image (up to 5 MB). Premium unlocks immediately after upload.",
+        "Tài khoản trải nghiệm không hỗ trợ thanh toán. Hãy đăng nhập tài khoản chính để gửi bill.": "Demo accounts cannot make payments. Sign in with your account to upload a receipt.",
+        "Hãy đăng nhập tài khoản để tải ảnh bill và kích hoạt Premium.": "Sign in to upload a receipt and activate Premium.",
+        "Xác nhận & mở Premium": "Confirm & unlock Premium",
+        "Tệp phải là ảnh PNG, JPEG hoặc WebP.": "The file must be a PNG, JPEG, or WebP image.",
+        "Ảnh bill phải có dung lượng từ 1 byte đến 5 MB.": "The receipt image must be between 1 byte and 5 MB.",
+        "Đang tải ảnh bill và kích hoạt Premium…": "Uploading receipt and activating Premium…",
+        "Phiên đăng nhập không hợp lệ. Hãy đăng nhập lại rồi thử lại.": "Your session is invalid. Sign in again and retry.",
+        "Máy chủ chưa kích hoạt gói Premium. Vui lòng thử lại.": "The server has not activated Premium. Please try again.",
+        "Không thể gửi ảnh bill. Vui lòng thử lại.": "Could not upload the receipt. Please try again.",
+        "Gói Premium đang hoạt động": "Premium is active",
+        "Chưa có gói Premium đang hoạt động": "No active Premium plan",
+        "Ảnh bill đã được gửi và gói Premium đã mở. Bé có thể tiếp tục khám phá các bài học.": "The receipt image was uploaded and Premium is active. Your child can continue exploring lessons.",
+        "Gói Premium sẽ được mở ngay khi máy chủ nhận ảnh bill.": "Premium unlocks as soon as the server receives the receipt image.",
         "Tùy chọn ngôn ngữ": "Language settings",
         "GIA ĐÌNH": "FAMILY",
         "HỖ TRỢ GIA ĐÌNH": "FAMILY SUPPORT",
@@ -1536,12 +1589,17 @@
         const cards = available.map((lesson) => {
           const category = categories.find((item) => item.id === lesson.category);
           const image = lessonImage(lesson.category);
-          const locked = isPremiumLesson(lesson) && !hasVerifiedPremium();
+          const locked = state.authenticated && isPremiumLesson(lesson) && !hasActivePremium();
+          const actionLabel = !state.authenticated
+            ? "Đăng nhập để học →"
+            : locked
+              ? "🔒 Xem gói Premium"
+              : `${state.completed.includes(lesson.id) ? "Học lại" : "Bắt đầu bài học"} →`;
           return `<article class="catalog-card"><div class="catalog-art" style="--lesson-color:${category.color}">
               <img src="${image.src}" alt="${escapeHtml(image.alt)}" loading="lazy"><span aria-hidden="true">${lesson.icon}</span>
             </div><div class="catalog-card-copy"><span class="kicker">${category.name}</span><h3>${escapeHtml(lesson.title)}</h3>
-              <p>${escapeHtml(lesson.goal)}<br>${lesson.age} · ${lesson.duration}${state.completed.includes(lesson.id) ? " · ⭐ Đã hoàn thành" : ""}</p>
-            </div><button class="btn ${locked ? "btn-light" : "btn-mint"} btn-small" data-route="${locked ? "pricing" : `lesson/${lesson.id}`}">${locked ? "🔒 Xem gói Premium" : `${state.completed.includes(lesson.id) ? "Học lại" : "Bắt đầu bài học"} →`}</button></article>`;
+              <p>${escapeHtml(lesson.goal)}<br>${lesson.age} · ${lesson.duration}${isPremiumLesson(lesson) ? " · ♛ Premium" : ""}${state.completed.includes(lesson.id) ? " · ⭐ Đã hoàn thành" : ""}</p>
+            </div><button class="btn ${locked ? "btn-light" : "btn-mint"} btn-small" data-route="${!state.authenticated ? `lesson/${lesson.id}` : locked ? "pricing" : `lesson/${lesson.id}`}">${actionLabel}</button></article>`;
         }).join("");
         const chips = allowedCategories.map((category) => routeLink(`lessons/${category.id}`, `${category.icon} ${category.name}`)).join("");
         const message = unavailableCategory ? "Chủ đề này chưa nằm trong nhóm tuổi của bé. Đây là các nội dung phù hợp hơn:" : "Chọn bài học phù hợp với độ tuổi và chủ đề bé quan tâm.";
@@ -1853,13 +1911,19 @@
 
       const renderLessonRoute = (lessonId) => {
         const sourceLesson = lessonById(lessonId);
-        if (sourceLesson && !ageCategories[currentAgeGroup()].includes(sourceLesson.category)) {
+        if (!sourceLesson) { $("#routeView").innerHTML = pageShell("lessons", "Không tìm thấy bài học này.", routeLink("lessons", "Xem kho bài học", "🏝️")); return; }
+        if (!state.authenticated) {
+          pendingAuthRoute = `lesson/${lessonId}`;
+          setRoute("auth");
+          toast("Đăng nhập để bắt đầu bài học và lưu tiến độ của bé.");
+          return;
+        }
+        if (sourceLesson.ageGroup !== currentAgeGroup()) {
           $("#routeView").innerHTML = pageShell("lessons", "Bài học này dành cho nhóm tuổi khác. Hero đã chọn sẵn các bài phù hợp với bé.", routeLink("lessons", "Xem bài học phù hợp", "🏝️"));
           return;
         }
-        if (!sourceLesson) { $("#routeView").innerHTML = pageShell("lessons", "Không tìm thấy bài học này.", routeLink("lessons", "Xem kho bài học", "🏝️")); return; }
-        if (isPremiumLesson(sourceLesson) && !hasVerifiedPremium()) {
-          renderLockedPlanPage("Bài học này thuộc thư viện Premium", "Chọn gói tháng hoặc năm để mở khóa các bài học nâng cao sau khi thanh toán được xác minh.");
+        if (isPremiumLesson(sourceLesson) && !hasActivePremium()) {
+          renderLockedPlanPage("Bài học này thuộc thư viện Premium", "Chọn gói tháng hoặc năm, tải ảnh bill lên ở bước thanh toán để mở khóa nội dung.");
           return;
         }
         const lesson = { ...sourceLesson, age: currentAgeLabel() };
@@ -2632,8 +2696,8 @@
             ["Làm sao để khôi phục mật khẩu?", "Tại trang đăng nhập, chọn “Quên mật khẩu?” rồi nhận mã xác minh qua email hoặc số điện thoại đã đăng ký. Máy chủ cần được cấu hình dịch vụ gửi email hoặc SMS."],
           ["Các tình huống có thay thế tư vấn chuyên gia không?", "Không. Nội dung là gợi ý giáo dục tổng quát, không thay thế tư vấn của chuyên gia giáo dục, tâm lý hoặc y tế."],
           ["Đăng nhập Google đã hoạt động chưa?", "Chưa. Cần tạo Google OAuth Client ID và dịch vụ máy chủ xác thực token trước khi đưa đăng nhập thật vào sử dụng."],
-          ["Thanh toán Premium có thể chuyển khoản chưa?", "Thông tin thanh toán chưa được cấu hình và hệ thống chưa xác nhận giao dịch. Không chuyển khoản qua trang này."],
-          ["Ứng dụng lưu những thông tin nào?", "Họ tên phụ huynh, email và số điện thoại được lưu trong cơ sở dữ liệu máy chủ để đăng nhập và khôi phục tài khoản. Hồ sơ, tiến độ và nhật ký học của bé vẫn lưu cục bộ trên trình duyệt; không nhập thông tin nhạy cảm của trẻ."]
+          ["Thanh toán Premium có thể chuyển khoản chưa?", "Có thể chuyển khoản theo thông tin tại trang thanh toán. Sau khi chuyển, tải ảnh bill lên để mở Premium ngay. Hệ thống chưa đối soát ảnh với ngân hàng."],
+          ["Ứng dụng lưu những thông tin nào?", "Họ tên phụ huynh, email, số điện thoại, trạng thái Premium và ảnh bill mới nhất được lưu trong SQLite trên máy chủ; ảnh cũ được thay thế khi tải ảnh mới. Hồ sơ và tiến độ học của bé vẫn lưu cục bộ trên trình duyệt. Hosting miễn phí hiện dùng dữ liệu tạm nên thông tin máy chủ có thể mất khi khởi động lại hoặc triển khai lại."]
         ];
         $("#routeView").innerHTML = pageShell("faq", "Một số câu hỏi thường gặp về cách sử dụng Little Hero.", `<div class="faq-grid">${questions.map(([question, answer]) => `<details class="faq-card"><summary>${question}</summary><p>${answer}</p></details>`).join("")}</div>`, "HỖ TRỢ GIA ĐÌNH");
       };
@@ -3246,6 +3310,11 @@
             }
             persist();
             loadAccountProgress(result.user.email, result.user.name);
+            try { await refreshActiveSubscription(); }
+            catch (error) {
+              console.error("Không thể tải trạng thái gói Premium sau khi đăng nhập.", error);
+              toast("Đã đăng nhập, nhưng chưa tải được trạng thái gói Premium. Hãy tải lại trang hoặc thử lại sau.");
+            }
             const nextRoute = pendingAuthRoute || "home";
             pendingAuthRoute = "";
             persist();
@@ -3308,6 +3377,14 @@
         const plan = subscriptionPlans[planId] || subscriptionPlans.monthly;
         const transferNote = planId === "yearly" ? "LITTLEHERO NAM" : "LITTLEHERO THANG";
         const featureList = plan.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join("");
+        const canUploadReceipt = state.authenticated && !state.demoAccount && Boolean(leaderboardToken());
+        const uploadPrompt = canUploadReceipt
+          ? "Chọn ảnh bill PNG, JPEG hoặc WebP (tối đa 5 MB). Sau khi gửi ảnh, Premium được mở ngay."
+          : state.demoAccount
+            ? "Tài khoản trải nghiệm không hỗ trợ thanh toán. Hãy đăng nhập tài khoản chính để gửi bill."
+            : state.authenticated
+              ? "Phiên đăng nhập không hợp lệ. Hãy đăng xuất rồi đăng nhập lại để tải bill."
+              : "Hãy đăng nhập tài khoản để tải ảnh bill và kích hoạt Premium.";
         $("#routeView").innerHTML = pageShell("payment", `Gói đã chọn: ${plan.name} · ${plan.price.toLocaleString("vi-VN")}đ`, `
           <article class="settings-card checkout-pending">
             <span class="catalog-icon" aria-hidden="true">💳</span>
@@ -3323,7 +3400,17 @@
               <div class="payment-row"><span>Nội dung</span><strong id="paymentTransferNote">${transferNote}</strong></div>
             </div>
             <div class="page-actions payment-copy-actions"><button class="btn btn-light btn-small" id="copyPaymentAccount" type="button">Sao chép số tài khoản</button><button class="btn btn-light btn-small" id="copyPaymentNote" type="button">Sao chép nội dung</button></div>
-            <div class="payment-note" role="status">Sau khi chuyển khoản, giao dịch cần được xác minh. Hiện chưa có đối soát tự động; quyền Premium vẫn khóa cho đến khi máy chủ xác nhận thanh toán thành công. Vui lòng kiểm tra kỹ người nhận và số tiền trước khi chuyển.</div>
+            <div class="payment-note">Sau khi chuyển khoản, tải ảnh bill lên và nhấn xác nhận để mở Premium ngay. Ảnh được lưu riêng theo tài khoản; hệ thống chưa đối soát ảnh với ngân hàng, nên chỉ tải bill của giao dịch thực tế. Hãy kiểm tra kỹ người nhận và số tiền trước khi chuyển.</div>
+            <form class="payment-upload-form" id="paymentConfirmForm">
+              <h3 class="payment-section-title">Tải ảnh bill chuyển khoản</h3>
+              <label class="payment-upload-label" for="paymentReceipt">
+                <span>🖼️ Chọn ảnh bill từ thiết bị</span>
+                <input id="paymentReceipt" name="receipt" type="file" accept="image/png,image/jpeg,image/webp" required ${canUploadReceipt ? "" : "disabled"}>
+              </label>
+              <img class="payment-receipt-preview" id="paymentReceiptPreview" alt="Ảnh bill đã chọn" hidden>
+              <p class="payment-upload-status" id="paymentUploadStatus" role="status" aria-live="polite">${escapeHtml(uploadPrompt)}</p>
+              <button class="btn btn-primary" id="paymentConfirmBtn" type="submit" disabled>Xác nhận & mở Premium</button>
+            </form>
             <div class="page-actions">${routeLink("pricing", "Chọn gói khác", "←")}${routeLink("faq", "Hỏi đáp thanh toán", "❔")}</div>
           </article>`, "THANH TOÁN AN TOÀN");
         const copyPaymentValue = async (value, label) => {
@@ -3336,14 +3423,83 @@
         };
         $("#copyPaymentAccount").addEventListener("click", () => copyPaymentValue(PAYMENT_CONFIG.accountNumber, "Số tài khoản"));
         $("#copyPaymentNote").addEventListener("click", () => copyPaymentValue(transferNote, "Nội dung chuyển khoản"));
+        const form = $("#paymentConfirmForm");
+        const receiptInput = $("#paymentReceipt", form);
+        const confirmButton = $("#paymentConfirmBtn", form);
+        const status = $("#paymentUploadStatus", form);
+        const preview = $("#paymentReceiptPreview", form);
+        let previewUrl = "";
+        receiptInput.addEventListener("change", () => {
+          const file = receiptInput.files[0];
+          confirmButton.disabled = true;
+          if (previewUrl) URL.revokeObjectURL(previewUrl);
+          previewUrl = "";
+          preview.hidden = true;
+          preview.removeAttribute("src");
+          if (!file) {
+            status.textContent = uploadPrompt;
+            return;
+          }
+          if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+            status.textContent = "Tệp phải là ảnh PNG, JPEG hoặc WebP.";
+            return;
+          }
+          if (file.size === 0 || file.size > 5 * 1024 * 1024) {
+            status.textContent = "Ảnh bill phải có dung lượng từ 1 byte đến 5 MB.";
+            return;
+          }
+          if (!canUploadReceipt) {
+            status.textContent = uploadPrompt;
+            return;
+          }
+          previewUrl = URL.createObjectURL(file);
+          preview.src = previewUrl;
+          preview.hidden = false;
+          status.textContent = `Đã chọn ${file.name}. Nhấn xác nhận để mở gói Premium ngay.`;
+          confirmButton.disabled = false;
+        });
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const file = receiptInput.files[0];
+          const token = leaderboardToken();
+          if (!canUploadReceipt || !file || !token) {
+            status.textContent = canUploadReceipt
+              ? "Phiên đăng nhập không hợp lệ. Hãy đăng nhập lại rồi thử lại."
+              : uploadPrompt;
+            return;
+          }
+          confirmButton.disabled = true;
+          status.textContent = "Đang tải ảnh bill và kích hoạt Premium…";
+          try {
+            const response = await fetch(apiUrl(`/api/premium/receipt?plan=${encodeURIComponent(planId)}`), {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": file.type
+              },
+              body: file
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "Không thể gửi ảnh bill. Vui lòng thử lại.");
+            activeSubscription = result.subscription;
+            if (!hasActivePremium()) throw new Error("Máy chủ chưa kích hoạt gói Premium. Vui lòng thử lại.");
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            setRoute("premium-success");
+          } catch (error) {
+            console.error("Không thể tải bill và kích hoạt Premium.", error);
+            status.textContent = error.message || "Không thể gửi ảnh bill. Vui lòng thử lại.";
+            confirmButton.disabled = false;
+          }
+        });
       };
 
       const renderPremiumSuccessPage = () => {
+        const plan = activeSubscription && subscriptionPlans[activeSubscription.plan];
         $("#routeView").innerHTML = pageShell("pricing", "Thông tin gói Premium của bé.", `
           <article class="score-card" style="max-width:680px;text-align:center">
-            <div style="font-size:42px">♛</div><h2 style="margin:4px 0">${hasVerifiedPremium() ? "Gói Premium đang hoạt động" : "Chưa có thanh toán được xác minh"}</h2>
-            <p>${hasVerifiedPremium() ? `Gói ${escapeHtml(subscriptionPlans[state.premiumPlan].name)} có hiệu lực đến ${new Date(state.premiumExpiresAt).toLocaleDateString("vi-VN")}.` : "Quyền lợi vẫn khóa cho đến khi máy chủ xác nhận giao dịch thành công."}</p>
-            <div class="story-box">Không thể kích hoạt quyền Premium bằng xác nhận trên trình duyệt. Website cần nhận trạng thái thanh toán đã xác minh từ cổng thanh toán.</div>
+            <div style="font-size:42px">♛</div><h2 style="margin:4px 0">${hasActivePremium() ? "Gói Premium đang hoạt động" : "Chưa có gói Premium đang hoạt động"}</h2>
+            <p>${hasActivePremium() ? `Gói ${escapeHtml(plan.name)} có hiệu lực đến ${new Date(activeSubscription.expiresAt).toLocaleDateString("vi-VN")}.` : "Chọn gói và gửi ảnh bill để mở quyền lợi Premium."}</p>
+            <div class="story-box">${hasActivePremium() ? "Ảnh bill đã được gửi và gói Premium đã mở. Bé có thể tiếp tục khám phá các bài học." : "Gói Premium sẽ được mở ngay khi máy chủ nhận ảnh bill."}</div>
             <div class="page-actions" style="justify-content:center">${routeLink("home", "Về trang chủ", "⌂")}${routeLink("lessons", "Tiếp tục học", "📚")}</div>
           </article>`, "TRẠNG THÁI GÓI");
       };
@@ -3404,7 +3560,7 @@
           return { text: "Bản đồ có 8 ốc đảo kỹ năng. Chọn một điểm dừng để mở tình huống và bắt đầu bài học.", ...destination };
         }
         if (destination?.route === "pricing" || destination?.route === "payment") {
-          return { text: "Ba mẹ có thể xem thông tin gói. Trang chưa kết nối cổng thanh toán hoặc xác nhận giao dịch.", ...destination };
+          return { text: "Ba mẹ có thể xem thông tin gói. Tải ảnh bill lên để mở Premium ngay; giao dịch chưa được đối soát tự động với ngân hàng.", ...destination };
         }
         if (destination?.route === "auth") {
           return { text: "Bạn có thể đăng nhập hoặc tạo tài khoản Little Hero tại trang tài khoản.", ...destination };
@@ -3877,8 +4033,8 @@
           stories: renderStoriesPage,
           storybook: () => renderStoriesPage("storybook"),
           games: () => {
-            if (!hasVerifiedPremium()) {
-              renderLockedPlanPage("Trò chơi thuộc thư viện Premium", "Thanh toán cần được xác minh trước khi mở các trò chơi Premium.");
+            if (!hasActivePremium()) {
+              renderLockedPlanPage("Trò chơi thuộc thư viện Premium", "Chọn gói tháng hoặc năm, tải ảnh bill lên ở bước thanh toán để mở khóa nội dung.");
               return;
             }
             renderGamesPage();
@@ -3898,9 +4054,9 @@
                 <div class="subscription-copy"><span class="course-plan-kicker">${escapeHtml(plan.caption)}</span><h3>${escapeHtml(plan.title)}</h3><ul class="features">${plan.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join("")}</ul></div>
                 <div class="subscription-action"><strong>${plan.price.toLocaleString("vi-VN")}đ <span>/${id === "yearly" ? "năm" : "tháng"}</span></strong><button class="btn btn-primary btn-small" data-route="payment/${id}">Chọn hành trình</button></div>
               </article>`).join("");
-            $("#routeView").innerHTML = pageShell("pricing", "Chọn thời hạn phù hợp. Quyền lợi chỉ được mở sau khi giao dịch được máy chủ xác minh.", `
+            $("#routeView").innerHTML = pageShell("pricing", "Chọn thời hạn phù hợp. Tải ảnh bill lên ở bước thanh toán để mở Premium ngay.", `
               <div class="subscription-list">${planRows}</div>
-              <div class="free-plan-note"><span>8 bài học nền tảng luôn miễn phí.</span><button class="text-link" id="freePlanBtn">Khám phá nội dung miễn phí →</button></div>`, "GÓI HỌC");
+              <div class="free-plan-note"><span>${lessons.filter((lesson) => !isPremiumLesson(lesson)).length} bài học miễn phí; nội dung Premium chiếm khoảng một nửa kho bài học.</span><button class="text-link" id="freePlanBtn">Khám phá nội dung miễn phí →</button></div>`, "GÓI HỌC");
             $("#freePlanBtn").addEventListener("click", () => setRoute("lessons"));
           },
           payment: () => renderPaymentPage(param),
@@ -3922,7 +4078,7 @@
             }
             requestParentAccess(() => {
               if (!hasYearlyPremium()) {
-                renderLockedPlanPage("Báo cáo phụ huynh thuộc gói năm", "Báo cáo tiến độ chi tiết chỉ mở sau khi gói năm được thanh toán và xác minh.");
+                renderLockedPlanPage("Báo cáo phụ huynh thuộc gói năm", "Báo cáo tiến độ chi tiết chỉ mở sau khi tải ảnh bill của gói năm lên.");
                 return;
               }
               renderParentRoute();
@@ -4517,6 +4673,7 @@
           try { sessionStorage.removeItem(leaderboardTokenKey(state.accountEmail)); }
           catch (error) { console.warn("Không thể xóa phiên đăng nhập bảng xếp hạng.", error); }
         }
+        activeSubscription = null;
         const preferences = { darkMode: state.darkMode, sound: state.sound, language: state.language };
         state = freshState();
         Object.assign(state, preferences);
@@ -4627,6 +4784,11 @@
       if (initialRoute !== "home") setRoute(initialRoute, { pop: true });
       else if (!location.hash.startsWith("#/") && state.lastRoute && state.lastRoute !== "home") setRoute(state.lastRoute, { pop: true, restore: true });
       else setRoute("home", { pop: true });
+      if (state.authenticated && !state.demoAccount) {
+        refreshActiveSubscription()
+          .then(() => renderRoute())
+          .catch((error) => console.error("Không thể khôi phục trạng thái gói Premium.", error));
+      }
       queueLeaderboardSync();
       showOnboardingIfNeeded();
       window.setInterval(() => {

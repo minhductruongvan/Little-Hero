@@ -9,6 +9,7 @@
 - `js/motion.js` — hiệu ứng chuyển động GSAP cho các trang, thẻ nội dung được cập nhật động và điểm lấp lánh Lottie; hai thư viện được tải từ CDN trong trang chính.
 - `js/modules/lesson-catalog.js` — danh mục chủ đề, bài học, câu hỏi tiếp nối, nhiệm vụ và thử thách.
 - `js/modules/expanded-lesson-catalog.js` — 52 bài học bổ sung cho các chủ đề cảm xúc, an toàn, sức khỏe, tư duy, trách nhiệm/môi trường và cộng đồng; trang chính tải mô-đun này ngay sau danh mục bài học.
+- `js/modules/social-creative-lesson-catalog.js` — 20 bài học xã hội/giao tiếp và sáng tạo/khám phá; từng bài được gắn nhóm tuổi 3–6 hoặc 7–10 và quyền truy cập miễn phí/Premium.
 - `js/modules/character-model.js` — dựng Hero trang chủ và tạo bộ nhân vật bài học dạng hoạt hình với nét mặt cùng tay/chân có khớp chuyển động.
 - `assets/little-hero-logo.png` — logo Little Hero dùng chung ở đầu trang và chân trang.
 - `assets/hero-character.png` — ảnh Hero mặc định, hiển thị trong vòng nền và bóng đổ SVG.
