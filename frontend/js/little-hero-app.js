@@ -350,8 +350,8 @@
           toast(`Đã lưu hành trình cho bé ${age} tuổi.`);
         });
       };
-      const showOnboardingIfNeeded = () => {
-        if (state.authenticated && !state.onboardingComplete) openChildOnboarding();
+      const showOnboardingIfNeeded = (force = false) => {
+        if (state.authenticated && (force || !state.onboardingComplete)) openChildOnboarding();
       };
       let activeSpeech = null;
       const updateSpeechControls = (speaking) => {
@@ -799,9 +799,10 @@
               .filter((player) => mode !== "region"
                 || window.LittleHeroLocations.regionByProvince[player.province] === selectedRegion)
               .sort((left, right) => right.points - left.points)
-              .slice(0, 50)
+              .slice(0, 10)
               .map((player, index) => ({ ...player, rank: index + 1, isCurrentUser: false }));
           }
+          players = players.slice(0, 10);
           const medals = ["🥇", "🥈", "🥉"];
           const podium = $("#leaderboardPodium", root);
           if (podium) {
@@ -3054,7 +3055,7 @@
           pendingAuthRoute = "";
           persist();
           setRoute(nextRoute);
-          showOnboardingIfNeeded();
+          showOnboardingIfNeeded(true);
           toast("Đã vào tài khoản trải nghiệm. Tiến độ chỉ lưu trên trình duyệt này.");
         };
         $("#demoAccountLogin").addEventListener("click", enterDemoAccount);
@@ -3248,7 +3249,7 @@
             pendingAuthRoute = "";
             persist();
             setRoute(nextRoute);
-            showOnboardingIfNeeded();
+            showOnboardingIfNeeded(true);
             toast(`Chào mừng ${result.user.name} trở lại Little Hero!`);
           } catch (error) {
             console.error("Không thể kết nối tới máy chủ đăng nhập.", error);
