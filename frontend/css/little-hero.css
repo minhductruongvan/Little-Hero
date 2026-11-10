@@ -906,7 +906,7 @@
     .arena-howto > div > span { grid-row: span 2; display: grid; width: 34px; height: 34px; place-items: center; border-radius: 11px; background: #ffffff18; color: #ffda7d; font-size: 12px; font-weight: 900; }
     .arena-howto strong { font-size: 13px; }
     .arena-howto small { margin-top: 2px; color: #c4d5e2; font-size: 11px; }
-    .rank-big { display: flex; align-items: baseline; gap: 8px; margin: auto 0 18px; padding-top: 22px; }
+    .rank-big { display: flex; align-items: baseline; gap: 8px; margin: 18px 0; padding-top: 22px; }
     .rank-big strong { color: #ffdc80; font-size: 40px; }
     .rank-big span { color: #cfdae4; font-size: 11px; }
     .arena-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 13px 0; }
