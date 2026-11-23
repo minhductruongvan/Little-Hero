@@ -1,4 +1,11 @@
 (() => {
+  const excludedLessonIds = new Set([
+    "community-topic-01",
+    "community-topic-02",
+    "community-topic-04",
+    "community-topic-06"
+  ]);
+
   window.LittleHeroAdditionalLessons = [
   {
     "id": "emotion-topic-04",
@@ -1404,5 +1411,5 @@
     "ageGroup": "7-10",
     "premium": false
   }
-];
+  ].filter((lesson) => !excludedLessonIds.has(lesson.id));
 })();
