@@ -144,48 +144,104 @@
 
     const renderLessonCharacterSvg = (profile = {}, options = {}) => {
       const color = (value, fallback) => /^#[\da-f]{6}$/i.test(value || "") ? value : fallback;
+      const isLessonHero = options.isLessonHero === true;
       const skin = color(profile.skin, "#f2c39e");
-      const shirt = color(profile.shirt, "#55a98c");
-      const pants = color(profile.pants, "#536f92");
+      const shirt = isLessonHero ? "#258bc2" : color(profile.shirt, "#55a98c");
+      const pants = isLessonHero ? "#345a7a" : color(profile.pants, "#536f92");
+      const shoes = isLessonHero ? "#e96b47" : color(profile.shoes, "#e98257");
       const hair = color(profile.hairColor, "#624337");
       const size = profile.adult ? "adult" : "child";
       const ariaLabel = escapeHtml(options.ariaLabel || profile.name || "Nhân vật bài học");
       const hairShape = profile.hair === "curly"
-        ? `<path d="M42 59Q34 43 48 34Q48 17 64 19Q76 5 88 17Q105 9 111 27Q129 26 128 44L119 66 106 54 57 57Z" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`
-        : `<path d="M43 60Q36 28 59 17Q87 2 109 19Q129 33 119 62L109 55Q103 39 94 37Q78 51 53 42L49 62Z" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`;
+        ? `<path d="M41 58Q34 47 43 39Q39 25 52 22Q56 8 70 15Q80 2 92 13Q106 7 112 20Q128 22 128 38Q136 47 124 59L116 67H48Z" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`
+        : `<path d="M41 59Q37 43 43 30Q51 10 72 14Q86 3 103 13Q125 19 127 40L121 60 111 66 106 43Q91 53 72 47L51 43 49 63Z" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`;
       const hairBack = ["long", "braids"].includes(profile.hair)
-        ? `<path d="M48 43Q38 68 47 94Q54 103 62 93L60 57m49-14q11 27 2 52-7 10-15 0l2-39" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`
+        ? `<path d="M49 42Q39 57 44 87L49 100Q57 105 63 96L60 56m49-14q13 20 8 47l-6 13q-8 4-13-5l4-42" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`
         : profile.hair === "ponytail"
-          ? `<path d="M111 37q26-7 22 17l-10 24-14-10Z" fill="${hair}" stroke="#392d30" stroke-width="4"/>`
+          ? `<path d="M115 33Q140 29 138 50L128 78 114 66Z" fill="${hair}" stroke="#392d30" stroke-width="4" stroke-linejoin="round"/>`
           : "";
-      return `<svg class="lesson-character-svg lesson-character-${size}" viewBox="0 0 160 250" role="img" aria-label="${ariaLabel}">
-        <ellipse cx="80" cy="239" rx="32" ry="7" fill="#354354" opacity=".16"/>
+      const hairAccessory = profile.hairAccessory === "flower"
+        ? '<g transform="translate(119 35)"><circle cy="-5" r="5" fill="#f3a5bd"/><circle cx="5" r="5" fill="#f3a5bd"/><circle cy="5" r="5" fill="#f3a5bd"/><circle cx="-5" r="5" fill="#f3a5bd"/><circle r="2.5" fill="#ffd45c"/></g>'
+        : profile.hairAccessory === "bow"
+          ? '<path d="M117 36q-12-11-12 0t12 4q12 7 12-3t-12-1Z" fill="#ed78a7" stroke="#fff1df" stroke-width="2"/>'
+          : "";
+      return `<svg class="lesson-character-svg lesson-character-${size}${isLessonHero ? " lesson-character-hero" : ""}" viewBox="0 0 160 250" role="img" aria-label="${ariaLabel}">
+        <ellipse cx="80" cy="238" rx="33" ry="7" fill="#354354" opacity=".16"/>
         <g class="lesson-movement">
+          ${isLessonHero ? '<path class="lesson-hero-cape" d="M58 107Q80 98 102 107L124 185Q105 174 91 184L80 171 68 184 36 176Z" fill="#17628e" stroke="#154d70" stroke-width="4" stroke-linejoin="round"/>' : ""}
           <g class="lesson-legs">
-            <g class="lesson-leg-left"><path d="M66 160 63 195" fill="none" stroke="#463d4b" stroke-width="21" stroke-linecap="round"/><path d="M66 160 63 195" fill="none" stroke="${pants}" stroke-width="15" stroke-linecap="round"/><circle cx="63" cy="195" r="8" fill="${pants}"/><g class="lesson-knee-left"><path d="M63 195 62 218" fill="none" stroke="#463d4b" stroke-width="17" stroke-linecap="round"/><path d="M63 195 62 218" fill="none" stroke="${pants}" stroke-width="11" stroke-linecap="round"/><g class="lesson-foot-left"><path d="M62 218q-15 0-17 12h34q0-9-17-12Z" fill="#fff9ee" stroke="#463d4b" stroke-width="4" stroke-linejoin="round"/><path d="M48 226h25" stroke="#e7a980" stroke-width="2.5" stroke-linecap="round"/></g></g></g>
-            <g class="lesson-leg-right"><path d="M94 160 97 195" fill="none" stroke="#463d4b" stroke-width="21" stroke-linecap="round"/><path d="M94 160 97 195" fill="none" stroke="${pants}" stroke-width="15" stroke-linecap="round"/><circle cx="97" cy="195" r="8" fill="${pants}"/><g class="lesson-knee-right"><path d="M97 195 98 218" fill="none" stroke="#463d4b" stroke-width="17" stroke-linecap="round"/><path d="M97 195 98 218" fill="none" stroke="${pants}" stroke-width="11" stroke-linecap="round"/><g class="lesson-foot-right"><path d="M98 218q15 0 17 12H81q0-9 17-12Z" fill="#fff9ee" stroke="#463d4b" stroke-width="4" stroke-linejoin="round"/><path d="M87 226h25" stroke="#e7a980" stroke-width="2.5" stroke-linecap="round"/></g></g></g>
+            <g class="lesson-leg-left">
+              <path d="M66 157Q63 176 63 194" fill="none" stroke="#423849" stroke-width="23" stroke-linecap="round"/>
+              <path d="M66 157Q63 176 63 194" fill="none" stroke="${pants}" stroke-width="16" stroke-linecap="round"/>
+              <circle cx="63" cy="194" r="10" fill="${pants}" stroke="#423849" stroke-width="3"/>
+              <g class="lesson-knee-left">
+                <path d="M63 194 62 218" fill="none" stroke="#423849" stroke-width="19" stroke-linecap="round"/>
+                <path d="M63 194 62 218" fill="none" stroke="${pants}" stroke-width="12" stroke-linecap="round"/>
+                <g class="lesson-foot-left">
+                  <path d="M62 216Q48 215 44 229Q44 234 50 234H76Q80 234 78 229Q74 220 62 216Z" fill="${shoes}" stroke="#423849" stroke-width="4" stroke-linejoin="round"/>
+                  <path d="M48 229h27" stroke="#fff4dd" stroke-width="3" stroke-linecap="round"/>
+                  <path d="m54 220 6 6m5-6 6 6" fill="none" stroke="#fff4dd" stroke-width="2.5" stroke-linecap="round"/>
+                </g>
+              </g>
+            </g>
+            <g class="lesson-leg-right">
+              <path d="M94 157Q97 176 97 194" fill="none" stroke="#423849" stroke-width="23" stroke-linecap="round"/>
+              <path d="M94 157Q97 176 97 194" fill="none" stroke="${pants}" stroke-width="16" stroke-linecap="round"/>
+              <circle cx="97" cy="194" r="10" fill="${pants}" stroke="#423849" stroke-width="3"/>
+              <g class="lesson-knee-right">
+                <path d="M97 194 98 218" fill="none" stroke="#423849" stroke-width="19" stroke-linecap="round"/>
+                <path d="M97 194 98 218" fill="none" stroke="${pants}" stroke-width="12" stroke-linecap="round"/>
+                <g class="lesson-foot-right">
+                  <path d="M98 216Q112 215 116 229Q116 234 110 234H84Q80 234 82 229Q86 220 98 216Z" fill="${shoes}" stroke="#423849" stroke-width="4" stroke-linejoin="round"/>
+                  <path d="M85 229h27" stroke="#fff4dd" stroke-width="3" stroke-linecap="round"/>
+                  <path d="m91 220 6 6m5-6 6 6" fill="none" stroke="#fff4dd" stroke-width="2.5" stroke-linecap="round"/>
+                </g>
+              </g>
+            </g>
           </g>
           <g class="lesson-upper">
+            <path d="M72 94h16v18H72Z" fill="${skin}" stroke="#805b49" stroke-width="2"/>
+            <path class="lesson-torso" d="M59 108Q80 96 101 108L109 157Q80 172 51 157Z" fill="${shirt}" stroke="#423849" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M69 108 80 120 91 108" fill="none" stroke="${isLessonHero ? "#d8f4ff" : "#fff3de"}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            ${isLessonHero ? '<path d="m80 128 4 8 9 1-7 6 2 9-8-4-8 4 2-9-7-6 9-1Z" fill="#ffd86e" stroke="#8f692e" stroke-width="2"/>' : '<path d="M89 133h13v17H89Z" fill="#ffffff2b" stroke="#ffffff85" stroke-width="2"/><circle cx="95.5" cy="138" r="2" fill="#fff4d6"/>'}
+            <path d="M62 158q18 5 36 0" fill="none" stroke="#ffffff65" stroke-width="3" stroke-linecap="round"/>
             <g class="lesson-arms">
-              <g class="lesson-arm-left"><path d="M59 111 44 135" fill="none" stroke="#463d4b" stroke-width="18" stroke-linecap="round"/><path d="M59 111 44 135" fill="none" stroke="${shirt}" stroke-width="12" stroke-linecap="round"/><circle cx="44" cy="135" r="7" fill="${shirt}" stroke="#463d4b" stroke-width="3"/><g class="lesson-forearm-left"><path d="M44 135 45 159" fill="none" stroke="#463d4b" stroke-width="17" stroke-linecap="round"/><path d="M44 135 45 159" fill="none" stroke="${shirt}" stroke-width="11" stroke-linecap="round"/><path d="M39 160q-2 7 5 8 7-1 6-8Z" fill="${skin}" stroke="#805b49" stroke-width="2"/></g></g>
-              <g class="lesson-arm-right"><path d="M101 111 116 135" fill="none" stroke="#463d4b" stroke-width="18" stroke-linecap="round"/><path d="M101 111 116 135" fill="none" stroke="${shirt}" stroke-width="12" stroke-linecap="round"/><circle cx="116" cy="135" r="7" fill="${shirt}" stroke="#463d4b" stroke-width="3"/><g class="lesson-forearm-right"><path d="M116 135 115 159" fill="none" stroke="#463d4b" stroke-width="17" stroke-linecap="round"/><path d="M116 135 115 159" fill="none" stroke="${shirt}" stroke-width="11" stroke-linecap="round"/><path d="M110 160q-1 7 5 8 7-1 6-8Z" fill="${skin}" stroke="#805b49" stroke-width="2"/></g></g>
+              <g class="lesson-arm-left">
+                <path d="M59 111Q51 121 44 136" fill="none" stroke="#423849" stroke-width="21" stroke-linecap="round"/>
+                <path d="M59 111Q51 121 44 136" fill="none" stroke="${shirt}" stroke-width="14" stroke-linecap="round"/>
+                <circle cx="44" cy="136" r="8" fill="${shirt}" stroke="#423849" stroke-width="3"/>
+                <g class="lesson-forearm-left">
+                  <path d="M44 136Q45 148 47 160" fill="none" stroke="#423849" stroke-width="19" stroke-linecap="round"/>
+                  <path d="M44 136Q45 148 47 160" fill="none" stroke="${shirt}" stroke-width="12" stroke-linecap="round"/>
+                  <path d="M42 158Q37 161 40 168Q44 174 51 170L53 166" fill="${skin}" stroke="#805b49" stroke-width="2.5" stroke-linejoin="round"/>
+                  <path d="M42 166l2 4m4-5 1 5" fill="none" stroke="#805b49" stroke-width="1.5" stroke-linecap="round"/>
+                </g>
+              </g>
+              <g class="lesson-arm-right">
+                <path d="M101 111Q109 121 116 136" fill="none" stroke="#423849" stroke-width="21" stroke-linecap="round"/>
+                <path d="M101 111Q109 121 116 136" fill="none" stroke="${shirt}" stroke-width="14" stroke-linecap="round"/>
+                <circle cx="116" cy="136" r="8" fill="${shirt}" stroke="#423849" stroke-width="3"/>
+                <g class="lesson-forearm-right">
+                  <path d="M116 136Q115 148 113 160" fill="none" stroke="#423849" stroke-width="19" stroke-linecap="round"/>
+                  <path d="M116 136Q115 148 113 160" fill="none" stroke="${shirt}" stroke-width="12" stroke-linecap="round"/>
+                  <path d="M111 158Q106 161 109 168Q113 174 120 170L122 166" fill="${skin}" stroke="#805b49" stroke-width="2.5" stroke-linejoin="round"/>
+                  <path d="M111 166l2 4m4-5 1 5" fill="none" stroke="#805b49" stroke-width="1.5" stroke-linecap="round"/>
+                </g>
+              </g>
             </g>
-            <path d="M72 91h16v20H72Z" fill="${skin}" stroke="#805b49" stroke-width="2"/>
-            <path class="lesson-torso" d="M59 108q21-13 42 0l10 53q-29 17-62 0Z" fill="${shirt}" stroke="#463d4b" stroke-width="4" stroke-linejoin="round"/>
-            <path d="M70 109 80 120 90 109M80 120v11" fill="none" stroke="#ffffffd9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M65 143q15 8 30 0v15q-15 8-30 0Z" fill="#ffffff24" stroke="#ffffff77" stroke-width="2"/>
-            <circle cx="80" cy="140" r="3" fill="#fff4d6"/><circle cx="80" cy="151" r="3" fill="#fff4d6"/>
             <g class="lesson-head">
-              <path d="M43 59Q43 24 78 19 115 18 118 56L115 78Q110 99 82 101 54 99 47 78Z" fill="${skin}" stroke="#463d4b" stroke-width="4"/>
-              <ellipse cx="45" cy="67" rx="7" ry="10" fill="${skin}" stroke="#463d4b" stroke-width="3"/><ellipse cx="116" cy="67" rx="7" ry="10" fill="${skin}" stroke="#463d4b" stroke-width="3"/>
+              <path d="M43 59Q43 23 80 17 117 17 119 57L115 78Q109 101 81 102 53 100 47 78Z" fill="${skin}" stroke="#423849" stroke-width="4"/>
+              <ellipse cx="45" cy="67" rx="8" ry="11" fill="${skin}" stroke="#423849" stroke-width="3"/><ellipse cx="117" cy="67" rx="8" ry="11" fill="${skin}" stroke="#423849" stroke-width="3"/>
               ${hairBack}${hairShape}
-              <path class="lesson-face-brows" d="M60 58q8-5 16 0m8 0q8-5 16 0" fill="none" stroke="#463d4b" stroke-width="3" stroke-linecap="round"/>
-              <ellipse cx="69" cy="69" rx="6" ry="8" fill="#fff"/><ellipse cx="91" cy="69" rx="6" ry="8" fill="#fff"/>
-              <circle cx="70" cy="70" r="3.5" fill="#342e3b"/><circle cx="92" cy="70" r="3.5" fill="#342e3b"/>
-              <circle cx="71" cy="69" r="1.3" fill="#fff"/><circle cx="93" cy="69" r="1.3" fill="#fff"/>
+              <path d="M51 46Q61 35 73 37M96 27Q111 31 116 44" fill="none" stroke="#ffffff66" stroke-width="4" stroke-linecap="round"/>
+              <path class="lesson-face-brows" d="M60 58q8-5 16 0m8 0q8-5 16 0" fill="none" stroke="#423849" stroke-width="3.5" stroke-linecap="round"/>
+              <ellipse cx="69" cy="69" rx="7" ry="9" fill="#fff"/><ellipse cx="91" cy="69" rx="7" ry="9" fill="#fff"/>
+              <circle cx="70" cy="70" r="4" fill="#342e3b"/><circle cx="92" cy="70" r="4" fill="#342e3b"/>
+              <circle cx="71.5" cy="68.5" r="1.6" fill="#fff"/><circle cx="93.5" cy="68.5" r="1.6" fill="#fff"/>
               <path d="M80 73q-4 6 1 7" fill="none" stroke="#a9785a" stroke-width="2" stroke-linecap="round"/>
-              <ellipse cx="59" cy="81" rx="7" ry="4" fill="#ec8c91" opacity=".66"/><ellipse cx="101" cy="81" rx="7" ry="4" fill="#ec8c91" opacity=".66"/>
-              <path class="lesson-face-mouth" d="M73 82q7 8 14 0" fill="none" stroke="#74404a" stroke-width="3" stroke-linecap="round"/>
+              <ellipse cx="59" cy="82" rx="7" ry="4.5" fill="#ec8c91" opacity=".66"/><ellipse cx="101" cy="82" rx="7" ry="4.5" fill="#ec8c91" opacity=".66"/>
+              <path class="lesson-face-mouth" d="M73 82q7 8 14 0" fill="none" stroke="#74404a" stroke-width="3.5" stroke-linecap="round"/>
+              ${hairAccessory}
             </g>
           </g>
         </g>
@@ -212,7 +268,16 @@
           : { mouth: "M92 100Q100 93 108 100", brows: "m74 62 21 6m32-6-21 6" },
         concerned: lessonCharacter
           ? { mouth: "M74 85q6-4 12 0", brows: "M60 58q8-4 16 1m8 1q8-5 16-1" }
-          : { mouth: "M94 100Q100 96 106 100", brows: "M74 64q10-6 21 1m11 1q11-7 21-1" }
+          : { mouth: "M94 100Q100 96 106 100", brows: "M74 64q10-6 21 1m11 1q11-7 21-1" },
+        surprised: lessonCharacter
+          ? { mouth: "M77 82q3-8 6 0q-3 9-6 0", brows: "M60 54q8-7 16-1m8-1q8-6 16 1" }
+          : { mouth: "M96 97q4-10 8 0q-4 10-8 0", brows: "M74 58q10-9 21-2m11-2q11-7 21 2" },
+        excited: lessonCharacter
+          ? { mouth: "M71 80q9 14 18 0", brows: "M60 54q8-7 16-1m8-1q8-6 16 1" }
+          : { mouth: "M90 94Q100 109 110 94", brows: "M74 58q10-9 21-2m11-2q11-7 21 2" },
+        shy: lessonCharacter
+          ? { mouth: "M76 83q5 4 10 0", brows: "M60 58q8-2 16 1m8 1q8-3 16-1" }
+          : { mouth: "M94 99q6 4 12 0", brows: "M74 63q10-3 21 0m11 0q11-3 21 0" }
       };
       const face = expressions[expression] || expressions.happy;
       mouth.setAttribute("d", face.mouth);

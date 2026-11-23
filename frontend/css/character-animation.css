@@ -1,0 +1,278 @@
+/* ==========================================================
+   LITTLE HERO — shared character rig / action animation layer
+   ========================================================== */
+.scene-actor[data-joint-animation] {
+  animation: none !important;
+}
+.scene-actor[data-joint-animation] .lesson-character-svg * {
+  animation: none !important;
+  transition: none !important;
+}
+.scene-actor .lesson-character-svg .lesson-head,
+.scene-actor .lesson-character-svg .lesson-arm-left,
+.scene-actor .lesson-character-svg .lesson-arm-right,
+.scene-actor .lesson-character-svg .lesson-forearm-left,
+.scene-actor .lesson-character-svg .lesson-forearm-right,
+.scene-actor .lesson-character-svg .lesson-leg-left,
+.scene-actor .lesson-character-svg .lesson-leg-right,
+.scene-actor .lesson-character-svg .lesson-knee-left,
+.scene-actor .lesson-character-svg .lesson-knee-right {
+transform-box: view-box;
+}
+.scene-actor .lesson-character-svg .lesson-arm-left,
+.scene-actor .lesson-character-svg .lesson-arm-right {
+transform-origin: 36.9% 44.4%;
+}
+.scene-actor .lesson-character-svg .lesson-arm-right {
+transform-origin: 63.1% 44.4%;
+}
+.scene-actor .lesson-character-svg .lesson-forearm-left,
+.scene-actor .lesson-character-svg .lesson-forearm-right {
+transform-origin: 27.5% 54%;
+}
+.scene-actor .lesson-character-svg .lesson-forearm-right {
+transform-origin: 72.5% 54%;
+}
+.scene-actor .lesson-character-svg .lesson-leg-left,
+.scene-actor .lesson-character-svg .lesson-leg-right {
+transform-origin: 41.25% 64%;
+}
+.scene-actor .lesson-character-svg .lesson-leg-right {
+transform-origin: 58.75% 64%;
+}
+.scene-actor .lesson-character-svg .lesson-knee-left {
+transform-origin: 39.4% 78%;
+}
+.scene-actor .lesson-character-svg .lesson-knee-right {
+transform-origin: 60.6% 78%;
+}
+.scene-actor .lesson-character-svg .lesson-head {
+transform-origin: 50% 40.4%;
+}
+
+.scene-actor.action-jump .lesson-character-svg .lesson-movement {
+  animation: lh-jump .72s cubic-bezier(.3,.7,.35,1) 2;
+}
+.scene-actor.action-jump .lesson-character-svg .lesson-leg-left {
+  animation: lh-jump-leg .72s ease-in-out 2;
+}
+.scene-actor.action-jump .lesson-character-svg .lesson-leg-right {
+  animation: lh-jump-leg .72s ease-in-out 2 reverse;
+}
+.scene-actor.action-jump .lesson-character-svg .lesson-arm-left {
+  animation: lh-jump-arm-left .72s ease-in-out 2;
+}
+.scene-actor.action-jump .lesson-character-svg .lesson-arm-right {
+  animation: lh-jump-arm-right .72s ease-in-out 2;
+}
+.scene-actor.action-wave .lesson-character-svg .lesson-arm-right {
+  animation: lh-wave-arm .58s ease-in-out 4;
+}
+.scene-actor.action-wave .lesson-character-svg .lesson-forearm-right {
+  animation: lh-wave-forearm .58s ease-in-out 4;
+}
+.scene-actor.action-clap .lesson-character-svg .lesson-arm-left {
+  animation: lh-clap-left .42s ease-in-out 4 alternate;
+}
+.scene-actor.action-clap .lesson-character-svg .lesson-arm-right {
+  animation: lh-clap-right .42s ease-in-out 4 alternate;
+}
+.scene-actor.action-sweep .lesson-character-svg .lesson-upper {
+  animation: lh-sweep-body .72s ease-in-out 3;
+}
+.scene-actor.action-sweep .lesson-character-svg .lesson-arm-right,
+.scene-actor.action-sweep .lesson-character-svg .lesson-forearm-right {
+  animation: lh-sweep-arm .72s ease-in-out 3 alternate;
+}
+.scene-actor.action-carry .lesson-character-svg .lesson-arm-left,
+.scene-actor.action-carry .lesson-character-svg .lesson-arm-right {
+  animation: lh-carry-arms .65s ease-in-out 3 alternate;
+}
+.scene-actor.action-fold .lesson-character-svg .lesson-upper,
+.scene-actor.action-tidy .lesson-character-svg .lesson-upper {
+  animation: lh-fold-body .8s ease-in-out 2;
+}
+.scene-actor.action-fold .lesson-character-svg .lesson-arm-left,
+.scene-actor.action-fold .lesson-character-svg .lesson-arm-right,
+.scene-actor.action-tidy .lesson-character-svg .lesson-arm-left,
+.scene-actor.action-tidy .lesson-character-svg .lesson-arm-right {
+  animation: lh-fold-arms .65s ease-in-out 3 alternate;
+}
+.scene-actor.action-give .lesson-character-svg .lesson-arm-right,
+.scene-actor.action-give .lesson-character-svg .lesson-forearm-right {
+  animation: lh-give-arm .7s ease-in-out 2 alternate;
+}
+.scene-actor.action-hug .lesson-character-svg .lesson-arm-left {
+  animation: lh-hug-left .7s ease-in-out 2 alternate;
+}
+.scene-actor.action-hug .lesson-character-svg .lesson-arm-right {
+  animation: lh-hug-right .7s ease-in-out 2 alternate;
+}
+.scene-actor.action-protect .lesson-character-svg .lesson-arm-left,
+.scene-actor.action-warn .lesson-character-svg .lesson-arm-left {
+  animation: lh-protect-left .65s ease-in-out 3 alternate;
+}
+.scene-actor.action-protect .lesson-character-svg .lesson-arm-right,
+.scene-actor.action-warn .lesson-character-svg .lesson-arm-right {
+  animation: lh-protect-right .65s ease-in-out 3 alternate;
+}
+.scene-actor.action-dance .lesson-character-svg .lesson-movement {
+  animation: lh-dance-body .55s ease-in-out 5 alternate;
+}
+.scene-actor.action-dance .lesson-character-svg .lesson-arm-left,
+.scene-actor.action-dance .lesson-character-svg .lesson-arm-right {
+  animation: lh-dance-arms .55s ease-in-out 5 alternate;
+}
+.scene-actor.action-point .lesson-character-svg .lesson-arm-right,
+.scene-actor.action-point .lesson-character-svg .lesson-forearm-right {
+  animation: lh-point-arm .7s ease-in-out 2 alternate;
+}
+.scene-actor.action-give .lesson-character-svg .lesson-upper,
+.scene-actor.action-hug .lesson-character-svg .lesson-upper {
+  animation: lh-give-body .7s ease-in-out 2;
+}
+.scene-actor.mood-surprised .lesson-character-svg .lesson-head {
+  animation: lh-surprised .42s ease-out 2;
+}
+.scene-actor.mood-excited .lesson-character-svg .lesson-movement {
+  animation: lh-excited .65s ease-in-out 2;
+}
+.scene-actor.mood-shy .lesson-character-svg .lesson-head {
+  animation: lh-shy .7s ease-in-out 2;
+}
+
+.scene[data-active-action="sweep"] .scene-prop,
+.scene[data-active-action="fold"] .scene-prop,
+.scene[data-active-action="tidy"] .scene-prop {
+  animation: lh-prop-work .72s ease-in-out 3;
+}
+.scene[data-active-action="carry"] .scene-prop,
+.scene[data-active-action="give"] .scene-prop {
+  animation: lh-prop-lift .8s ease-in-out 2;
+}
+.scene[data-active-action="jump"] .scene-prop {
+  animation: lh-prop-bounce .72s ease-in-out 2;
+}
+
+@keyframes lh-jump {
+  0%,100% { transform: translateY(0) rotate(0); }
+  35%,65% { transform: translateY(-24px) rotate(-3deg); }
+}
+@keyframes lh-jump-leg {
+  0%,100% { transform: rotate(0); }
+  45% { transform: rotate(-24deg); }
+}
+@keyframes lh-jump-arm-left { to { transform: rotate(100deg); } }
+@keyframes lh-jump-arm-right { to { transform: rotate(-100deg); } }
+@keyframes lh-wave-arm {
+  0%,100% { transform: rotate(0); }
+  35%,65% { transform: rotate(-112deg); }
+}
+@keyframes lh-wave-forearm {
+  0%,100% { transform: rotate(0); }
+  35%,65% { transform: rotate(-40deg); }
+}
+@keyframes lh-clap-left { to { transform: rotate(-48deg) translateX(8px); } }
+@keyframes lh-clap-right { to { transform: rotate(48deg) translateX(-8px); } }
+@keyframes lh-sweep-body { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-7deg) translateY(4px); } }
+@keyframes lh-sweep-arm { to { transform: rotate(54deg) translateY(5px); } }
+@keyframes lh-carry-arms { to { transform: rotate(-34deg) translateY(-7px); } }
+@keyframes lh-fold-body { 0%,100% { transform: translateY(0); } 45%,70% { transform: translateY(5px) rotate(5deg); } }
+@keyframes lh-fold-arms { to { transform: rotate(28deg) translateY(5px); } }
+@keyframes lh-give-arm { to { transform: rotate(-45deg) translateY(-4px); } }
+@keyframes lh-hug-left { to { transform: rotate(-52deg) translateY(-3px); } }
+@keyframes lh-hug-right { to { transform: rotate(52deg) translateY(-3px); } }
+@keyframes lh-protect-left { to { transform: rotate(78deg); } }
+@keyframes lh-protect-right { to { transform: rotate(-78deg); } }
+@keyframes lh-give-body { 50% { transform: translateY(-3px) rotate(-3deg); } }
+@keyframes lh-dance-body { 0%,100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(5deg) translateY(-9px); } }
+@keyframes lh-dance-arms { 0%,100% { transform: rotate(-35deg); } 50% { transform: rotate(45deg); } }
+@keyframes lh-point-arm { to { transform: rotate(-68deg) translateY(-4px); } }
+@keyframes lh-surprised { 50% { transform: translateY(-4px) scale(1.04); } }
+@keyframes lh-excited { 50% { transform: translateY(-8px) rotate(3deg); } }
+@keyframes lh-shy { 50% { transform: rotate(-7deg) translateX(-3px); } }
+@keyframes lh-prop-work { 0%,100% { transform: translateX(-50%) rotate(0); } 50% { transform: translateX(calc(-50% + 10px)) rotate(12deg); } }
+@keyframes lh-prop-lift { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-16px) rotate(-8deg); } }
+@keyframes lh-prop-bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-actor[class*="action-"] .lesson-character-svg *,
+  .scene[data-active-action] .scene-prop {
+    animation: none !important;
+  }
+}
+
+.character-held-object {
+  position: absolute;
+  z-index: 8;
+  top: 47%;
+  right: 1%;
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 28px;
+  font-size: clamp(20px, 2.5vw, 34px);
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 3px #26364a35);
+  transform-origin: 50% 80%;
+  animation: lh-held-sway .42s ease-in-out 4 alternate;
+}
+.character-held-object[data-held-action="action-give"] {
+  top: 44%;
+  right: 0;
+}
+.character-held-object[data-held-action="action-fold"] {
+  top: 51%;
+  right: 3%;
+  font-size: clamp(22px, 2.8vw, 38px);
+}
+@keyframes lh-held-sway {
+  to { transform: translateY(-4px) rotate(7deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .character-held-object { animation: none !important; }
+}
+
+.scene-actor.action-read .lesson-character-svg .lesson-arm-left,
+.scene-actor.action-read .lesson-character-svg .lesson-arm-right {
+  animation: lh-read-arms .8s ease-in-out 2 alternate;
+}
+.scene-actor.action-draw .lesson-character-svg .lesson-arm-right,
+.scene-actor.action-draw .lesson-character-svg .lesson-forearm-right {
+  animation: lh-draw-arm .48s ease-in-out 5 alternate;
+}
+.scene-actor.action-drink .lesson-character-svg .lesson-arm-right,
+.scene-actor.action-drink .lesson-character-svg .lesson-forearm-right {
+  animation: lh-drink-arm .8s ease-in-out 2 alternate;
+}
+.scene-actor.action-eat .lesson-character-svg .lesson-head {
+  animation: lh-eat-head .42s ease-in-out 4 alternate;
+}
+.scene-actor.action-brush-teeth .lesson-character-svg .lesson-arm-right,
+.scene-actor.action-brush-teeth .lesson-character-svg .lesson-forearm-right {
+  animation: lh-brush-arm .35s ease-in-out 6 alternate;
+}
+@keyframes lh-read-arms { to { transform: rotate(-28deg) translateY(-3px); } }
+@keyframes lh-draw-arm { to { transform: rotate(28deg) translate(3px,4px); } }
+@keyframes lh-drink-arm { to { transform: rotate(-62deg) translateY(-5px); } }
+@keyframes lh-eat-head { to { transform: translateY(2px) rotate(5deg); } }
+@keyframes lh-brush-arm { to { transform: rotate(-55deg) translateY(-3px); } }
+
+.scene-actor .lesson-character-hero .lesson-hero-cape {
+  transform-box: fill-box;
+  transform-origin: 50% 5%;
+}
+.scene-actor.action-run .lesson-character-hero .lesson-hero-cape {
+  animation: lh-hero-cape-run .32s ease-in-out 6 alternate;
+}
+.scene-actor.action-jump .lesson-character-hero .lesson-hero-cape,
+.scene-actor.action-dance .lesson-character-hero .lesson-hero-cape {
+  animation: lh-hero-cape-float .65s ease-in-out 4 alternate;
+}
+@keyframes lh-hero-cape-run {
+  to { transform: skewY(9deg) translateX(4px); }
+}
+@keyframes lh-hero-cape-float {
+  to { transform: rotate(7deg) translateY(-5px); }
+}

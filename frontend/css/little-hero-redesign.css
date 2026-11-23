@@ -1,0 +1,377 @@
+:root {
+  --font-display: clamp(2.75rem, 4.8vw, 3.5rem);
+  --font-section: clamp(1.875rem, 3.2vw, 2.125rem);
+  --font-card-title: 1.25rem;
+  --font-body: 22px;
+  --font-support: 14px;
+  --font-meta: 12px;
+}
+
+*,
+*::before,
+*::after {
+  font-family: "Be Vietnam Pro" !important;
+}
+
+html,
+body {
+  font-family: "Be Vietnam Pro" !important;
+}
+
+body {
+  font-size: var(--font-body);
+  line-height: 1.65;
+}
+
+button,
+input,
+textarea,
+select {
+  font-size: var(--font-body);
+}
+
+#home .hero-copy h1 {
+  font-size: var(--font-display);
+  line-height: 1.12;
+}
+
+#home .section-head h2,
+#routeView .page-heading h1 {
+  font-size: var(--font-section);
+  line-height: 1.25;
+}
+
+#home h2,
+#routeView h2 {
+  font-size: 26px;
+  line-height: 1.3;
+}
+
+#home h3,
+#routeView h3 {
+  font-size: var(--font-card-title);
+  line-height: 1.4;
+}
+
+#home p,
+#routeView p,
+.footer p,
+.testimonial-card blockquote {
+  font-size: 20px !important;
+  line-height: 1.55;
+  text-align: left;
+  text-justify: auto;
+}
+
+#home .kicker,
+#routeView .kicker,
+#home .tag,
+#routeView .tag,
+#home .lesson-meta,
+#routeView .lesson-meta,
+#home small,
+#routeView small,
+.footer small {
+  font-size: var(--font-meta);
+}
+
+.nav a,
+.nav summary,
+.stat-pill {
+  font-size: 14px;
+}
+
+.btn,
+#home .btn,
+#routeView .btn {
+  min-height: 42px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  font-size: 15px;
+}
+
+.btn-small {
+  min-height: 34px;
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.icon-btn,
+.menu-btn {
+  width: 40px;
+  height: 40px;
+  font-size: 17px;
+}
+
+.catalog-card,
+.story-route-card,
+.game-card,
+.achievement-card,
+.forum-card,
+.faq-card,
+.review-form,
+.settings-card,
+.empty-card,
+.parent-panel,
+.score-card {
+  border-radius: 20px;
+}
+
+.lesson-choice,
+.mini-game-option {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.lesson-choice {
+  padding: 12px 14px;
+}
+
+.route-view .btn,
+.page-actions .btn {
+  min-height: 40px;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --font-display: clamp(2.25rem, 8.5vw, 2.75rem);
+    --font-section: clamp(1.625rem, 6.5vw, 1.875rem);
+    --font-card-title: 1.125rem;
+  }
+
+  .btn,
+  #home .btn,
+  #routeView .btn {
+    min-height: 40px;
+    padding: 9px 14px;
+    font-size: 15px;
+  }
+
+  .icon-btn,
+  .menu-btn {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+#home #stories {
+  display: none !important;
+}
+
+#home h1,
+#home h2,
+#home h3,
+#routeView h1,
+#routeView h2,
+#routeView h3 {
+  color: #1e4263;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 0 #fff, 0 2px 0 #d9e7f2, 0 5px 11px #18344d24;
+}
+
+#home strong,
+#routeView strong {
+  font-weight: 600;
+}
+
+#home .btn,
+#routeView .btn {
+  font-weight: 600;
+  text-shadow: 0 1px 0 #194b78;
+}
+
+#home p,
+#routeView p,
+.footer p {
+  color: #40556a;
+}
+
+#home .arena-card h3,
+#routeView .arena-card h3 {
+  color: #fff;
+  font-size: clamp(26px, 2.4vw, 32px);
+  font-weight: 700 !important;
+  letter-spacing: normal;
+  line-height: 1.15;
+  text-shadow: none;
+}
+
+#home .arena-card p,
+#routeView .arena-card p {
+  color: #d1dfeb !important;
+  font-size: 14px !important;
+  line-height: 1.7;
+}
+
+#home .home-final-cta h2 {
+  color: #fff3ad;
+  font-weight: 700 !important;
+  letter-spacing: normal;
+  text-shadow: 0 3px 0 #246052;
+}
+
+#home .home-final-cta p {
+  color: #effff8 !important;
+}
+
+#routeView .page-actions a[href^="#/lessons"] {
+  font-weight: 500;
+  text-shadow: none;
+}
+
+body.route-active[data-route="quiz"] #routeView > .page-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 720px);
+  margin-inline: auto;
+  text-align: center;
+}
+
+body.route-active[data-route="quiz"] #routeView > .page-heading p {
+  text-align: center !important;
+}
+
+body.route-active[data-route="quiz"] #routeView .quiz-format-grid {
+  width: min(100%, 1120px);
+  margin-inline: auto;
+}
+
+body.route-active[data-route="quiz"] #routeView .quiz-format-card {
+  min-height: 270px;
+  grid-template-rows: 42px minmax(2.7em, auto) 1fr 48px;
+}
+
+body.route-active[data-route="quiz"] #routeView .quiz-format-card .btn {
+  width: 100%;
+  min-height: 48px;
+  justify-self: stretch;
+  align-self: end;
+  justify-content: center;
+}
+
+body.route-active[data-route="quiz"] #routeView .quiz-note {
+  width: min(100%, 1120px);
+  margin: 16px auto 0;
+  text-align: center !important;
+}
+
+body.route-active[data-route="quiz"] #routeView .quiz-format-card p {
+  min-height: 3.2em;
+}
+
+.parent-article-art {
+  height: 126px;
+}
+
+.parent-article-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.parent-article-content {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px;
+}
+
+.parent-article-content h2,
+.parent-article-content p {
+  margin: 0;
+}
+
+.parent-article-content details {
+  margin-top: 2px;
+}
+
+.parent-article-content details[open] {
+  grid-column: 1 / -1;
+}
+
+.parent-article-content details p {
+  padding-top: 10px;
+}
+
+body.dark-mode #home h1,
+body.dark-mode #home h2,
+body.dark-mode #home h3,
+body.dark-mode #routeView h1,
+body.dark-mode #routeView h2,
+body.dark-mode #routeView h3 {
+  color: #edf3f8;
+  text-shadow: none;
+}
+
+body.dark-mode #home p,
+body.dark-mode #routeView p,
+body.dark-mode .footer p {
+  color: #c4ced9 !important;
+}
+
+body.dark-mode #home .btn,
+body.dark-mode #routeView .btn {
+  text-shadow: none;
+}
+
+#home .trust-share-link {
+  font-weight: 600;
+  text-shadow: none;
+}
+
+.footer .footer-connect p {
+  font-size: 20px !important;
+  line-height: 1.55;
+  text-align: left;
+}
+
+body.route-active[data-route="quiz"] #routeView .quiz-format-card {
+  min-height: 330px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(3.2em, 1fr) 48px;
+}
+
+body.route-active[data-route="quiz"] #routeView .quiz-format-card h2 {
+  align-self: end;
+}
+
+body.route-active[data-route="quiz"] #routeView .quiz-format-card .quiz-format-icon {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 600px) {
+  body.route-active[data-route="quiz"] #routeView .quiz-format-card {
+    min-height: 300px;
+    grid-template-rows: auto minmax(3.2em, 1fr) 48px;
+  }
+}
+
+.parent-article-art {
+  height: 150px;
+}
+
+body.route-active[data-route="parents"] {
+  background-color: #c9eaff;
+  background-image: url("../assets/parent-sky-background.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+body.dark-mode.route-active[data-route="parents"] {
+  background-color: #18212b;
+  background-image:
+    linear-gradient(#18212bba, #18212bba),
+    url("../assets/parent-sky-background.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}

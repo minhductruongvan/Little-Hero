@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title">
+  <title id="title">Little Hero skill island map</title>
+  <defs><linearGradient id="sea" y2="1"><stop stop-color="#b7e9f4"/><stop offset="1" stop-color="#63c6d2"/></linearGradient></defs>
+  <rect width="640" height="360" rx="28" fill="url(#sea)"/>
+  <path d="M0 269c100-22 176 27 275 3s218-66 365-8v96H0z" fill="#75c993"/>
+  <path d="M60 221c76-55 129 20 207-16s95-87 173-53 93 47 140 23" fill="none" stroke="#fff6d8" stroke-width="13" stroke-linecap="round" stroke-dasharray="3 15"/>
+  <g>
+    <ellipse cx="123" cy="222" rx="68" ry="21" fill="#4a9b70"/>
+    <path d="M56 207q10-70 66-71 56 1 66 71z" fill="#a7dc7d"/>
+    <circle cx="122" cy="158" r="28" fill="#ffdb79"/>
+    <path d="M106 159q16-14 32 0m-29 9q13 11 26 0" fill="none" stroke="#668852" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g>
+    <ellipse cx="319" cy="188" rx="80" ry="24" fill="#559f78"/>
+    <path d="M238 170q10-87 81-88 70 1 81 88z" fill="#b5e58a"/>
+    <rect x="295" y="109" width="48" height="56" rx="14" fill="#fff8ec"/>
+    <path d="M304 125h30m-30 12h23m-23 12h27" stroke="#65a8d1" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g>
+    <ellipse cx="511" cy="224" rx="74" ry="22" fill="#4a9b70"/>
+    <path d="M436 208q11-73 75-74 64 1 75 74z" fill="#9edb73"/>
+    <path d="M510 154v54m-22-32 22-22 22 22" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <circle cx="320" cy="47" r="24" fill="#ffe68a"/>
+  <path d="m310 47 7 7 14-16" fill="none" stroke="#448e6b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#fff"><path d="M58 78c0-13 10-23 23-23 8 0 16 5 19 12 3-2 6-3 9-3 10 0 18 8 18 18H58z"/><path d="M437 70c0-11 9-20 20-20 8 0 14 4 17 11 2-1 5-2 8-2 9 0 16 7 16 16h-61z"/></g>
+  <g fill="#fff2b0"><path d="m215 45 5 12 13 1-10 8 4 13-12-7-11 7 3-13-10-8 13-1z"/><circle cx="567" cy="124" r="5"/></g>
+</svg>

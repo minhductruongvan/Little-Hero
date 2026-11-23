@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title">
+  <title id="title">Safe learning practice</title>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#e1f3ff"/><stop offset="1" stop-color="#ddf6e8"/></linearGradient><linearGradient id="shield" x2="1" y2="1"><stop stop-color="#61b6df"/><stop offset="1" stop-color="#57bd95"/></linearGradient></defs>
+  <rect width="640" height="360" rx="28" fill="url(#bg)"/>
+  <circle cx="318" cy="183" r="129" fill="#fff" opacity=".48"/>
+  <path d="M320 58 423 99v81c0 68-45 107-103 134-58-27-103-66-103-134V99z" fill="url(#shield)" stroke="#fff" stroke-width="10"/>
+  <path d="M320 101v154" stroke="#fff" stroke-width="5" stroke-dasharray="8 12" opacity=".8"/>
+  <path d="m277 176 30 30 61-70" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(113 231)">
+    <ellipse cy="58" rx="54" ry="11" fill="#487b69" opacity=".16"/>
+    <path d="M-28 11 0 22l28-11-7 41h-42z" fill="#ffbd61"/>
+    <rect x="-22" y="8" width="44" height="47" rx="15" fill="#548fd2"/>
+    <circle cy="-13" r="27" fill="#ffd2aa"/>
+    <path d="M-27-20c3-23 47-27 54-2-11-7-19-9-28-7-9 1-16 5-26 9" fill="#624337"/>
+    <circle cx="-9" cy="-12" r="3" fill="#354758"/><circle cx="9" cy="-12" r="3" fill="#354758"/>
+    <path d="M-7 0q7 6 14 0" fill="none" stroke="#a9574c" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g fill="#fff"><path d="M49 103c0-13 10-23 23-23 9 0 16 5 20 12 3-2 6-3 10-3 10 0 18 8 18 18H49z"/><path d="M489 71c0-10 8-19 19-19 7 0 14 4 17 11 2-1 5-2 7-2 9 0 16 7 16 16h-59z"/></g>
+  <g fill="#ffcb64"><circle cx="501" cy="264" r="6"/><path d="m178 77 5 12 13 1-10 8 4 13-12-7-11 7 3-13-10-8 13-1z"/></g>
+</svg>

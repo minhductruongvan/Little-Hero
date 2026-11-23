@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title">
+  <title id="title">Family talking after a Little Hero lesson</title>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#fff0d6"/><stop offset="1" stop-color="#f8dfee"/></linearGradient></defs>
+  <rect width="640" height="360" rx="28" fill="url(#bg)"/>
+  <circle cx="320" cy="190" r="123" fill="#fff" opacity=".48"/>
+  <g transform="translate(216 135)">
+    <ellipse cx="0" cy="150" rx="61" ry="12" fill="#6a5a70" opacity=".13"/>
+    <path d="M-41 48q41-22 82 0l17 96h-116z" fill="#6db7d0"/>
+    <circle cy="14" r="38" fill="#ffd2aa"/>
+    <path d="M-39 5c4-38 68-43 78-3-19-12-41-17-78 3" fill="#5a4039"/>
+    <circle cx="-13" cy="15" r="4" fill="#364457"/><circle cx="13" cy="15" r="4" fill="#364457"/>
+    <path d="M-9 31q9 8 18 0" fill="none" stroke="#a9574c" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(397 158)">
+    <ellipse cy="128" rx="54" ry="11" fill="#6a5a70" opacity=".13"/>
+    <path d="M-36 37q36-20 72 0l14 84h-100z" fill="#f3a75c"/>
+    <circle cy="8" r="34" fill="#f1bf91"/>
+    <path d="M-35-2c2-35 60-40 70-4-17-11-37-15-70 4" fill="#6a493b"/>
+    <circle cx="-11" cy="8" r="3.5" fill="#364457"/><circle cx="11" cy="8" r="3.5" fill="#364457"/>
+    <path d="M-8 23q8 7 16 0" fill="none" stroke="#a9574c" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g>
+    <path d="M89 67h157q17 0 17 17v43q0 17-17 17h-87l-29 25v-25H89q-17 0-17-17V84q0-17 17-17z" fill="#fff" stroke="#e7c6d9" stroke-width="4"/>
+    <circle cx="120" cy="105" r="7" fill="#62b899"/><circle cx="146" cy="105" r="7" fill="#62b899"/><circle cx="172" cy="105" r="7" fill="#62b899"/>
+  </g>
+  <g fill="#fff"><path d="M449 58c0-11 9-20 20-20 8 0 14 4 17 10 3-1 5-2 8-2 9 0 16 7 16 16h-61z"/></g>
+  <path d="m506 273 6 14 15 1-11 10 4 15-14-8-13 8 3-15-11-10 15-1z" fill="#ffc85b"/>
+</svg>

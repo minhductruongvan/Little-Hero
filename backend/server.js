@@ -66,6 +66,19 @@ const chatFileTypes = new Set([
     'video/x-ms-wmv',
     'video/3gpp'
 ]);
+const chatLanguages = new Map([
+    ['vi', 'Vietnamese'],
+    ['en', 'English'],
+    ['zh-CN', 'Simplified Chinese'],
+    ['ja', 'Japanese'],
+    ['ko', 'Korean'],
+    ['es', 'Spanish'],
+    ['fr', 'French'],
+    ['th', 'Thai'],
+    ['id', 'Indonesian'],
+    ['de', 'German'],
+    ['pt-BR', 'Brazilian Portuguese']
+]);
 const legacyAuthFile = process.env.LITTLE_HERO_AUTH_FILE
     || path.join(os.homedir(), '.little-hero', 'accounts.json');
 const databaseFile = process.env.LITTLE_HERO_DATABASE_FILE
@@ -110,7 +123,10 @@ let authQueue = Promise.resolve();
 const passwordRecoveryChallenges = new Map();
 const passwordRecoveryRequests = new Map();
 const leaderboardSessions = new Map();
+const arenaMatchmaking = new Map();
+const arenaDemoSessions = new Map();
 const leaderboardSessionLifetime = 30 * 24 * 60 * 60 * 1000;
+const arenaDemoSessionLifetime = 12 * 60 * 60 * 1000;
 const receiptMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 const getLeaderboardSession = (req) => {
@@ -123,6 +139,25 @@ const getLeaderboardSession = (req) => {
         return null;
     }
     return session;
+};
+const getArenaDemoSession = (req) => {
+    const token = /^Bearer ([A-Za-z0-9_-]+)$/.exec(req.get('authorization') || '')?.[1];
+    if (!token) return null;
+    const session = arenaDemoSessions.get(token);
+    if (!session) return null;
+    if (session.expiresAt <= Date.now()) {
+        arenaDemoSessions.delete(token);
+        return null;
+    }
+    return session;
+};
+const getArenaMatchmakingParticipant = (req) => {
+    const accountSession = getLeaderboardSession(req);
+    if (accountSession) {
+        return { id: accountSession.email.toLowerCase(), email: accountSession.email, isDemo: false };
+    }
+    const demoSession = getArenaDemoSession(req);
+    return demoSession ? { id: demoSession.id, email: '', isDemo: true } : null;
 };
 const getPremiumSubscription = (email) => accountDatabase.prepare(`
     SELECT plan, status, expires_at AS expiresAt, uploaded_at AS uploadedAt
@@ -315,7 +350,7 @@ app.get('/api/leaderboard', (req, res) => {
     if (!['duel', 'region', 'city', 'nation'].includes(mode)) {
         return res.status(400).json({ error: 'Phạm vi bảng xếp hạng không hợp lệ.' });
     }
-    if (mode !== 'nation' && !['3-6', '7-10'].includes(ageGroup)) {
+    if ((mode !== 'nation' || ageGroup) && !['3-6', '7-10'].includes(ageGroup)) {
         return res.status(400).json({ error: 'Nhóm tuổi bảng xếp hạng không hợp lệ.' });
     }
     if ((mode === 'region' || mode === 'city') && !locationCatalog.regionByProvince[province]) {
@@ -324,7 +359,7 @@ app.get('/api/leaderboard', (req, res) => {
 
     const conditions = [];
     const values = [];
-    if (mode !== 'nation') {
+    if (ageGroup) {
         conditions.push('age_group = ?');
         values.push(ageGroup);
     }
@@ -422,6 +457,101 @@ app.delete('/api/leaderboard/score', (req, res) => {
     const session = getLeaderboardSession(req);
     if (!session) return res.status(401).json({ error: 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.' });
     accountDatabase.prepare('DELETE FROM leaderboard_scores WHERE email = ?').run(session.email);
+    res.sendStatus(204);
+});
+
+app.post('/api/arena/matchmaking/demo-session', (req, res) => {
+    const now = Date.now();
+    for (const [token, session] of arenaDemoSessions) {
+        if (session.expiresAt <= now) arenaDemoSessions.delete(token);
+    }
+    if (arenaDemoSessions.size >= 10000) {
+        return res.status(503).json({ error: 'Máy chủ đang bận. Hãy thử lại sau.' });
+    }
+    const token = crypto.randomBytes(32).toString('base64url');
+    arenaDemoSessions.set(token, { id: `demo:${crypto.randomUUID()}`, expiresAt: now + arenaDemoSessionLifetime });
+    res.json({ token });
+});
+
+app.post('/api/arena/matchmaking', (req, res) => {
+    const participant = getArenaMatchmakingParticipant(req);
+    if (!participant) return res.status(401).json({ error: 'Phiên tham gia đã hết hạn. Hãy bắt đầu lại thử thách.' });
+    const ageGroup = typeof req.body?.ageGroup === 'string' ? req.body.ageGroup : '';
+    if (!['3-6', '7-10'].includes(ageGroup)) {
+        return res.status(400).json({ error: 'Nhóm tuổi cho thử thách không hợp lệ.' });
+    }
+
+    if (!participant.isDemo) {
+        const accountExists = accountDatabase.prepare('SELECT 1 FROM accounts WHERE email = ?').get(participant.email);
+        if (!accountExists) return res.status(401).json({ error: 'Không tìm thấy tài khoản. Hãy đăng nhập lại.' });
+    }
+
+    const participantId = participant.id;
+    const now = Date.now();
+    for (const [queuedEmail, entry] of arenaMatchmaking) {
+        const timeout = entry.match ? 5 * 60 * 1000 : 30 * 1000;
+        if (now - entry.lastSeenAt > timeout) arenaMatchmaking.delete(queuedEmail);
+    }
+
+    let entry = arenaMatchmaking.get(participantId);
+    if (entry && entry.ageGroup !== ageGroup) {
+        arenaMatchmaking.delete(participantId);
+        entry = null;
+    }
+    if (entry) {
+        entry.lastSeenAt = now;
+        if (entry.match) return res.json({ status: 'matched', match: entry.match });
+    } else {
+        entry = { ageGroup, joinedAt: now, lastSeenAt: now, match: null, participant };
+        arenaMatchmaking.set(participantId, entry);
+    }
+
+    const opponentEntry = [...arenaMatchmaking.entries()].find(([queuedId, candidate]) =>
+        queuedId !== participantId && candidate.ageGroup === ageGroup && !candidate.match
+    );
+    if (opponentEntry) {
+        const [, waitingOpponent] = opponentEntry;
+        const getOpponent = (candidate) => {
+            if (candidate.isDemo) {
+                return { name: 'Người chơi trải nghiệm', type: 'player', level: 'Tài khoản trải nghiệm' };
+            }
+            const name = accountDatabase.prepare(`
+                SELECT display_name AS name FROM leaderboard_scores WHERE email = ?
+            `).get(candidate.email)?.name || 'Người chơi cùng';
+            return { name, type: 'player', level: 'Người chơi thật' };
+        };
+        const matchId = crypto.randomUUID();
+        entry.match = {
+            id: matchId,
+            opponent: getOpponent(waitingOpponent.participant)
+        };
+        waitingOpponent.match = {
+            id: matchId,
+            opponent: getOpponent(participant)
+        };
+        waitingOpponent.lastSeenAt = now;
+        return res.json({ status: 'matched', match: entry.match });
+    }
+
+    if (req.body?.allowBot === true && now - entry.joinedAt >= 10 * 1000) {
+        const bots = ['Hero Bot', 'Mây Bot', 'Sao Bot'];
+        entry.match = {
+            id: crypto.randomUUID(),
+            opponent: {
+                name: bots[crypto.randomInt(bots.length)],
+                type: 'bot',
+                level: 'Bot · cùng nhóm tuổi'
+            }
+        };
+        return res.json({ status: 'matched', match: entry.match });
+    }
+    res.json({ status: 'searching' });
+});
+
+app.delete('/api/arena/matchmaking', (req, res) => {
+    const participant = getArenaMatchmakingParticipant(req);
+    if (!participant) return res.status(401).json({ error: 'Phiên tham gia đã hết hạn. Hãy bắt đầu lại thử thách.' });
+    arenaMatchmaking.delete(participant.id);
     res.sendStatus(204);
 });
 
@@ -590,7 +720,7 @@ app.post('/api/chat', async (req, res) => {
 
     const messages = req.body?.messages;
     const attachments = req.body?.attachments || [];
-    const responseLanguage = req.body?.language === 'en' ? 'English' : 'Vietnamese';
+    const responseLanguage = chatLanguages.get(req.body?.language) || chatLanguages.get('vi');
     if (!Array.isArray(messages) || messages.length === 0 || messages.length > 12) {
         return res.status(400).json({ error: 'Cuộc trò chuyện không hợp lệ.' });
     }

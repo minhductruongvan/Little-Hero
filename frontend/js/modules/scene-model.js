@@ -112,7 +112,10 @@ const renderSceneBackdrop = (scene) => {
     const actorClass = isHero ? "hero-actor" : "friend-actor";
     const ageClass = !isHero && profile.adult ? "adult-actor" : "child-actor";
     const characterSvg = useLessonDesign
-      ? renderLessonCharacterSvg({ ...profile, name }, { ariaLabel: `${name}, ${profile.adult ? "người lớn" : "trẻ em"}` })
+      ? renderLessonCharacterSvg(
+        { ...profile, name },
+        { ariaLabel: `${name}, ${profile.adult ? "người lớn" : "trẻ em"}`, isLessonHero: id === "lessonProtagonist" }
+      )
       : renderHeroCharacterSvg(outfit, { skin: profile.skin || "#f2c39e", civilian: !isHero, adult: profile.adult, hairAccessory: profile.hairAccessory, ariaLabel: `${name}, ${profile.adult ? "người lớn" : "trẻ em"}` });
     return `<div class="scene-actor ${actorClass} ${ageClass} ${profile.gender === "girl" ? "girl-actor" : "boy-actor"}" id="${id}" data-gender="${profile.gender || outfit.gender}" style="--hero-shirt:${outfit.shirt};--hero-pants:${outfit.pants};--hero-shoes:${outfit.shoes};--hero-cape:${outfit.accessory === "cape" ? outfit.shirt : "#f49a69"}">
       ${characterSvg}

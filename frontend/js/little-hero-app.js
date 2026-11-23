@@ -3,6 +3,8 @@
 
       const STORAGE_KEY = "little-hero-new-home-v1";
       const localHosts = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+      const languageConfig = (code) => window.LittleHeroLanguages.find((language) => language.code === code) || window.LittleHeroLanguages[0];
+      const languageSpeechLocale = () => languageConfig(state.language).speechLocale;
       const API_BASE = location.port === "5500"
         ? "http://127.0.0.1:31377"
         : localHosts.has(location.hostname)
@@ -57,10 +59,10 @@
         }
       ];
       const sampleReviews = [
-        { id: "sample-review-routine", author: "Nguyễn Minh Anh", stars: 5, title: "Bé hào hứng học mỗi tối", body: "Các tình huống gần gũi nên con dễ hiểu và chịu kể lại cách mình sẽ làm. Gia đình mình thường cùng con chọn một bài trước giờ đi ngủ." },
-        { id: "sample-review-practice", author: "Trần Thu Hà", stars: 5, title: "Dễ học cùng con", body: "Bài học ngắn, phần lựa chọn giúp bố mẹ có thêm chủ đề để trò chuyện với con. Bé thích nhất các nhân vật trong câu chuyện." },
-        { id: "sample-review-family", author: "Lê Quang Huy", stars: 4, title: "Một hoạt động hữu ích cho cả nhà", body: "Nội dung nhẹ nhàng, phù hợp để bố mẹ cùng con luyện cách xử lý những tình huống thường gặp ở trường và khi đi chơi." },
-        { id: "sample-review-progress", author: "Phạm Thảo Nhi", stars: 5, title: "Con nhớ được điều đã học", body: "Sau khi học về an toàn, con chủ động nhắc lại cần tìm người lớn đáng tin cậy khi thấy lo lắng. Cả nhà có thêm cách ôn bài vui vẻ." }
+        { id: "sample-review-routine", author: "Nguyễn Minh Anh", avatar: "parent-avatar-woman-1.jpg", stars: 5, title: "Bé hào hứng học mỗi tối", body: "Các tình huống gần gũi nên con dễ hiểu và chịu kể lại cách mình sẽ làm. Gia đình mình thường cùng con chọn một bài trước giờ đi ngủ." },
+        { id: "sample-review-practice", author: "Trần Thu Hà", avatar: "parent-avatar-woman-2.jpg", stars: 5, title: "Dễ học cùng con", body: "Bài học ngắn, phần lựa chọn giúp bố mẹ có thêm chủ đề để trò chuyện với con. Bé thích nhất các nhân vật trong câu chuyện." },
+        { id: "sample-review-family", author: "Lê Quang Huy", avatar: "parent-avatar-man.jpg", stars: 4, title: "Một hoạt động hữu ích cho cả nhà", body: "Nội dung nhẹ nhàng, phù hợp để bố mẹ cùng con luyện cách xử lý những tình huống thường gặp ở trường và khi đi chơi." },
+        { id: "sample-review-progress", author: "Phạm Thảo Nhi", avatar: "parent-avatar-woman-3.jpg", stars: 5, title: "Con nhớ được điều đã học", body: "Sau khi học về an toàn, con chủ động nhắc lại cần tìm người lớn đáng tin cậy khi thấy lo lắng. Cả nhà có thêm cách ôn bài vui vẻ." }
       ].map((review) => ({ ...review, isSample: true, helpful: 0 }));
       const { categories, lessonFollowUps, questSpecs, challengeSpecs } = window.LittleHeroLessonCatalog;
       const lessons = [
@@ -120,6 +122,8 @@
         closet: { gender: "boy", hair: "curly", hairColor: "#624337", shirt: "#4ba6c5", pants: "#386b83", shoes: "#de6549", accessory: "cape", outfit: "classic" }
       });
       let state = freshState();
+      const localizedChildName = (name = state.childName) =>
+        name && name !== "Bé" ? name : languageConfig(state.language).friend;
       let activeSubscription = null;
       const forumMediaUrls = new Map();
       let activeLessonRecognition = null;
@@ -168,7 +172,8 @@
         state.dailyUsage = state.dailyUsage && typeof state.dailyUsage === "object" ? state.dailyUsage : {};
         state.dailyStudy = state.dailyStudy && typeof state.dailyStudy === "object" ? state.dailyStudy : {};
         state.studySeconds = Number(state.studySeconds) || 0;
-        state.language = state.language === "en" ? "en" : "vi";
+        state.language = window.LittleHeroLanguages.some(({ code }) => code === state.language) ? state.language : "vi";
+        document.documentElement.lang = state.language;
         state.leaderboardName = typeof state.leaderboardName === "string" ? state.leaderboardName.slice(0, 24) : "";
         state.leaderboardProvince = window.LittleHeroLocations.regionByProvince[state.leaderboardProvince] ? state.leaderboardProvince : "";
         state.leaderboardOptIn = state.leaderboardOptIn === true;
@@ -227,6 +232,138 @@
       state.forumPosts = [...sampleForumPosts.filter((post) => !seededPostIds.has(post.id)), ...(state.forumPosts || [])];
 
       const $ = (selector, root = document) => root.querySelector(selector);
+      let displayedXp = state.xp;
+      const xpFlightQueue = [];
+      let xpFlightActive = false;
+      let recentXpOrigin = null;
+      let recentXpOriginTimer = 0;
+      const renderXpValue = (pulse = false, levelUp = false) => {
+        const counter = $("#xpValue");
+        const level = Math.floor(displayedXp / 100) + 1;
+        const progress = displayedXp % 100;
+        counter.textContent = String(displayedXp);
+        counter.title = translateString(`Cấp ${level}`);
+        const progressBar = $(".header-level-progress");
+        const progressFill = $("#headerLevelProgress");
+        progressBar.setAttribute("aria-valuenow", String(progress));
+        progressBar.setAttribute("aria-label", translateString(`Tiến độ cấp ${level}`));
+        progressFill.style.width = `${progress}%`;
+        if (!pulse) return;
+        counter.classList.remove("xp-count-pulse", "xp-level-pulse");
+        void counter.offsetWidth;
+        counter.classList.add(levelUp ? "xp-level-pulse" : "xp-count-pulse");
+      };
+      document.addEventListener("click", (event) => {
+        if (!(event.target instanceof Element)) return;
+        const source = event.target.closest("button,[role='button']");
+        if (!source) return;
+        const rect = source.getBoundingClientRect();
+        recentXpOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        window.clearTimeout(recentXpOriginTimer);
+        recentXpOriginTimer = window.setTimeout(() => { recentXpOrigin = null; }, 1800);
+      }, true);
+      const xpFlightOrigin = (source) => {
+        const activeElement = document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+          ? document.activeElement
+          : null;
+        const originElement = source instanceof Element ? source : activeElement;
+        const rect = originElement?.getBoundingClientRect();
+        if (rect && rect.width && rect.height) return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        if (recentXpOrigin) return recentXpOrigin;
+        const counter = $("#xpValue").getBoundingClientRect();
+        return { x: counter.left + counter.width / 2, y: counter.top + counter.height / 2 };
+      };
+      const animateXpStar = (origin, index) => new Promise((resolve) => {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          window.setTimeout(resolve, 70);
+          return;
+        }
+        const counter = $("#xpValue").getBoundingClientRect();
+        const targetX = counter.left + counter.width / 2;
+        const targetY = counter.top + counter.height / 2;
+        const angle = index * 2.4;
+        const spread = 5 + index % 4 * 3;
+        const startX = origin.x + Math.cos(angle) * spread;
+        const startY = origin.y + Math.sin(angle) * spread;
+        const star = document.createElement("span");
+        star.className = "xp-flight-star";
+        star.setAttribute("aria-hidden", "true");
+        star.textContent = "⭐";
+        star.style.left = `${startX - 12}px`;
+        star.style.top = `${startY - 12}px`;
+        star.style.setProperty("--xp-flight-x", `${targetX - startX}px`);
+        star.style.setProperty("--xp-flight-y", `${targetY - startY}px`);
+        document.body.appendChild(star);
+        let settled = false;
+        let timer = 0;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          star.remove();
+          resolve();
+        };
+        star.addEventListener("animationend", finish, { once: true });
+        timer = window.setTimeout(finish, 900);
+      });
+      const runXpFlightQueue = async () => {
+        if (xpFlightActive) return;
+        xpFlightActive = true;
+        while (xpFlightQueue.length) {
+          const reward = xpFlightQueue.shift();
+          const flights = Array.from({ length: reward.amount }, (_, index) => new Promise((resolve) => {
+            window.setTimeout(() => {
+              animateXpStar(reward.origin, index).then(() => {
+                const previousLevel = Math.floor(displayedXp / 100) + 1;
+                displayedXp += 1;
+                renderXpValue(true, Math.floor(displayedXp / 100) + 1 > previousLevel);
+                resolve();
+              });
+            }, index * 75);
+          }));
+          await Promise.all(flights);
+        }
+        xpFlightActive = false;
+        displayedXp = state.xp;
+        renderXpValue();
+      };
+      const awardXp = (amount, source) => {
+        const value = Number(amount);
+        const reward = Number.isFinite(value) ? Math.floor(value) : 0;
+        if (reward < 1) return;
+        state.xp += reward;
+        xpFlightQueue.push({ amount: reward, origin: xpFlightOrigin(source) });
+        void runXpFlightQueue();
+      };
+      const celebrateCorrectAnswer = (source) => {
+        if (!(source instanceof HTMLElement) || !source.isConnected
+          || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const bounds = source.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return;
+        const burst = document.createElement("span");
+        burst.className = "answer-celebration";
+        burst.setAttribute("aria-hidden", "true");
+        burst.style.left = `${bounds.left + bounds.width / 2}px`;
+        burst.style.top = `${bounds.top + bounds.height / 2}px`;
+        [
+          [-42, -28], [0, -42], [42, -28], [52, 4],
+          [38, 38], [0, 48], [-38, 38], [-52, 4]
+        ].forEach(([x, y], index) => {
+          const particle = document.createElement("span");
+          particle.textContent = ["✦", "★", "✧", "●"][index % 4];
+          particle.style.setProperty("--answer-burst-x", `${x}px`);
+          particle.style.setProperty("--answer-burst-y", `${y}px`);
+          burst.append(particle);
+        });
+        document.body.append(burst);
+        source.classList.remove("answer-celebrated");
+        void source.offsetWidth;
+        source.classList.add("answer-celebrated");
+        window.setTimeout(() => {
+          burst.remove();
+          source.classList.remove("answer-celebrated");
+        }, 850);
+      };
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       })[char]);
@@ -263,6 +400,10 @@
         $("#dialogContent").innerHTML = content;
         if (!dialog.open) dialog.showModal();
       };
+      const appDialog = $("#appDialog");
+      appDialog.addEventListener("cancel", (event) => {
+        if (appDialog.dataset.childOnboarding === "true") event.preventDefault();
+      });
       const openChildOnboarding = () => {
         const dialog = $("#appDialog");
         const ageGroup = state.age <= 6 ? "3-6" : "7-10";
@@ -288,12 +429,11 @@
         ];
         showDialog(`<div class="dialog-inner onboarding-dialog">
           <div class="dialog-head"><div><span class="kicker">BẮT ĐẦU HÀNH TRÌNH</span><h2 id="dialogTitle">Cùng Hero chọn hành trình cho bé</h2>
-            <p>Thông tin này giúp gợi ý bài học và ghép nhóm đấu trường phù hợp với độ tuổi.</p></div>
-            <button class="onboarding-dismiss" id="dismissChildOnboarding" type="button" aria-label="Để thiết lập độ tuổi sau">Để sau</button></div>
+            <p>Thông tin này giúp gợi ý bài học và ghép nhóm đấu trường phù hợp với độ tuổi.</p></div></div>
           <form id="childOnboardingForm">
             <fieldset class="onboarding-group"><legend>Bé thuộc nhóm tuổi nào?</legend>
-              <label class="onboarding-age-option"><input type="radio" name="ageGroup" value="3-6" ${ageGroup === "3-6" ? "checked" : ""}><span><strong>3–6 tuổi</strong><small>Bài học gần gũi, từng bước</small></span></label>
-              <label class="onboarding-age-option"><input type="radio" name="ageGroup" value="7-10" ${ageGroup === "7-10" ? "checked" : ""}><span><strong>7–10 tuổi</strong><small>Tình huống và thử thách đa dạng</small></span></label>
+              <label class="onboarding-age-option"><input type="radio" name="ageGroup" value="3-6"><span><strong>3–6 tuổi</strong><small>Bài học gần gũi, từng bước</small></span></label>
+              <label class="onboarding-age-option"><input type="radio" name="ageGroup" value="7-10"><span><strong>7–10 tuổi</strong><small>Tình huống và thử thách đa dạng</small></span></label>
             </fieldset>
             <label class="form-label" for="onboardingAge">Độ tuổi của bé
               <select id="onboardingAge" name="age" required>${renderAgeOptions(ageGroup, Math.max(ageGroup === "3-6" ? 3 : 7, Math.min(ageGroup === "3-6" ? 6 : 10, state.age)))}</select>
@@ -308,30 +448,37 @@
         dialog.dataset.childOnboarding = "true";
         const form = $("#childOnboardingForm", dialog);
         const ageSelect = $("#onboardingAge", form);
-        $("#dismissChildOnboarding", dialog).addEventListener("click", () => {
-          state.onboardingComplete = true;
-          dialog.dataset.childOnboarding = "false";
-          persist();
-          closeDialog();
-        });
+        const onboardingError = $("#onboardingError", form);
+        const clearOnboardingError = () => {
+          onboardingError.textContent = "";
+          onboardingError.hidden = true;
+        };
         form.querySelectorAll('input[name="ageGroup"]').forEach((input) => input.addEventListener("change", () => {
+          clearOnboardingError();
           ageSelect.innerHTML = renderAgeOptions(input.value, input.value === "3-6" ? 6 : 7);
           updateInterestOptions(input.value);
         }));
+        form.querySelectorAll('input[name="interest"]').forEach((input) => input.addEventListener("change", clearOnboardingError));
         updateInterestOptions(ageGroup);
         ageSelect.addEventListener("change", () => {
+          clearOnboardingError();
           const group = Number(ageSelect.value) <= 6 ? "3-6" : "7-10";
           const radio = form.querySelector(`input[name="ageGroup"][value="${group}"]`);
           if (radio) radio.checked = true;
         });
         form.addEventListener("submit", (event) => {
           event.preventDefault();
+          const selectedAgeGroup = form.querySelector('input[name="ageGroup"]:checked')?.value;
           const selectedInterests = [...form.querySelectorAll('input[name="interest"]:checked')].map((input) => input.value);
           const age = Number(ageSelect.value);
+          if (!selectedAgeGroup) {
+            onboardingError.textContent = "Hãy chọn nhóm tuổi phù hợp với bé nhé.";
+            onboardingError.hidden = false;
+            return;
+          }
           if (!selectedInterests.length) {
-            const error = $("#onboardingError", form);
-            error.textContent = "Hãy chọn ít nhất một chủ đề bé yêu thích nhé.";
-            error.hidden = false;
+            onboardingError.textContent = "Hãy chọn ít nhất một chủ đề bé yêu thích nhé.";
+            onboardingError.hidden = false;
             return;
           }
           if (!Number.isInteger(age) || age < 3 || age > 10) return;
@@ -355,8 +502,8 @@
           toast(`Đã lưu hành trình cho bé ${age} tuổi.`);
         });
       };
-      const showOnboardingIfNeeded = (force = false) => {
-        if (state.authenticated && (force || !state.onboardingComplete)) openChildOnboarding();
+      const showOnboardingIfNeeded = () => {
+        if (state.authenticated && !state.onboardingComplete) openChildOnboarding();
       };
       let activeSpeech = null;
       const updateSpeechControls = (speaking) => {
@@ -374,19 +521,26 @@
       window.addEventListener("pagehide", stopSpeech);
       const speak = (text, onComplete) => {
         if (!("speechSynthesis" in window)) {
-          toast("Trình duyệt chưa hỗ trợ giọng đọc. Bé vẫn có thể đọc nội dung trên màn hình.");
+          toast(translateString("Trình duyệt chưa hỗ trợ giọng đọc."));
           onComplete?.();
           return false;
         }
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
+        activeSpeech = null;
+        updateSpeechControls(false);
+        const utterance = new SpeechSynthesisUtterance(translateString(text));
+        utterance.lang = languageSpeechLocale();
+        utterance.rate = 0.92;
+        const speechPrefix = languageSpeechLocale().split("-")[0].toLowerCase();
+        const preferredVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith(speechPrefix));
+        if (!preferredVoice) {
+          toast(translateString("Thiết bị chưa cài giọng đọc cho ngôn ngữ đã chọn."));
+          onComplete?.();
+          return false;
+        }
+        if (preferredVoice) utterance.voice = preferredVoice;
         activeSpeech = utterance;
         updateSpeechControls(true);
-        utterance.lang = state.language === "en" ? "en-US" : "vi-VN";
-        utterance.rate = 0.92;
-        const speechPrefix = state.language === "en" ? "en" : "vi";
-        const preferredVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith(speechPrefix));
-        if (preferredVoice) utterance.voice = preferredVoice;
         let completed = false;
         const finishSpeech = () => {
           if (completed) return;
@@ -397,7 +551,7 @@
           onComplete?.();
         };
         utterance.onerror = (event) => {
-          if (event.error !== "canceled" && event.error !== "interrupted") toast("Không thể phát giọng đọc trên thiết bị này.");
+          if (event.error !== "canceled" && event.error !== "interrupted") toast(translateString("Không thể phát giọng đọc trên thiết bị này."));
           finishSpeech();
         };
         utterance.onend = finishSpeech;
@@ -446,7 +600,7 @@
         monthly: {
           name: "Hành trang Tự Tin – Gói tháng",
           title: "Hành trang Tự Tin",
-          caption: "GÓI THÁNG · HỌC VUI CÙNG HERO",
+          caption: "GÓI THÁNG",
           badge: "BẮT ĐẦU NHẸ NHÀNG",
           image: "./frontend/assets/emotion-classroom.png",
           imageAlt: "Hero và bạn cùng học trong lớp mỹ thuật",
@@ -457,8 +611,8 @@
         yearly: {
           name: "Cùng Hero Mỗi Ngày – Gói năm",
           title: "Cùng Hero Mỗi Ngày",
-          caption: "GÓI NĂM · CẢ NHÀ CÙNG TIẾN BỘ",
-          badge: "ĐỒNG HÀNH TRỌN NĂM",
+          caption: "GÓI NĂM",
+          badge: "TIẾT KIỆM HƠN",
           image: "./frontend/assets/safety-supermarket.png",
           imageAlt: "Hero thực hành kỹ năng an toàn tại quầy thông tin",
           price: 399000,
@@ -467,8 +621,8 @@
         }
       };
       const PAYMENT_CONFIG = {
-        bankName: "MB Bank",
-        accountName: "LITTLE HERO",
+        bankName: "MB BANK",
+        accountName: "MB BANK",
         accountNumber: "16030616032006"
       };
       const refreshActiveSubscription = async () => {
@@ -497,12 +651,12 @@
         activeSubscription = result.subscription;
         return activeSubscription;
       };
-      const hasActivePremium = () => Boolean(activeSubscription
+      const hasActivePremium = () => state.demoAccount || Boolean(activeSubscription
         && activeSubscription.status === "active"
         && ["monthly", "yearly"].includes(activeSubscription.plan)
         && Number.isFinite(Date.parse(activeSubscription.expiresAt || ""))
         && Date.parse(activeSubscription.expiresAt) > Date.now());
-      const hasYearlyPremium = () => hasActivePremium() && activeSubscription.plan === "yearly";
+      const hasYearlyPremium = () => state.demoAccount || (hasActivePremium() && activeSubscription.plan === "yearly");
       const isPremiumLesson = (lesson) => lesson.premium === true;
       const renderLockedPlanPage = (title, description) => {
         $("#routeView").innerHTML = pageShell("pricing", description, `
@@ -537,7 +691,9 @@
       };
       const renderStats = () => {
         refreshDay();
-        $("#childName").textContent = state.childName || "bạn nhỏ";
+        $("#childName").textContent = localizedChildName();
+        $("#accountMenu").hidden = !state.authenticated;
+        $("#headerAvatar").textContent = state.closet?.gender === "girl" ? "👧" : "🧒";
         const closet = safeWardrobe(state.closet);
         state.closet = closet;
         const wardrobeKey = JSON.stringify(closet);
@@ -556,14 +712,15 @@
             mascot.dataset.wardrobe = wardrobeKey;
           }
         });
-        $("#accountMenuName").textContent = state.childName || "Tài khoản";
-        $("#accountMenuGreeting").textContent = state.childName ? `Xin chào, ${state.childName}` : "Chào bạn nhỏ";
+        $("#accountMenuName").textContent = state.childName && state.childName !== "Bé" ? state.childName : "Tài khoản";
+        $("#accountMenuGreeting").textContent = state.childName && state.childName !== "Bé" ? `Xin chào, ${state.childName}` : "Chào bạn nhỏ";
         $("#accountBtn").hidden = state.authenticated;
         $("#accountBtn").textContent = "Đăng nhập / đăng ký";
         $("#logoutBtn").hidden = !state.authenticated;
         document.body.dataset.authenticated = String(state.authenticated);
-        $("#upgradeBtn").textContent = state.premium ? "♛ Premium của bé" : "♛ Premium";
-        $("#xpValue").textContent = `${state.xp} · Lv ${Math.floor(state.xp / 100) + 1}`;
+        $("#upgradeBtn").textContent = hasActivePremium() ? "♛ Premium của bé" : "♛ Premium";
+        if (!xpFlightActive && !xpFlightQueue.length) displayedXp = state.xp;
+        renderXpValue();
         $("#streakValue").textContent = `${streak()} ngày`;
         $("#timeToday").textContent = `${Math.floor(state.sessionSeconds / 60)} phút`;
         $("#journalLessons").textContent = completedCount();
@@ -578,9 +735,13 @@
           ? homeReviews.map((review, index) => {
             const [background, color] = testimonialColors[index % testimonialColors.length];
             const stars = Math.max(1, Math.min(5, Number(review.stars) || 0));
+            const ratingLabel = translateTemplate("{stars} trên 5 sao", { stars });
             const author = String(review.author).trim();
+            const avatar = review.avatar
+              ? `<img src="./frontend/assets/${escapeHtml(review.avatar)}" alt="" loading="lazy" decoding="async">`
+              : escapeHtml(Array.from(author)[0] || "L");
             return `<article class="testimonial-card" style="--testimonial-bg:${background};--testimonial-color:${color}">
-              <div class="testimonial-person"><span class="testimonial-avatar" aria-hidden="true">${escapeHtml(Array.from(author)[0] || "L")}</span><span class="testimonial-meta"><span class="testimonial-name">${escapeHtml(author)}</span><span class="review-stars" aria-label="${stars} trên 5 sao">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></span></div>
+              <div class="testimonial-person"><span class="testimonial-avatar" aria-hidden="true">${avatar}</span><span class="testimonial-meta"><span class="testimonial-name">${escapeHtml(author)}</span><span class="review-stars" aria-label="${ratingLabel}">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span></span></div>
               <blockquote class="testimonial-quote">“${escapeHtml(review.body)}”</blockquote>
             </article>`;
           }).join("")
@@ -594,7 +755,9 @@
       };
 
       const renderDropdown = () => {
-        $("#lessonDropdown").innerHTML = ageAppropriateCategories().map((category) =>
+        const dropdown = $("#lessonDropdown");
+        if (!dropdown) return;
+        dropdown.innerHTML = ageAppropriateCategories().map((category) =>
           `<a href="#/lessons/${category.id}" data-route="lessons/${category.id}">${category.icon} &nbsp; ${category.name}</a>`
         ).join("");
       };
@@ -658,14 +821,14 @@
         if (islandGrid) renderJourneyMap(islandGrid);
       };
       const lessonImages = {
-        emotion: { src: "./frontend/assets/emotion-calm-room.png", alt: "Các bạn nhỏ cùng Hero nhận biết cảm xúc trong phòng chơi" },
-        social: { src: "./frontend/assets/emotion-classroom.png", alt: "Hero và bạn cùng học trong lớp mỹ thuật" },
-        safety: { src: "./frontend/assets/safety-supermarket.png", alt: "Hero thực hành kỹ năng an toàn tại quầy thông tin" },
-        health: { src: "./frontend/assets/lesson-handwashing.png", alt: "Hero hướng dẫn Mia rửa tay trong bếp" },
-        thinking: { src: "./frontend/assets/emotion-calm-room.png", alt: "Các bạn nhỏ cùng Hero suy nghĩ và giải quyết tình huống" },
-        care: { src: "./frontend/assets/lesson-playground-cleanup.png", alt: "Hero và Linh cùng giữ sân chơi sạch đẹp" },
-        creative: { src: "./frontend/assets/lesson-safe-bicycle.png", alt: "Hero và bố hướng dẫn Bin tập xe an toàn" },
-        community: { src: "./frontend/assets/safety-supermarket.png", alt: "Hero thực hành nhận biết và xử lý tình huống an toàn" }
+        emotion: { src: "./frontend/assets/emotion-calm-room.png", width: 1024, height: 765, alt: "Các bạn nhỏ cùng Hero nhận biết cảm xúc trong phòng chơi" },
+        social: { src: "./frontend/assets/emotion-classroom.png", width: 1024, height: 637, alt: "Hero và bạn cùng học trong lớp mỹ thuật" },
+        safety: { src: "./frontend/assets/safety-supermarket.png", width: 1024, height: 541, alt: "Hero thực hành kỹ năng an toàn tại quầy thông tin" },
+        health: { src: "./frontend/assets/lesson-handwashing.png", width: 1024, height: 572, alt: "Hero hướng dẫn Mia rửa tay trong bếp" },
+        thinking: { src: "./frontend/assets/emotion-calm-room.png", width: 1024, height: 765, alt: "Các bạn nhỏ cùng Hero suy nghĩ và giải quyết tình huống" },
+        care: { src: "./frontend/assets/lesson-playground-cleanup.png", width: 1024, height: 572, alt: "Hero và Linh cùng giữ sân chơi sạch đẹp" },
+        creative: { src: "./frontend/assets/lesson-safe-bicycle.png", width: 1024, height: 765, alt: "Hero và bố hướng dẫn Bin tập xe an toàn" },
+        community: { src: "./frontend/assets/safety-supermarket.png", width: 1024, height: 541, alt: "Hero thực hành nhận biết và xử lý tình huống an toàn" }
       };
       const lessonSceneImages = {
         health: lessonImages.health,
@@ -681,11 +844,11 @@
         const category = categories.find((item) => item.id === lesson.category);
         const image = lessonImage(lesson.category);
         $("#featuredLesson").innerHTML = `<div class="lesson-art" style="--lesson-color:${category.color}">
-          <img class="lesson-art-image" src="${image.src}" alt="${escapeHtml(image.alt)}" loading="lazy">
+          <img class="lesson-art-image" src="${image.src}" width="${image.width}" height="${image.height}" alt="${escapeHtml(image.alt)}" loading="lazy">
           <span class="lesson-emoji" aria-hidden="true">${lesson.icon}</span><span class="lesson-note">✦ TÌNH HUỐNG GẦN GŨI</span>
         </div><div class="lesson-copy"><span class="tag">${category.icon} ${escapeHtml(category.name)}</span>
-          <h3>${escapeHtml(lesson.title)}</h3><p>${escapeHtml(lesson.goal)}</p>
-          <div class="lesson-meta"><span>♧ ${lesson.age}</span><span>◷ ${lesson.duration}</span><span>⭐ +${lesson.reward}</span></div>
+          <h3>${escapeHtml(lesson.title)}</h3>
+          <div class="lesson-meta"><span>⭐ +${lesson.reward}</span></div>
           <button class="btn btn-mint btn-small" data-route="lessons/${category.id}">${state.completed.includes(lesson.id) ? "Xem lại chủ đề →" : "Khám phá chủ đề →"}</button>
         </div>`;
       };
@@ -714,31 +877,32 @@
       let leaderboardRequestId = 0;
       let leaderboardSyncTimer = null;
       let arenaLeaderboardInterval = null;
-      const sampleLeaderboardNames = ["Mây Nhỏ", "Cá Heo", "Bé Sóc", "Thỏ Nâu", "Gấu Nhỏ", "Mầm Xanh", "Sao Mai", "Chim Non"];
-      const exampleLeaderboardPlayers = window.LittleHeroLocations.provinces.flatMap(({ name: province }, provinceIndex) =>
-        ["3-6", "7-10"].flatMap((ageGroup, ageIndex) =>
-          sampleLeaderboardNames.slice(ageIndex * 4, ageIndex * 4 + 4).map((name, playerIndex) => ({
-            name: `${name} ${String(provinceIndex + 1).padStart(2, "0")}`,
-            province,
-            ageGroup,
-            points: 1900 - provinceIndex * 13 - ageIndex * 70 - playerIndex * 17
-          }))
-        )
-      );
+      let arenaLeaderboardAgeGroup = currentAgeGroup();
       let leaderboardViewProvince = state.leaderboardProvince || "Đà Nẵng";
       const leaderboardProvinceOptions = () => window.LittleHeroLocations.provinces.map(({ name }) =>
         `<option value="${escapeHtml(name)}" ${leaderboardViewProvince === name ? "selected" : ""}>${escapeHtml(name)}</option>`
       ).join("");
+      const leaderboardAgeGroupControl = (id) => `
+        <label class="leaderboard-view-control" id="${id}Wrap"><span>Xem nhóm tuổi</span>
+          <select id="${id}" aria-label="Chọn nhóm tuổi để xem bảng xếp hạng">
+            <option value="3-6" ${arenaLeaderboardAgeGroup === "3-6" ? "selected" : ""}>3–6 tuổi</option>
+            <option value="7-10" ${arenaLeaderboardAgeGroup === "7-10" ? "selected" : ""}>7–10 tuổi</option>
+          </select>
+        </label>`;
       const leaderboardLocationControl = (id) => `
         <label class="leaderboard-view-control" id="${id}Wrap"><span>Xem bảng theo tỉnh/thành</span>
           <select id="${id}" aria-label="Chọn tỉnh/thành để xem bảng xếp hạng">${leaderboardProvinceOptions()}</select>
         </label>`;
-      const leaderboardScopeLabel = (mode) => ({
-        duel: `Nhóm ${currentAgeLabel()}`,
-        region: window.LittleHeroLocations.regions[window.LittleHeroLocations.regionByProvince[leaderboardViewProvince]],
-        city: leaderboardViewProvince,
-        nation: "Toàn quốc"
-      }[mode]);
+      const leaderboardScopeLabel = (mode, ageGroup = currentAgeGroup()) => {
+        const groupLabel = translateTemplate("Nhóm {age} tuổi", { age: ageGroup.replace("-", "–") });
+        const region = window.LittleHeroLocations.regions[window.LittleHeroLocations.regionByProvince[leaderboardViewProvince]];
+        return ({
+          duel: groupLabel,
+          region: `${translateString(region)} · ${groupLabel}`,
+          city: `${translateString(leaderboardViewProvince)} · ${groupLabel}`,
+          nation: `${translateString("Toàn quốc")} · ${groupLabel}`
+        }[mode]);
+      };
       const syncLeaderboardLocationControls = () => {
         ["homeLeaderboardProvince", "arenaLeaderboardProvince"].forEach((id) => {
           const select = $(`#${id}`);
@@ -753,6 +917,63 @@
           status.classList.toggle("error", isError);
           status.textContent = message;
         }
+      };
+      const renderLeaderboardResult = (root, result, offline = false) => {
+        const players = (Array.isArray(result.players) ? result.players : []).slice(0, 10);
+        const medals = ["🥇", "🥈", "🥉"];
+        const podium = $("#leaderboardPodium", root);
+        if (podium) {
+          podium.hidden = false;
+          podium.innerHTML = players.length
+            ? players.slice(0, 3).map((player, index) =>
+              `<div class="leader-podium-place place-${index + 1} ${player.isCurrentUser ? "is-you" : ""}">
+                <span class="podium-medal">${medals[index]}</span><span class="podium-avatar">${escapeHtml(player.name.slice(0, 1).toLocaleUpperCase("vi"))}</span>
+                <strong>${escapeHtml(player.name)}</strong><small>${escapeHtml(player.province)} · ${player.ageGroup.replace("-", "–")} tuổi</small>
+                <b>${Number(player.points).toLocaleString(languageSpeechLocale())} RP</b><span class="podium-rank">#${player.rank}</span>
+              </div>`
+            ).join("")
+            : `<div class="leaderboard-empty">
+                <span aria-hidden="true">${offline ? "⚠️" : "🏆"}</span>
+                <strong>${offline ? "Không thể tải bảng xếp hạng" : "Chưa có dữ liệu công khai"}</strong>
+                ${offline ? "<p>Hãy thử lại khi kết nối máy chủ ổn định.</p>" : ""}
+              </div>`;
+        }
+        $("#leaderboard", root).innerHTML = players.slice(3).map((player) =>
+          `<div class="leader-row ${player.isCurrentUser ? "is-you" : ""}">
+            <span class="medal">#${player.rank}</span>
+            <span><span class="leader-name">${escapeHtml(player.name)}</span><br><span class="leader-sub">${escapeHtml(player.province)} · Nhóm ${player.ageGroup.replace("-", "–")} tuổi</span></span>
+            <span class="leader-score">${Number(player.points).toLocaleString(languageSpeechLocale())} RP</span>
+          </div>`
+        ).join("");
+        const you = $("#leaderYou", root);
+        if (you) {
+          you.innerHTML = result.you
+            ? `<div class="leader-row"><span class="medal">🌟</span><span><span class="leader-name">Hạng của bé</span><br><span class="leader-sub">${escapeHtml(result.you.name)} · ${Number(result.you.points).toLocaleString(languageSpeechLocale())} RP</span></span><span class="leader-score">#${Number(result.you.rank).toLocaleString(languageSpeechLocale())}</span></div>`
+            : "";
+        }
+        const updated = new Date(result.updatedAt);
+        const message = offline
+          ? "Chưa thể tải bảng xếp hạng. Vui lòng thử lại sau."
+          : players.length
+            ? `Cập nhật lúc ${updated.toLocaleTimeString(languageSpeechLocale(), { hour: "2-digit", minute: "2-digit", second: "2-digit" })} · tự làm mới mỗi 10 giây`
+            : "";
+        leaderboardStatus(root, message, offline);
+      };
+      const fetchLeaderboardWithRetry = async (url, token) => {
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          try {
+            const response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+            if (response.status < 500 || attempt === 1) return response;
+          } catch (error) {
+            if (attempt === 1) {
+              const networkError = new Error("Không thể kết nối máy chủ bảng xếp hạng.");
+              networkError.name = "LeaderboardNetworkError";
+              throw networkError;
+            }
+          }
+          await new Promise((resolve) => window.setTimeout(resolve, 700));
+        }
+        throw new Error("Không thể kết nối máy chủ bảng xếp hạng.");
       };
       const syncLeaderboardScore = async () => {
         const token = leaderboardToken();
@@ -783,7 +1004,11 @@
             const result = await response.json();
             throw new Error(result.error || "Không thể cập nhật bảng xếp hạng.");
           }
-          await renderLeaderboard(route === "arena" ? $("#routeView") : document, arenaMode);
+          await renderLeaderboard(
+            route === "arena" ? $("#routeView") : document,
+            arenaMode,
+            route === "arena" ? arenaLeaderboardAgeGroup : currentAgeGroup()
+          );
         } catch (error) {
           console.error("Không thể đồng bộ điểm bảng xếp hạng.", error);
           leaderboardStatus(document, error.message || "Không thể đồng bộ điểm lúc này.", true);
@@ -794,7 +1019,7 @@
         window.clearTimeout(leaderboardSyncTimer);
         leaderboardSyncTimer = window.setTimeout(syncLeaderboardScore, 500);
       };
-      const renderLeaderboard = async (root = document, mode = arenaMode) => {
+      const renderLeaderboard = async (root = document, mode = arenaMode, ageGroup = currentAgeGroup()) => {
         const list = $("#leaderboard", root);
         if (!list) return;
         const requestId = ++leaderboardRequestId;
@@ -810,65 +1035,32 @@
         }
         const url = new URL(apiUrl("/api/leaderboard"), location.origin);
         url.searchParams.set("mode", mode);
-        url.searchParams.set("ageGroup", currentAgeGroup());
+        url.searchParams.set("ageGroup", ageGroup);
         if (province) url.searchParams.set("province", province);
         leaderboardStatus(root, "Đang cập nhật bảng xếp hạng…");
         try {
           const token = leaderboardToken();
-          const response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-          const result = await response.json();
-          if (!response.ok) throw new Error(result.error || "Không thể tải bảng xếp hạng.");
+          const response = await fetchLeaderboardWithRetry(url, token);
           if (requestId !== leaderboardRequestId) return;
-          let players = Array.isArray(result.players) ? result.players : [];
-          const showingExamples = players.length === 0;
-          if (showingExamples) {
-            const selectedRegion = province
-              ? window.LittleHeroLocations.regionByProvince[province]
-              : "";
-            players = exampleLeaderboardPlayers
-              .filter((player) => mode === "nation" || player.ageGroup === currentAgeGroup())
-              .filter((player) => mode !== "city" || player.province === province)
-              .filter((player) => mode !== "region"
-                || window.LittleHeroLocations.regionByProvince[player.province] === selectedRegion)
-              .sort((left, right) => right.points - left.points)
-              .slice(0, 10)
-              .map((player, index) => ({ ...player, rank: index + 1, isCurrentUser: false }));
+          if (response.status >= 500) {
+            console.error("Máy chủ bảng xếp hạng phản hồi lỗi.", response.status);
+            renderLeaderboardResult(root, { players: [], you: null }, true);
+            return;
           }
-          players = players.slice(0, 10);
-          const medals = ["🥇", "🥈", "🥉"];
-          const podium = $("#leaderboardPodium", root);
-          if (podium) {
-            podium.hidden = players.length === 0;
-            podium.innerHTML = players.slice(0, 3).map((player, index) =>
-              `<div class="leader-podium-place place-${index + 1} ${player.isCurrentUser ? "is-you" : ""} ${showingExamples ? "is-example" : ""}">
-                <span class="podium-medal">${medals[index]}</span><span class="podium-avatar">${escapeHtml(player.name.slice(0, 1).toLocaleUpperCase("vi"))}</span>
-                <strong>${escapeHtml(player.name)}</strong><small>${escapeHtml(player.province)} · ${player.ageGroup.replace("-", "–")} tuổi</small>
-                <b>${Number(player.points).toLocaleString("vi-VN")} RP</b><span class="podium-rank">#${player.rank}</span>
-              </div>`
-            ).join("");
+          const result = await response.json();
+          if (!response.ok) {
+            leaderboardStatus(root, result.error || "Không thể tải bảng xếp hạng.", true);
+            return;
           }
-          list.innerHTML = players.slice(3).map((player) =>
-            `<div class="leader-row ${player.isCurrentUser ? "is-you" : ""} ${showingExamples ? "is-example" : ""}">
-              <span class="medal">#${player.rank}</span>
-              <span><span class="leader-name">${escapeHtml(player.name)}</span><br><span class="leader-sub">${escapeHtml(player.province)} · Nhóm ${player.ageGroup.replace("-", "–")} tuổi</span></span>
-              <span class="leader-score">${Number(player.points).toLocaleString("vi-VN")} RP</span>
-            </div>`
-          ).join("");
-          const you = $("#leaderYou", root);
-          if (you) {
-            you.innerHTML = result.you
-              ? `<div class="leader-row"><span class="medal">🌟</span><span><span class="leader-name">Hạng của bé</span><br><span class="leader-sub">${escapeHtml(result.you.name)} · ${Number(result.you.points).toLocaleString("vi-VN")} RP</span></span><span class="leader-score">#${Number(result.you.rank).toLocaleString("vi-VN")}</span></div>`
-              : "";
-          }
-          const updated = new Date(result.updatedAt);
-          leaderboardStatus(root, showingExamples
-            ? players.length
-              ? "Bảng xếp hạng đang cập nhật theo phạm vi đã chọn."
-              : "Chưa có người chơi trong phạm vi này. Bảng sẽ được cập nhật khi có thêm người tham gia."
-            : `Cập nhật lúc ${updated.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })} · tự làm mới mỗi 10 giây`);
+          if (requestId !== leaderboardRequestId) return;
+          renderLeaderboardResult(root, result);
         } catch (error) {
           if (requestId !== leaderboardRequestId) return;
           console.error("Không thể tải bảng xếp hạng.", error);
+          if (error.name === "LeaderboardNetworkError") {
+            renderLeaderboardResult(root, { players: [], you: null }, true);
+            return;
+          }
           leaderboardStatus(root, error.message || "Không thể tải bảng xếp hạng. Hãy thử lại sau.", true);
         }
       };
@@ -882,14 +1074,15 @@
       };
 
       const answerFeedback = (lesson, answerIndex, buttons, feedback) => {
-        buttons.forEach((button) => { button.disabled = true; });
+        buttons.forEach((button) => { button.disabled = true; button.classList.remove("try-again"); });
         recordLearningAttempt(lesson, answerIndex);
         if (answerIndex === lesson.correct) {
           buttons[answerIndex].classList.add("correct");
+          celebrateCorrectAnswer(buttons[answerIndex]);
           const firstCompletion = !state.completed.includes(lesson.id);
           if (firstCompletion) {
             state.completed.push(lesson.id);
-            state.xp += lesson.reward;
+            awardXp(lesson.reward, buttons[answerIndex]);
           }
           feedback.textContent = firstCompletion
             ? `Đúng rồi! Bé đã cân nhắc một lựa chọn an toàn. +${lesson.reward} sao 🌟`
@@ -913,16 +1106,9 @@
           feedback.insertAdjacentElement("afterend", next);
         } else {
           buttons[answerIndex].classList.add("try-again");
-          feedback.textContent = "Mình cùng nghĩ lại nhé: cách nào giúp bé an toàn và có thể nhờ người lớn hỗ trợ?";
-          const retry = document.createElement("button");
-          retry.className = "btn btn-light btn-small";
-          retry.textContent = "Thử chọn lại";
-          retry.addEventListener("click", () => {
-            buttons.forEach((button) => { button.disabled = false; button.classList.remove("try-again"); });
-            feedback.textContent = "";
-            retry.remove();
-          });
-          feedback.insertAdjacentElement("afterend", retry);
+          feedback.textContent = "";
+          speak(translateString("Không sao, con hãy thử lại nhé."));
+          buttons.forEach((button) => { button.disabled = false; });
         }
       };
 
@@ -932,7 +1118,7 @@
         const category = categories.find((item) => item.id === lesson.category);
         showDialog(`<div class="dialog-head"><div><span class="tag">${category.icon} ${category.name}</span><h2 id="dialogTitle">${lesson.icon} ${lesson.title}</h2><p>${lesson.age} · ${lesson.duration} · Cùng bé thử nghĩ nhé.</p></div><button class="close-btn" data-close aria-label="Đóng">×</button></div>
           <div class="story-box"><strong>📖 Câu chuyện</strong><br>${lesson.story}</div>
-          <div class="thinking-prompts"><strong style="font-size:11px">Gợi ý để bé suy nghĩ</strong>${lesson.prompts.map((text) => `<div>${text}</div>`).join("")}</div>
+          <div class="thinking-prompts"><strong style="font-size:11px">Gợi ý để bé suy nghĩ</strong>${lesson.prompts.slice(0, 1).map((text) => `<div>${text}</div>`).join("")}</div>
           <p style="margin:13px 0 8px;font-size:11px;font-weight:850">Bé sẽ chọn cách nào?</p>
           <div class="answer-list">${lesson.answers.map((answer, index) => `<button class="answer" data-answer="${index}">${String.fromCharCode(65 + index)}. ${answer}</button>`).join("")}</div>
           <div class="feedback" id="lessonFeedback" aria-live="polite"></div>
@@ -946,7 +1132,7 @@
         showDialog(`<div class="dialog-head"><div><span class="kicker">KHU VỰC GIA ĐÌNH</span><h2 id="dialogTitle">Góc đồng hành cùng bé</h2><p>Tóm tắt được lưu trên thiết bị này; chưa có tài khoản hay máy chủ.</p></div><button class="close-btn" data-close aria-label="Đóng">×</button></div>
           <div class="journal-stat"><div><strong>${completedCount()}</strong><span>Bài hoàn thành</span></div><div><strong>${state.xp}</strong><span>Sao đã tích lũy</span></div><div><strong>${streak()}</strong><span>Ngày liên tục</span></div></div>
           <div class="story-box"><strong>Gợi ý trò chuyện cùng con</strong><br>Hỏi bé: “Con đã nghĩ đến cảm xúc nào? Điều gì khiến cách con chọn an toàn?” Hãy lắng nghe và động viên nỗ lực.</div>
-          <label class="form-label">Tên hiển thị của bé<input id="nameInput" maxlength="24" placeholder="Nhập tên bé" value="${escapeHtml(state.childName)}"></label>
+          <label class="form-label">Tên hiển thị của bé<input id="nameInput" maxlength="24" placeholder="Nhập tên bé" value="${escapeHtml(localizedChildName())}"></label>
           <button class="btn btn-mint" id="saveName">Lưu tên bé</button>
           <button class="btn btn-light btn-small" id="clearProgress" style="margin-left:6px">Xóa tiến độ</button>
           </div>`);
@@ -996,7 +1182,7 @@
         const challenge = challengeSpecs.find((item) => item.id === id);
         if (!challenge) return;
         state.challenges.push(challenge.id);
-        state.xp += challenge.reward;
+        awardXp(challenge.reward);
         persist();
         toast(`Đã ghi nhận nỗ lực của bé · +${challenge.reward} sao! Hãy cùng phụ huynh thực hành nhé.`);
       };
@@ -1016,18 +1202,14 @@
       const openSound = () => {
         const supported = "speechSynthesis" in window;
         showDialog(`<div class="dialog-head"><div><span class="kicker">ÂM THANH & GIỌNG ĐỌC</span><h2 id="dialogTitle">Nghe Hero đọc nội dung</h2><p>Giọng đọc phụ thuộc trình duyệt và ngôn ngữ đã cài.</p></div><button class="close-btn" data-close aria-label="Đóng">×</button></div>
-          <div class="story-box">${supported ? "Trình duyệt có hỗ trợ đọc văn bản. Nhấn nút dưới để nghe thử lời chào tiếng Việt." : "Trình duyệt này chưa hỗ trợ giọng đọc tự động."}</div>
+          <div class="story-box">${supported ? "Trình duyệt có hỗ trợ đọc văn bản. Nhấn nút dưới để nghe thử lời chào theo ngôn ngữ đã chọn." : "Trình duyệt này chưa hỗ trợ giọng đọc tự động."}</div>
           <button class="btn btn-mint" id="voicePreview" ${supported ? "" : "disabled"}>♫ Nghe Hero chào</button>
           <p class="note">Đoạn thử được đọc trực tiếp trên thiết bị, không phát âm thanh nếu chưa được người dùng bấm.</p>`);
         $("#voicePreview").addEventListener("click", () => {
           if (supported) {
-            const greeting = state.language === "en"
-              ? `Hello ${state.childName || "friend"}! Let's explore the world with Hero today!`
-              : `Xin chào ${state.childName || "bạn nhỏ"}! Cùng Hero khám phá thế giới hôm nay nhé!`;
-            const utterance = new SpeechSynthesisUtterance(greeting);
-            utterance.lang = state.language === "en" ? "en-US" : "vi-VN";
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
+            const language = languageConfig(state.language);
+            const greeting = language.greeting(state.childName || language.friend);
+            speak(greeting);
             state.sound = true;
             persist();
           }
@@ -1037,14 +1219,48 @@
       let arenaMode = "duel";
       let arenaOpponent = null;
       let arenaMatchTimeout = null;
+      let arenaSearchRequestId = 0;
+      let arenaSearchRequest = null;
       let arenaMatchLesson = null;
       let arenaMatchChoice = null;
+      let arenaDemoSessionToken = "";
+      const arenaMatchmakingToken = async () => {
+        const accountToken = leaderboardToken();
+        if (accountToken) return accountToken;
+        if (!state.authenticated || !state.demoAccount) return "";
+        if (arenaDemoSessionToken) return arenaDemoSessionToken;
+        const response = await fetch(apiUrl("/api/arena/matchmaking/demo-session"), { method: "POST" });
+        const result = await response.json();
+        if (!response.ok || typeof result.token !== "string" || !result.token) {
+          throw new Error(result.error || "Không thể mở phiên trải nghiệm lúc này.");
+        }
+        arenaDemoSessionToken = result.token;
+        return arenaDemoSessionToken;
+      };
+      const releaseArenaSearch = async () => {
+        if (arenaSearchRequest) {
+          try { await arenaSearchRequest; }
+          catch (error) { console.warn("Không thể hoàn tất yêu cầu ghép trận đang chờ trước khi hủy.", error); }
+          arenaSearchRequest = null;
+        }
+        const token = leaderboardToken() || (state.demoAccount ? arenaDemoSessionToken : "");
+        if (!token) return;
+        try {
+          const response = await fetch(apiUrl("/api/arena/matchmaking"), {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (!response.ok && response.status !== 401) throw new Error(`HTTP ${response.status}`);
+        } catch (error) {
+          console.error("Không thể hủy tìm trận trên máy chủ.", error);
+        }
+      };
       const openQuiz = () => {
         const available = ageAppropriateLessons();
         const lesson = available[Math.floor(Math.random() * available.length)];
         showDialog(`<div class="dialog-head"><div><span class="kicker">THỬ THÁCH TÌNH HUỐNG</span><h2 id="dialogTitle">Một câu hỏi cùng Hero</h2><p>${lesson.age} · Tình huống: ${lesson.title}</p></div><button class="close-btn" data-close aria-label="Đóng">×</button></div>
           <div class="story-box">${lesson.story}</div><button class="btn btn-light btn-small" id="quizSpeak">♫ Nghe đề bài và các phương án</button><div class="answer-list">${lesson.answers.map((answer, index) => `<button class="answer" data-quiz-answer="${index}">${answer}</button>`).join("")}</div>
-          <div class="feedback" id="quizFeedback" aria-live="polite"></div><p class="quiz-lock-note" id="quizLockNote" hidden>Con có thể suy nghĩ lại và chọn phương án khác.</p>`);
+          <div class="feedback" id="quizFeedback" aria-live="polite"></div>`);
         $("#quizSpeak").addEventListener("click", () => speak(`${lesson.title}. ${lesson.story} Các phương án. ${lesson.answers.map((answer, index) => `Phương án ${index + 1}: ${answer}`).join(". ")}`));
         $("#dialogContent").querySelectorAll("[data-quiz-answer]").forEach((button) => button.addEventListener("click", () => {
           const index = Number(button.dataset.quizAnswer);
@@ -1054,18 +1270,18 @@
             state.quiz += 1;
             state.dailyQuiz += 1;
             button.classList.add("correct");
-            state.xp += 5;
+            celebrateCorrectAnswer(button);
+            awardXp(5, button);
             state.rp += 25;
             $("#quizFeedback").textContent = "Kết quả thành công! Bé chọn cách an toàn. +5 sao · +25 RP 🌟";
             speak(`Tuyệt vời! Con đã chọn cách phù hợp. ${lesson.prompts[2] || lesson.goal}`);
           } else {
             button.classList.add("try-again");
             button.disabled = true;
-            $("#quizFeedback").textContent = `Không sao, bé thử lại nhé. ${lesson.prompts[1] || lesson.goal}`;
+            $("#quizFeedback").textContent = "";
             speak(`Không sao, con thử lại nhé. ${lesson.prompts[1] || lesson.goal}`);
             window.setTimeout(() => { if (button.isConnected) button.disabled = false; }, 250);
           }
-          $("#quizLockNote").hidden = index === lesson.correct;
           persist();
           $("#rankPoints").textContent = `${state.rp} RP`;
           renderLeaderboard();
@@ -1078,7 +1294,7 @@
       let pendingNewsFocus = "";
       let pendingAuthRoute = "";
       let cleanupTutorSession = null;
-      const accountFeatureRoutes = new Set(["map", "lesson", "quiz", "games", "quests", "achievements", "parents", "arena", "arena-match", "payment", "premium-success"]);
+      const accountFeatureRoutes = new Set(["map", "lesson", "quiz", "games", "quests", "achievements", "child", "parents", "arena", "arena-match", "payment", "premium-success"]);
       const previewRoutes = new Set([...accountFeatureRoutes, "forum", "reviews"]);
       const guestActionSelector = [
         "#dialogContent [data-answer]",
@@ -1155,10 +1371,10 @@
       let selectedStars = 5;
       let miniGameRun = null;
       const localizedTitles = {
-        vi: { home: "Trang chủ", map: "Bản đồ ốc đảo", lessons: "Kho bài học", stories: "Truyện tranh", storybook: "Sách truyện", games: "Trò chơi", quests: "Nhiệm vụ hằng ngày", quiz: "Bài ôn tập", achievements: "Tường thành tích", reviews: "Đánh giá ứng dụng", forum: "Diễn đàn", faq: "Câu hỏi thường gặp", language: "Ngôn ngữ", tutor: "Hỏi Hero", parents: "Góc phụ huynh", "parent-news": "Tin tức & LITTLE HERO", auth: "Tài khoản", pricing: "Gói Premium", payment: "Thanh toán Premium", arena: "Đấu trường" },
-        en: { home: "Home", map: "Island map", lessons: "Lessons", stories: "Stories", storybook: "Storybook", games: "Games", quests: "Daily quests", quiz: "Review activities", achievements: "Achievements", reviews: "App reviews", forum: "Community", faq: "FAQs", language: "Language", tutor: "Ask Hero", parents: "Parent corner", "parent-news": "News & LITTLE HERO", auth: "Account", pricing: "Premium plans", payment: "Premium payment", arena: "Challenge arena" }
+        vi: { home: "Trang chủ", map: "Bản đồ ốc đảo", emotions: "Bản đồ cảm xúc", lessons: "Kho bài học", stories: "Truyện tranh", storybook: "Sách truyện", games: "Trò chơi", quests: "Nhiệm vụ hằng ngày", quiz: "Bài ôn tập", achievements: "Tường thành tích", child: "Của bé", reviews: "Đánh giá ứng dụng", forum: "Diễn đàn", faq: "Câu hỏi thường gặp", language: "Ngôn ngữ", tutor: "Hỏi Hero", parents: "Góc phụ huynh", "parent-news": "Tin tức", auth: "Tài khoản", pricing: "Gói Premium", payment: "Thanh toán Premium", arena: "Đấu trường" },
+        en: { home: "Home", map: "Island map", emotions: "Emotion map", lessons: "Lessons", stories: "Stories", storybook: "Storybook", games: "Games", quests: "Daily quests", quiz: "Review activities", achievements: "Achievements", child: "My space", reviews: "App reviews", forum: "Community", faq: "FAQs", language: "Language", tutor: "Ask Hero", parents: "Parent corner", "parent-news": "News", auth: "Account", pricing: "Premium plans", payment: "Premium payment", arena: "Challenge arena" }
       };
-      const pageTitle = (name) => localizedTitles[state.language === "en" ? "en" : "vi"][name] || localizedTitles.vi[name] || name;
+      const pageTitle = (name) => translateString(localizedTitles.vi[name] || name);
       const englishUiText = new Map(Object.entries({
         "Bạn có thể khám phá nội dung; đăng nhập để sử dụng chức năng và lưu tiến độ.": "Explore the content; sign in to use features and save your progress.",
         "Tính năng truyện đang được đội ngũ LITTLE HERO xây dựng và phát triển.": "The story feature is being built and developed by the LITTLE HERO team.",
@@ -1181,10 +1397,8 @@
         "Sáng tạo & khám phá": "Creativity & discovery",
         "Gia đình, cộng đồng & mạng": "Family, community & online safety",
         "Bé sẽ chọn cách nào?": "What do you think they should do?",
-        "Bé có thể trả lời bằng giọng nói hoặc chọn một phương án bên dưới.": "You can answer by voice or choose an option below.",
         "Phương án": "Option",
         "Đang nghe… khi bé ngừng nói, Hero sẽ tự xử lý câu trả lời.": "Listening… Hero will check your answer when you finish speaking.",
-        "Đến lượt bé trả lời nhé. Bé có thể nói hoặc chọn một phương án.": "Your turn! Say your answer or choose an option.",
         "Trả lời bằng giọng nói": "Answer by voice",
         "Dừng nghe": "Stop listening",
         "Nội dung bài học": "Vietnamese lesson content",
@@ -1293,6 +1507,311 @@
         "Cùng Hero ": "Let's ",
         "khám phá": "explore",
         " nhé.": "!",
+        " phút": " min",
+        " ngày": " days",
+        "✦ HỌC KỸ NĂNG SỐNG QUA TRẢI NGHIỆM · 3–10 TUỔI": "✦ LIFE SKILLS THROUGH EXPERIENCE · AGES 3–10",
+        "▶ \u00a0Bắt đầu bài học": "▶ \u00a0Start a lesson",
+        "Khám phá chủ đề →": "Explore this topic →",
+        "Tiến bộ nhỏ cũng đáng tự hào.": "Every bit of progress is worth celebrating.",
+        "Chọn một bài học để Hero tìm hoạt động phù hợp cùng bé.": "Choose a lesson and Hero will find an activity that suits you.",
+        "Thành phố Hồ Chí Minh": "Ho Chi Minh City",
+        "Cài đặt giọng đọc": "Voice settings",
+        "Âm thanh": "Sound",
+        "Đổi giao diện": "Switch theme",
+        "Điều hướng chính": "Main navigation",
+        "Sao tích lũy": "Stars earned",
+        "Tiến độ cấp ": "Progress to level ",
+        "Tiến độ ": "Progress ",
+        "Tiến độ cấp độ": "Level progress",
+        "Chuyển sang giao diện tối": "Switch to dark theme",
+        "Chuyển sang giao diện sáng": "Switch to light theme",
+        "Hero cá nhân hóa": "Your personalized Hero",
+        "Hero đồng hành cùng bé": "Hero is here to help",
+        "Chọn nhóm tuổi để xem bảng xếp hạng": "Choose an age group to view the leaderboard",
+        "Chọn tỉnh/thành để xem bảng xếp hạng": "Choose a province or city to view the leaderboard",
+        "Chọn cảm xúc": "Choose a feeling",
+        "Nhiệm vụ và tiến độ được lưu trên thiết bị hiện tại.": "Quests and progress are saved on this device.",
+        "Khám phá 8 ốc đảo kỹ năng; chọn một hòn đảo để mở bài học. Rê chuột hoặc dùng phím Tab để xem nội dung điểm dừng.": "Explore 8 skill islands and select one to open a lesson. Hover or use Tab to preview each stop.",
+        "✨ Chọn một ốc đảo để bắt đầu": "✨ Choose an island to get started",
+        "Di chuột, chạm hoặc dùng phím Tab để hiện tên chủ đề và bài học, rồi chọn đảo để bắt đầu.": "Hover, tap, or use Tab to preview a topic and lesson, then select an island to begin.",
+        "Bản đồ chi tiết gồm 8 ốc đảo và các bài học": "Detailed map with 8 islands and lessons",
+        "Bắt đầu bài học": "Start a lesson",
+        "▶ Bắt đầu bài học": "▶ Start a lesson",
+        "ĐIỂM ": "STOP ",
+        "Nhận thưởng": "Claim reward",
+        "Tin nhắn trò chuyện": "Chat messages",
+        "Bật micro, nói câu hỏi rồi nhấn lần nữa để gửi": "Turn on the microphone, ask your question, then press again to send.",
+        "Đăng nhập để bắt đầu bài học và lưu tiến độ của bé.": "Sign in to start lessons and save your child's progress.",
+        "Thích": "Like",
+        "Yêu thích": "Love",
+        "Vỗ tay": "Applaud",
+        "Đồng cảm": "Support",
+        "Các bạn nhỏ cùng Hero nhận biết cảm xúc trong phòng chơi": "Children learn to recognize feelings with Hero in a playroom",
+        "Hero và bạn cùng học trong lớp mỹ thuật": "Hero and a friend learn together in an art classroom",
+        "Hero thực hành kỹ năng an toàn tại quầy thông tin": "Hero practices safety skills at an information desk",
+        "Hero hướng dẫn Mia rửa tay trong bếp": "Hero shows Mia how to wash her hands in the kitchen",
+        "Các bạn nhỏ cùng Hero suy nghĩ và giải quyết tình huống": "Children and Hero think through a situation together",
+        "Hero và Linh cùng giữ sân chơi sạch đẹp": "Hero and Linh keep the playground clean",
+        "Hero và bố hướng dẫn Bin tập xe an toàn": "Hero and Dad teach Bin to ride a bike safely",
+        "Hero thực hành nhận biết và xử lý tình huống an toàn": "Hero practices recognizing and handling a safety situation",
+        "Họ và tên phụ huynh": "Parent's full name",
+        "Số điện thoại (+84)": "Phone number (+84)",
+        "Mật khẩu (từ 8 ký tự)": "Password (at least 8 characters)",
+        "Nhập lại mật khẩu": "Re-enter password",
+        "Nhập mã 6 chữ số": "Enter the 6-digit code",
+        "Từ 8 đến 128 ký tự": "8 to 128 characters",
+        "Mở menu": "Open menu",
+        "Mở hồ sơ của bé": "Open your child's profile",
+        "Nghe Hero chào": "Hear Hero say hello",
+        "Chế độ xem trước": "Preview mode",
+        "🏝️Tất cả chủ đề": "🏝️All topics",
+        "🌐Tất cả chủ đề": "🌐All topics",
+        "🗺️Bản đồ khám phá": "🗺️Discovery map",
+        "💛Bản đồ cảm xúc": "💛Feelings map",
+        "🧩Ôn tập cùng Hero": "🧩Practice with Hero",
+        "🏅Huy hiệu của bé": "🏅Your badges",
+        "👨‍👩‍👧 Góc phụ huynh": "👨‍👩‍👧 Parents' corner",
+        "Đăng nhập để học →": "Sign in to learn →",
+        "Đăng nhập / đăng ký để tham gia": "Sign in / Register to join",
+        "Trò chơi thuộc thư viện Premium": "Games are part of the Premium library",
+        "Xem các gói Premium →": "View Premium plans →",
+        "Về kho bài học": "Back to the lesson library",
+        "THÁCH THỨC": "CHALLENGES",
+        "TIẾT KIỆM HƠN": "SAVE MORE",
+        "/tháng": "/month",
+        "/năm": "/year",
+        "Thông tin chuyển khoản": "Bank transfer details",
+        "Ngân hàng": "Bank",
+        "Người nhận": "Account holder",
+        "Số tài khoản": "Account number",
+        "Số tiền": "Amount",
+        "Nội dung": "Transfer note",
+        "Sao chép số tài khoản": "Copy account number",
+        "Sao chép nội dung": "Copy transfer note",
+        "←Chọn gói khác": "←Change plan",
+        "❔Hỏi đáp thanh toán": "❔Payment FAQs",
+        "Ảnh bill đã chọn": "Selected receipt image",
+        "Tải ảnh bill chuyển khoản": "Upload transfer receipt",
+        "🖼️ Chọn ảnh bill từ thiết bị": "🖼️ Choose a receipt image",
+        "Xem trước ảnh (tài khoản trải nghiệm)": "Preview image (demo account)",
+        "Tiếp tục trải nghiệm Premium": "Continue with Premium",
+        "Xác nhận & mở Premium": "Confirm & unlock Premium",
+        "THANH TOÁN AN TOÀN": "SECURE CHECKOUT",
+        "Tình huống gần gũi": "Everyday scenario",
+        "Đọc tình huống rồi chọn cách xử lý phù hợp.": "Read the scenario and choose a helpful response.",
+        "Con sẽ chọn cách nào?": "What would you choose?",
+        "Chọn cách con nghĩ là phù hợp nhé.": "Choose the response you think is best.",
+        "♫ Nghe tình huống": "♫ Listen to the scenario",
+        "Câu tiếp theo →": "Next question →",
+        "Hoàn thành →": "Finish →",
+        "Câu chuyện tiếp theo · Câu ": "Next story · Question ",
+        "Đọc tình huống rồi chọn một phương án phù hợp.": "Read the scenario and choose a helpful response.",
+        "Góc riêng để bé xem hành trình và chọn hoạt động tiếp theo.": "A space to follow your learning journey and choose what to do next.",
+        "Mỗi bước con thử sức đều đáng tự hào.": "Every step you take is worth celebrating.",
+        "Cấp ": "Level ",
+        " sao": " stars",
+        " đến cấp tiếp theo": " to the next level",
+        "Bản đồ khám phá": "Discovery map",
+        "Bản đồ cảm xúc": "Feelings map",
+        "Ôn tập cùng Hero": "Practice with Hero",
+        "Huy hiệu của bé": "Your badges",
+        "Góc phụ huynh": "Parents' corner",
+        "Đang cố gắng": "In progress",
+        "Đã mở khóa": "Unlocked",
+        "Bước đầu tiên": "First steps",
+        "Hoàn thành bài học đầu tiên": "Complete your first lesson",
+        "Ngày chăm chỉ": "Learning streak",
+        "Học xong bài trong một ngày": "Complete a lesson in one day",
+        "Người suy nghĩ": "Thoughtful thinker",
+        "Hoàn thành một bài kiểm tra": "Complete a quiz",
+        "Người bạn tốt": "Kind friend",
+        "Xác nhận một thử thách ngoài đời": "Complete an offline challenge",
+        "Nhà khám phá": "Explorer",
+        "Hoàn thành ba chủ đề": "Complete three topics",
+        "Ngôi sao nhỏ": "Little star",
+        "Tích lũy 50 sao": "Earn 50 stars",
+        " lần": " times",
+        " mốc": " milestones",
+        "Bạn muốn chia sẻ điều gì?": "What would you like to share?",
+        "Trạng thái": "What's on your mind?",
+        "Chia sẻ một khoảnh khắc học tập vui vẻ…": "Share a happy learning moment…",
+        "🖼️ Ảnh / video": "🖼️ Photo / video",
+        "Đăng lên bảng tin": "Post to the community",
+        "Ảnh/video chỉ xem được trong phiên trình duyệt này, không tải lên máy chủ. Không chia sẻ thông tin riêng tư của trẻ.": "Photos and videos are only available during this browser session and are not uploaded. Do not share a child's private information.",
+        "Cộng đồng an toàn": "A safe community",
+        "Bài viết chỉ lưu trên thiết bị này. Chỉ chia sẻ nội dung phù hợp và tránh đăng thông tin nhận dạng trẻ.": "Posts are saved only on this device. Share appropriate content and avoid identifying a child.",
+        "Tương tác": "Interactions",
+        "Thích, cảm xúc, bình luận và đăng lại chỉ hiển thị trên thiết bị này.": "Likes, reactions, comments, and reposts are visible only on this device.",
+        "Chào mừng đến bảng tin Little Hero": "Welcome to the Little Hero community",
+        "Chưa có bài chia sẻ. Hãy đăng trạng thái đầu tiên.": "No posts yet. Share the first update.",
+        "Bài mẫu": "Sample post",
+        " · Cộng đồng Little Hero": " · Little Hero community",
+        " · đã đăng lại": " · reposted",
+        " · Lưu trên thiết bị": " · Saved on this device",
+        " cảm xúc": " reactions",
+        " bình luận": " comments",
+        " lượt chia sẻ": " shares",
+        "💚 Đã thích": "💚 Liked",
+        "♡ Thích": "♡ Like",
+        "💬 Bình luận": "💬 Comment",
+        "↗ Chia sẻ": "↗ Share",
+        "⟳ Đăng lại": "⟳ Repost",
+        "Yêu thích": "Love",
+        "Vỗ tay": "Applause",
+        "Đồng cảm": "Support",
+        "Thả cảm xúc": "Add a reaction",
+        "Viết bình luận": "Write a comment",
+        "Viết bình luận tử tế…": "Write a kind comment…",
+        "Gửi": "Send",
+        "Gia đình Mây": "Cloud Family",
+        "Gia đình Thỏ": "Rabbit Family",
+        "Gia đình Cầu Vồng": "Rainbow Family",
+        "Nhà Thỏ": "Rabbit House",
+        "Hôm nay bé đã biết chờ đến lượt và nhường bạn chọn trò chơi trước. Một hành động nhỏ mà cả nhà đều vui! 🌱": "Today, the child waited for their turn and let a friend choose the game first. A small act that made the whole family happy! 🌱",
+        "Cùng ghi nhận những điều tử tế mỗi ngày nhé! 💚": "Let's notice kind acts every day! 💚",
+        "Cả nhà vừa cùng Hero ôn lại quy tắc an toàn khi đi chơi: luôn ở gần người lớn và nhờ cô chú đáng tin cậy giúp đỡ khi cần. 🛡️": "Our family reviewed safety rules with Hero: stay near an adult and ask a trusted grown-up for help when needed. 🛡️",
+        "Ôn lại cùng nhau giúp bé nhớ lâu hơn ạ!": "Reviewing together helps children remember!",
+        "Góc đọc truyện cuối tuần: bé tự chọn cách giúp bạn trong câu chuyện rồi kể lại vì sao mình chọn như vậy. 📚✨": "Weekend story time: the child chose how to help a friend in the story and explained why. 📚✨",
+        "Thật vui khi được nghe suy nghĩ của các bé!": "It's lovely to hear what children are thinking!",
+        "Một số câu hỏi thường gặp về cách sử dụng Little Hero.": "Answers to common questions about using Little Hero.",
+        "Little Hero phù hợp với độ tuổi nào?": "What ages is Little Hero for?",
+        "Nội dung hướng đến trẻ 3–10 tuổi. Phụ huynh nên đồng hành và điều chỉnh hoạt động theo khả năng của mỗi bé.": "Little Hero is designed for children ages 3–10. Parents should join in and adapt activities to each child's abilities.",
+        "Làm sao để lưu tiến độ?": "How is progress saved?",
+        "Tiến độ học được lưu trong trình duyệt trên thiết bị hiện tại; tài khoản đăng nhập lưu ở máy chủ nhưng tiến độ chưa đồng bộ giữa các thiết bị.": "Learning progress is saved in this browser. Account details are stored on the server, but progress is not yet synced between devices.",
+        "Làm sao để khôi phục mật khẩu?": "How can I reset my password?",
+        "Tại trang đăng nhập, chọn “Quên mật khẩu?” rồi nhận mã xác minh qua email hoặc số điện thoại đã đăng ký. Máy chủ cần được cấu hình dịch vụ gửi email hoặc SMS.": "On the sign-in page, choose “Forgot password?” to receive a verification code by email or phone. The server must be configured to send email or SMS.",
+        "Các tình huống có thay thế tư vấn chuyên gia không?": "Does this replace professional advice?",
+        "Không. Nội dung là gợi ý giáo dục tổng quát, không thay thế tư vấn của chuyên gia giáo dục, tâm lý hoặc y tế.": "No. This is general educational guidance, not a substitute for advice from an education, mental health, or medical professional.",
+        "Đăng nhập Google đã hoạt động chưa?": "Is Google sign-in available?",
+        "Chưa. Cần tạo Google OAuth Client ID và dịch vụ máy chủ xác thực token trước khi đưa đăng nhập thật vào sử dụng.": "Not yet. A Google OAuth client ID and a server-side token verification service must be set up before Google sign-in can be enabled.",
+        "Thanh toán Premium có thể chuyển khoản chưa?": "Can I pay for Premium by bank transfer?",
+        "Có thể chuyển khoản theo thông tin tại trang thanh toán. Sau khi chuyển, tải ảnh bill lên để mở Premium ngay. Hệ thống chưa đối soát ảnh với ngân hàng.": "Yes. Use the bank details on the payment page, then upload a receipt image to unlock Premium. Receipts are not verified with the bank.",
+        "Ứng dụng lưu những thông tin nào?": "What information does the app store?",
+        "Họ tên phụ huynh, email, số điện thoại, trạng thái Premium và ảnh bill mới nhất được lưu trong SQLite trên máy chủ; ảnh cũ được thay thế khi tải ảnh mới. Hồ sơ và tiến độ học của bé vẫn lưu cục bộ trên trình duyệt. Hosting miễn phí hiện dùng dữ liệu tạm nên thông tin máy chủ có thể mất khi khởi động lại hoặc triển khai lại.": "A parent's name, email, phone number, Premium status, and latest receipt image are stored in server-side SQLite; a new receipt replaces the old one. A child's profile and progress stay in this browser. The current free hosting uses temporary storage, so server data may be lost after a restart or redeployment.",
+        "Chào mừng trở lại!": "Welcome back!",
+        "Đăng nhập để tiếp tục hành trình cùng Hero": "Sign in to continue your journey with Hero",
+        "Đăng nhập để tiếp tục hành trình; nếu chưa có tài khoản, chọn đăng ký bên dưới.": "Sign in to continue your journey, or register below to create an account.",
+        "Email đã đăng ký": "Registered email",
+        "Mật khẩu": "Password",
+        "Hiện mật khẩu": "Show password",
+        "Ghi nhớ email": "Remember email",
+        "Quên mật khẩu?": "Forgot password?",
+        "Bạn chưa có tài khoản?": "Don't have an account?",
+        "Đăng ký ngay": "Register now",
+        "Hoặc vào với tài khoản trải nghiệm": "Or continue with a demo account",
+        "Tạo tài khoản mới": "Create a new account",
+        "Cùng bé bắt đầu hành trình khám phá nhé!": "Start an adventure of discovery with your child!",
+        "Xem trước các công cụ đồng hành cùng gia đình. Dữ liệu hồ sơ và tiến độ chỉ hiển thị sau khi đăng nhập và xác nhận phụ huynh.": "Preview tools for supporting your family. Profile and progress details appear after a parent signs in and confirms access.",
+        "Xem bài học đã hoàn thành, thời gian học và các kỹ năng bé đang khám phá.": "Review completed lessons, learning time, and the skills your child is exploring.",
+        "Quản lý hồ sơ": "Manage profiles",
+        "Tạo hồ sơ riêng cho từng bé và chuyển đổi giữa các hành trình học tập.": "Create a profile for each child and switch between learning journeys.",
+        "Đồng hành an toàn": "Safe support",
+        "Tham khảo cài đặt thời gian, nội dung và hoạt động thực hành tại nhà.": "Explore time and content settings, plus activities to practice at home.",
+        "Đăng nhập để tiếp tục": "Sign in to continue",
+        "Đấu trường nhóm 3–6 tuổi · nội dung và câu hỏi được chọn theo độ tuổi của bé.": "Challenge arena for ages 3–6 · activities and questions are tailored to your child's age.",
+        "Đấu trường nhóm 7–10 tuổi · nội dung và câu hỏi được chọn theo độ tuổi của bé.": "Challenge arena for ages 7–10 · activities and questions are tailored to your child's age.",
+        "Tìm người chơi thật cùng nhóm tuổi; nếu chưa có, sau 10 giây hệ thống sẽ bắt đầu thử thách với bot.": "Searching for a real player in your age group. If none is available, a challenge against a bot will start after 10 seconds.",
+        "👤 \u00a0Hồ sơ của bé": "👤 Your profile",
+        "🏅 \u00a0Thành tích": "🏅 Achievements",
+        "🗺️ \u00a0Bản đồ học tập": "🗺️ Learning map",
+        "💛 \u00a0Bản đồ cảm xúc": "💛 Feelings map",
+        "🧩 \u00a0Ôn luyện": "🧩 Practice",
+        "📔 \u00a0Nhật ký học tập": "📔 Learning journal",
+        "📰 \u00a0Bài viết cho ba mẹ": "📰 Articles for parents",
+        "❔ \u00a0Trợ giúp": "❔ Help",
+        "💬 \u00a0Bảng tin trên thiết bị này": "💬 Community board on this device",
+        "Các bạn nhỏ cùng Hero nhận biết cảm xúc trong phòng chơi": "Children learn to recognize feelings with Hero in a playroom",
+        "Tính năng truyện đọc đang được đội ngũ LITTLE HERO xây dựng và phát triển": "The LITTLE HERO team is developing the story feature",
+        "♫ Nghe Hero chào": "♫ Hear Hero say hello",
+        "CÙNG CON HỌC ĐIỀU HAY": "LEARN GOOD THINGS TOGETHER",
+        "Học qua tình huống,": "Learn through real-life situations,",
+        "thực hành ngoài đời.": "and practice in everyday life.",
+        "Phụ huynh có thể cùng bé thử một việc nhỏ mỗi ngày và ghi nhận nỗ lực của con. Trải nghiệm xác nhận trong trang này chỉ lưu trên thiết bị hiện tại.": "Parents can try one small activity with their child each day and celebrate their effort. Confirmed activities on this page are saved only on this device.",
+        "Xác nhận": "Confirm",
+        "Nhà Hero": "Home",
+        "Học tập": "Learning",
+        "Thử thách": "Challenges",
+        "Của bé": "My space",
+        "Mỗi hoạt động là một cơ hội để bé tự suy nghĩ, chọn cách xử lý và học thêm điều hữu ích cho cuộc sống.": "Every activity gives children a chance to think for themselves, choose how to respond, and learn something useful for everyday life.",
+        "Chào bạn! Sẵn sàng chưa? ✨": "Hello, friend! Ready to explore? ✨",
+        "✦ Dũng cảm thử điều mới": "✦ Be brave and try something new",
+        "+10 sao chờ bé!": "+10 stars are waiting for you!",
+        "🎯 Nhiệm vụ hôm nay": "🎯 Today's quests",
+        "Nhiệm vụ hôm nay": "Today's quests",
+        "Mỗi bước nhỏ đều đáng khen.": "Every small step deserves a cheer.",
+        "Nhận sao ✨": "Collect stars ✨",
+        "MỘT THẾ GIỚI HỌC TẬP CÙNG HERO": "A WORLD OF LEARNING WITH HERO",
+        "Little Hero là nền tảng học kỹ năng sống qua hình ảnh, tình huống thực tế và trò chơi tương tác, giúp trẻ tự tin, an toàn và trưởng thành hơn mỗi ngày.": "Little Hero helps children build life skills through illustrations, real-life scenarios, and interactive games, growing more confident and capable every day.",
+        "Hình ảnh sinh động, gần gũi với trẻ.": "Bright, familiar illustrations made for children.",
+        "Nội dung lành mạnh, có người lớn đồng hành.": "Child-friendly content with an adult alongside.",
+        "Học mà chơi, nhớ lâu hơn.": "Learning through play helps ideas stick.",
+        "Phát triển tư duy": "Build thinking skills",
+        "Giúp trẻ hiểu và xử lý tình huống tốt hơn.": "Help children understand situations and respond thoughtfully.",
+        "Tự tin & độc lập": "Confidence & independence",
+        "Trẻ biết tự chăm sóc và đưa ra quyết định.": "Children learn to care for themselves and make decisions.",
+        "Giao tiếp & ứng xử": "Communication & kindness",
+        "Trẻ biết yêu thương, tôn trọng mọi người.": "Children learn to care for and respect others.",
+        "Hành trang tương lai": "Skills for the future",
+        "Nền tảng quan trọng để trưởng thành hạnh phúc.": "A foundation for growing up happy and capable.",
+        "Gắn kết gia đình": "Stronger family bonds",
+        "Cùng học — cùng chơi — cùng phát triển.": "Learn together, play together, and grow together.",
+        "Đọc bài viết liên quan →": "Read a related article →",
+        "HỌC QUA TRẢI NGHIỆM · TIẾN BỘ TỪNG BƯỚC": "LEARN BY DOING · GROW STEP BY STEP",
+        "Mỗi bài học giúp bé khám phá tình huống, lựa chọn cách ứng xử và cùng Hero tiến bộ.": "Each lesson helps children explore a situation, choose how to respond, and grow with Hero.",
+        "Xem tình huống": "Explore a scenario",
+        "Bé xem câu chuyện gần gũi trong cuộc sống.": "See a story inspired by everyday life.",
+        "Chọn phản ứng": "Choose a response",
+        "Bé chọn cách xử lý phù hợp cho tình huống.": "Choose a helpful response to the situation.",
+        "Chơi mini game": "Play a mini-game",
+        "Bé học qua trò chơi tương tác vui nhộn.": "Learn through fun, interactive games.",
+        "Nhận phần thưởng": "Earn rewards",
+        "Bé tích lũy sao và ghi nhận nỗ lực.": "Collect stars and celebrate each effort.",
+        "Khám phá khóa học": "Explore lessons",
+        "HỌC MỘT CHÚT, LỚN MỘT CHÚT": "LEARN A LITTLE, GROW A LITTLE",
+        "Gợi ý học tập hôm nay": "Today's learning pick",
+        "Tình huống gần gũi để bé tập cách ứng xử an toàn.": "A familiar scenario to practice making safe choices.",
+        "Đổi gợi ý ↻": "Show another suggestion ↻",
+        "Đấu trường nhóm": "Challenge arena · age group",
+        "THI ĐUA LÀNH MẠNH": "FRIENDLY CHALLENGES",
+        "Cùng bạn chinh phục thử thách": "Take on challenges with friends",
+        "Cùng ôn bài, luyện suy nghĩ và ghi nhận nỗ lực mỗi ngày.": "Review, practice thinking, and celebrate progress every day.",
+        "HERO ARENA · HỌC QUA THỬ THÁCH": "HERO ARENA · LEARN THROUGH CHALLENGES",
+        "Chơi vui, rèn kỹ năng, tự tin hơn.": "Play, practice life skills, and grow in confidence.",
+        "Cùng Hero xử lý tình huống gần gũi, tích lũy điểm RP và khám phá cách lựa chọn an toàn. Mỗi lượt chơi là một cơ hội học hỏi — không áp lực thắng thua.": "Work through familiar situations with Hero, earn RP, and explore safe choices. Every round is a chance to learn—there's no pressure to win or lose.",
+        "Cách tham gia Hero Arena": "How to play Hero Arena",
+        "Chọn thử thách": "Choose a challenge",
+        "Đấu cùng nhóm tuổi": "Match with your age group",
+        "Suy nghĩ & lựa chọn": "Think & choose",
+        "Luyện kỹ năng sống": "Practice life skills",
+        "Nhận điểm RP": "Earn RP",
+        "Ghi nhận nỗ lực": "Celebrate your effort",
+        "điểm rèn luyện của bé": "Your practice points",
+        "Đấu 1v1": "1v1",
+        "Khu vực": "Region",
+        "Thành phố": "City",
+        "Toàn quốc": "Nationwide",
+        "⚡ Bắt đầu thử thách": "⚡ Start a challenge",
+        "Nhóm tuổi · thành tích RP": "Age group · RP standings",
+        "Truyện tương tác": "Interactive stories",
+        "GÓC CHIA SẺ GIA ĐÌNH": "FAMILY STORIES",
+        "Phản hồi chỉ hiển thị khi được người dùng gửi; chúng tôi không tạo nhận xét thay phụ huynh.": "Only submitted feedback is shown; we never write reviews on a parent's behalf.",
+        "GÓI HỌC LINH HOẠT": "FLEXIBLE PLANS",
+        "Bắt đầu miễn phí, nâng cấp khi sẵn sàng": "Start for free and upgrade when you're ready",
+        "Phụ huynh có thể chọn gói phù hợp với gia đình.": "Parents can choose a plan that works for their family.",
+        "Hành trang Tự Tin": "Confident Steps",
+        "Mở khóa toàn bộ bài học Premium (khoảng một nửa thư viện)": "Unlock all Premium lessons (about half of the library)",
+        "Trò chơi tương tác": "Interactive games",
+        "49.000đ": "VND 49,000",
+        "/ tháng": "/ month",
+        "Cùng Hero Mỗi Ngày": "Every Day with Hero",
+        "399.000đ": "VND 399,000",
+        "/ năm": "/ year",
+        "8 bài học nền tảng luôn miễn phí.": "Eight foundational lessons are always free.",
+        "CHUYẾN PHIÊU LƯU ĐANG CHỜ BÉ": "YOUR ADVENTURE IS WAITING",
+        "Đăng ký ngay để bé nhận những bài học thú vị và phần thưởng hấp dẫn mỗi ngày.": "Sign up so your child can enjoy fun lessons and exciting rewards every day.",
+        "Tạo tài khoản miễn phí": "Create a free account",
+        "Cùng Little Hero đồng hành trong hành trình lớn khôn của bé.": "Join Little Hero in supporting your child's growth.",
+        "Cùng bé học điều hay mỗi ngày": "Learning something good together every day",
         "Cùng gia đình học điều hay mỗi ngày": "Learn something good together every day",
         "LITTLE HERO là gì?": "What is LITTLE HERO?",
         "Dễ hiểu": "Easy to understand",
@@ -1315,9 +1834,7 @@
         "Tiếng Việt": "Vietnamese",
         "English": "English",
         "Cập nhật lúc": "Updated at",
-        "Bảng xếp hạng minh họa · thứ hạng thật sẽ cập nhật khi có người chơi đồng ý chia sẻ điểm.": "Illustrative leaderboard · real rankings will appear when players consent to share their scores.",
-        "Chưa có người chơi trong phạm vi này. Thứ hạng thật sẽ hiện khi có người chơi đồng ý chia sẻ điểm.": "No players in this area yet. Real rankings will appear when players consent to share their scores.",
-        "Bảng xếp hạng có thể xem công khai. Đăng nhập hoặc đăng ký để chọn biệt danh và tham gia.": "The leaderboard is public. Sign in or register to choose a nickname and participate.",
+        "Chưa thể tải bảng xếp hạng. Vui lòng thử lại sau.": "Could not load the leaderboard. Please try again later.",
         "Hiện tại đây chỉ là giao diện demo, LITTLE HERO sẽ được phát triển và nâng cấp trong tương lai.": "This is currently a demo interface. LITTLE HERO will be developed and improved in the future.",
         "Bảng vinh danh": "Leaderboard",
         "Đánh giá của người dùng": "User reviews",
@@ -1356,11 +1873,18 @@
         "Ba mẹ có thể xem thông tin gói. Tải ảnh bill lên để mở Premium ngay; giao dịch chưa được đối soát tự động với ngân hàng.": "You can review the plans. Upload a receipt image to unlock Premium immediately; transfers are not automatically checked with the bank.",
         "Chọn thời hạn phù hợp. Tải ảnh bill lên ở bước thanh toán để mở Premium ngay.": "Choose a plan duration. Upload a receipt image at checkout to unlock Premium immediately.",
         "Sau khi chuyển khoản, tải ảnh bill lên và nhấn xác nhận để mở Premium ngay. Ảnh được lưu riêng theo tài khoản; hệ thống chưa đối soát ảnh với ngân hàng, nên chỉ tải bill của giao dịch thực tế. Hãy kiểm tra kỹ người nhận và số tiền trước khi chuyển.": "After transferring, upload your receipt image and confirm to unlock Premium immediately. The image is stored with your account but is not checked against bank records; only upload a receipt for a real transfer. Check the recipient and amount before sending money.",
+        "Mở ứng dụng ngân hàng, chọn chuyển khoản đến MB Bank rồi nhập đúng người nhận, số tài khoản, số tiền và nội dung bên trên. Sau khi chuyển khoản thành công, tải ảnh bill lên để xác nhận. Ảnh chưa được đối soát tự động với ngân hàng; hãy kiểm tra kỹ thông tin trước khi chuyển.": "Open your banking app, choose a transfer to MB Bank, and enter the recipient, account number, amount, and transfer note shown above. After the transfer succeeds, upload the receipt to confirm. Receipts are not automatically verified with the bank; check all details before sending.",
         "Họ tên phụ huynh, email, số điện thoại, trạng thái Premium và ảnh bill mới nhất được lưu trong SQLite trên máy chủ; ảnh cũ được thay thế khi tải ảnh mới. Hồ sơ và tiến độ học của bé vẫn lưu cục bộ trên trình duyệt. Hosting miễn phí hiện dùng dữ liệu tạm nên thông tin máy chủ có thể mất khi khởi động lại hoặc triển khai lại.": "A parent's name, email, phone number, Premium status, and latest receipt image are stored in server-side SQLite; uploading a new image replaces the old one. A child's profile and learning progress remain in this browser. The current free hosting uses temporary storage, so server data may be lost on restart or redeployment.",
         "Tải ảnh bill chuyển khoản": "Upload transfer receipt",
         "🖼️ Chọn ảnh bill từ thiết bị": "🖼️ Choose a receipt image",
         "Chọn ảnh bill PNG, JPEG hoặc WebP (tối đa 5 MB). Sau khi gửi ảnh, Premium được mở ngay.": "Choose a PNG, JPEG, or WebP receipt image (up to 5 MB). Premium unlocks immediately after upload.",
-        "Tài khoản trải nghiệm không hỗ trợ thanh toán. Hãy đăng nhập tài khoản chính để gửi bill.": "Demo accounts cannot make payments. Sign in with your account to upload a receipt.",
+        "Chế độ trải nghiệm: Premium đã mở. Có thể chọn ảnh để xem trước trên thiết bị; ảnh không được gửi lên máy chủ và không thực hiện thanh toán.": "Demo mode: Premium is unlocked. Select an image to preview on this device; it is not sent to the server and no payment is made.",
+        "Ảnh được chọn để xem trước trên thiết bị; không tải lên máy chủ.": "Image selected for preview on this device; it is not uploaded to the server.",
+        "Tiếp tục trải nghiệm Premium": "Continue trying Premium",
+        "Xem trước ảnh (tài khoản trải nghiệm)": "Preview image (demo account)",
+        "Premium đã mở cho tài khoản trải nghiệm.": "Premium is unlocked for the demo account.",
+        "Tài khoản trải nghiệm được dùng các tính năng Premium mà không cần chuyển khoản.": "The demo account can use Premium features without making a payment.",
+        "Ảnh bill chỉ được xem trước trên thiết bị; không có giao dịch hoặc tải ảnh lên máy chủ.": "The receipt image is only previewed on this device; no payment is made and no image is uploaded to the server.",
         "Hãy đăng nhập tài khoản để tải ảnh bill và kích hoạt Premium.": "Sign in to upload a receipt and activate Premium.",
         "Xác nhận & mở Premium": "Confirm & unlock Premium",
         "Tệp phải là ảnh PNG, JPEG hoặc WebP.": "The file must be a PNG, JPEG, or WebP image.",
@@ -1378,20 +1902,61 @@
         "HỖ TRỢ GIA ĐÌNH": "FAMILY SUPPORT",
         "ĐÁNH GIÁ ỨNG DỤNG": "APP REVIEWS",
         "KHO BÀI HỌC": "LESSON LIBRARY",
-        "THỬ THÁCH": "CHALLENGES"
+        "THỬ THÁCH": "CHALLENGES",
+        "Chọn cảm xúc gần với con nhất hôm nay. Cảm xúc nào cũng bình thường; đây là hoạt động học tập, không phải công cụ chẩn đoán.": "Choose the feeling closest to yours today. All feelings are normal; this is a learning activity, not a diagnostic tool.",
+        "Chọn một cảm xúc": "Choose a feeling",
+        "Vui vẻ": "Happy",
+        "Buồn": "Sad",
+        "Tức giận": "Angry",
+        "Lo lắng": "Worried",
+        "Bình yên": "Calm",
+        "Hero nhắn con": "A message from Hero",
+        "Con có thể thử:": "You could try:",
+        "Vui quá! Con có thể kể với người thân điều làm con vui nhé.": "How wonderful! You can tell someone in your family what made you happy.",
+        "Niềm vui có thể lan tỏa. Con muốn chia sẻ điều làm mình vui với ai đó con tin tưởng không?": "Happiness can be shared. Would you like to tell someone you trust what made you happy?",
+        "Con thử vẽ điều làm mình vui nhé.": "Try drawing something that makes you happy.",
+        "Con muốn chia sẻ niềm vui với người con tin tưởng nhé.": "Share your happiness with someone you trust.",
+        "Buồn cũng không sao. Con có thể nói với người lớn con tin nhé.": "It's okay to feel sad. You can talk to an adult you trust.",
+        "Buồn là cảm xúc bình thường. Con có thể gọi tên điều làm mình buồn và tìm người lớn tin cậy để chia sẻ.": "Sadness is a normal feeling. You can name what made you sad and share it with a trusted adult.",
+        "Con thử vẽ hoặc kể điều làm mình buồn nhé.": "Try drawing or talking about what made you sad.",
+        "Con có thể kể với người lớn con tin điều khiến mình buồn.": "Tell an adult you trust what made you sad.",
+        "Tức giận là cảm xúc bình thường. Mình cùng dừng lại và thở chậm nhé.": "Anger is a normal feeling. Let's pause and take a slow breath.",
+        "Khi tức giận, con có thể tạm dừng, thở chậm và nói với người lớn tin cậy điều mình cần.": "When you're angry, you can pause, breathe slowly, and tell a trusted adult what you need.",
+        "Con thử hít vào nhẹ nhàng, rồi thở ra chậm ba lần.": "Try breathing in gently, then breathe out slowly three times.",
+        "Con có thể thở chậm vài lần rồi nói điều mình cần với người lớn tin cậy.": "Take a few slow breaths, then tell a trusted adult what you need.",
+        "Khi lo lắng, con hãy tìm người lớn con tin và kể cho họ nghe nhé.": "When you feel worried, find an adult you trust and tell them.",
+        "Con có thể gọi tên điều khiến mình lo lắng và cùng người lớn tin cậy nghĩ về bước tiếp theo.": "Name what is worrying you and think about a next step with a trusted adult.",
+        "Con kể với người lớn con tin điều khiến mình lo nhé.": "Tell an adult you trust what is worrying you.",
+        "Con có thể viết ra điều mình lo và nhờ người lớn tin cậy cùng tìm cách xử lý.": "Write down what is worrying you and ask a trusted adult to help.",
+        "Thật dễ chịu khi thấy bình yên. Con có thể tận hưởng khoảnh khắc này nhé.": "It's lovely to feel calm. You can enjoy this moment.",
+        "Con thử để ý điều gì đang giúp mình cảm thấy bình yên hôm nay nhé.": "Notice what is helping you feel calm today.",
+        "Con thử để ý hơi thở chậm rãi của mình nhé.": "Notice your slow, steady breathing.",
+        "Con có thể ghi nhớ điều đang giúp mình cảm thấy bình yên.": "Remember what is helping you feel calm."
       }).sort(([sourceA], [sourceB]) => sourceB.length - sourceA.length));
+      const englishUiTextByEnglish = new Map(
+        [...englishUiText].map(([source, translated]) => [translated, source])
+      );
       const localizedTextState = new WeakMap();
       const localizedAttributeState = new WeakMap();
+      const lessonLocaleText = window.LittleHeroLessonLocaleText;
       const translateString = (source) => {
-        if (state.language !== "en") return source;
-        const exactTranslation = englishUiText.get(source);
+        if (state.language === "vi") return source;
+        const languageTranslations = window.LittleHeroTranslations[state.language] || window.LittleHeroTranslations.en;
+        const canonicalSource = englishUiTextByEnglish.get(source) || source;
+        const exactLessonTranslation = lessonLocaleText instanceof Map
+          ? lessonLocaleText.get(canonicalSource)?.[state.language]
+          : lessonLocaleText?.[canonicalSource]?.[state.language];
+        const exactTranslation = exactLessonTranslation
+          || languageTranslations.get(source)
+          || languageTranslations.get(canonicalSource)
+          || (state.language === "en" ? englishUiText.get(canonicalSource) || englishUiText.get(source) : "");
         if (exactTranslation) return exactTranslation;
-        let translated = source;
-        for (const [vietnamese, english] of englishUiText) {
-          translated = translated.replaceAll(vietnamese, english);
-        }
-        return translated;
+        return canonicalSource;
       };
+      const translateTemplate = (template, values) => Object.entries(values).reduce(
+        (text, [key, value]) => text.replaceAll(`{${key}}`, String(value)),
+        translateString(template)
+      );
       const translateNodeText = (node) => {
         const current = node.nodeValue || "";
         let source = localizedTextState.get(node);
@@ -1442,9 +2007,9 @@
       languageObserver.observe(document.body, { childList: true, characterData: true, subtree: true });
       translateElement(document.body);
       const routeLink = (name, label, icon = "") => `<a class="btn btn-light btn-small" href="#/${name}" data-route="${name}">${icon}${label}</a>`;
-      const pageShell = (name, description, body, icon = "✦") => `
+      const pageShell = (name, description, body) => `
         <button class="route-back" type="button" data-route-back>← Quay lại</button>
-        <div class="page-heading"><span class="kicker">LITTLE HERO · ${icon}</span><h1>${escapeHtml(pageTitle(name))}</h1>${description ? `<p>${description}</p>` : ""}</div>${body}`;
+        <div class="page-heading"><h1>${escapeHtml(pageTitle(name))}</h1>${description ? `<p>${description}</p>` : ""}</div>${body}`;
       const ensureGuestPreviewBanner = () => {
         const routeName = route.split("/")[0];
         const routeView = $("#routeView");
@@ -1489,8 +2054,12 @@
         if (targetRoute === "home" && route === "auth") pendingAuthRoute = "";
         if (!options.restore && route === "home") state.lastHomeScroll = window.scrollY;
         if (nextRoute !== "arena" && arenaMatchTimeout) {
-          window.clearInterval(arenaMatchTimeout);
+          window.clearTimeout(arenaMatchTimeout);
           arenaMatchTimeout = null;
+        }
+        if (route === "arena" && targetRoute !== "arena") {
+          arenaSearchRequestId += 1;
+          void releaseArenaSearch();
         }
         if (targetRoute !== "arena" && arenaLeaderboardInterval) {
           window.clearInterval(arenaLeaderboardInterval);
@@ -1598,12 +2167,70 @@
           return `<article class="catalog-card"><div class="catalog-art" style="--lesson-color:${category.color}">
               <img src="${image.src}" alt="${escapeHtml(image.alt)}" loading="lazy"><span aria-hidden="true">${lesson.icon}</span>
             </div><div class="catalog-card-copy"><span class="kicker">${category.name}</span><h3>${escapeHtml(lesson.title)}</h3>
-              <p>${escapeHtml(lesson.goal)}<br>${lesson.age} · ${lesson.duration}${isPremiumLesson(lesson) ? " · ♛ Premium" : ""}${state.completed.includes(lesson.id) ? " · ⭐ Đã hoàn thành" : ""}</p>
             </div><button class="btn ${locked ? "btn-light" : "btn-mint"} btn-small" data-route="${!state.authenticated ? `lesson/${lesson.id}` : locked ? "pricing" : `lesson/${lesson.id}`}">${actionLabel}</button></article>`;
         }).join("");
         const chips = allowedCategories.map((category) => routeLink(`lessons/${category.id}`, `${category.icon} ${category.name}`)).join("");
         const message = unavailableCategory ? "Chủ đề này chưa nằm trong nhóm tuổi của bé. Đây là các nội dung phù hợp hơn:" : "Chọn bài học phù hợp với độ tuổi và chủ đề bé quan tâm.";
-        $("#routeView").innerHTML = pageShell("lessons", message, `<div class="page-actions">${routeLink("lessons", "Tất cả chủ đề", "🏝️")}${chips}</div><div class="lesson-catalog">${cards}</div>`, "KHO BÀI HỌC");
+        $("#routeView").innerHTML = pageShell("lessons", message, `<div class="page-actions">${routeLink("lessons", "Tất cả chủ đề", "🏝️")}${chips}</div><div class="lesson-catalog">${cards}</div>`);
+      };
+      const renderEmotionMap = () => {
+        const emotions = [
+          {
+            id: "happy", label: "Vui vẻ", icon: "😊",
+            messages: ["Vui quá! Con có thể kể với người thân điều làm con vui nhé.", "Niềm vui có thể lan tỏa. Con muốn chia sẻ điều làm mình vui với ai đó con tin tưởng không?"],
+            activities: ["Con thử vẽ điều làm mình vui nhé.", "Con muốn chia sẻ niềm vui với người con tin tưởng nhé."]
+          },
+          {
+            id: "sad", label: "Buồn", icon: "😟",
+            messages: ["Buồn cũng không sao. Con có thể nói với người lớn con tin nhé.", "Buồn là cảm xúc bình thường. Con có thể gọi tên điều làm mình buồn và tìm người lớn tin cậy để chia sẻ."],
+            activities: ["Con thử vẽ hoặc kể điều làm mình buồn nhé.", "Con có thể kể với người lớn con tin điều khiến mình buồn."]
+          },
+          {
+            id: "angry", label: "Tức giận", icon: "😠",
+            messages: ["Tức giận là cảm xúc bình thường. Mình cùng dừng lại và thở chậm nhé.", "Khi tức giận, con có thể tạm dừng, thở chậm và nói với người lớn tin cậy điều mình cần."],
+            activities: ["Con thử hít vào nhẹ nhàng, rồi thở ra chậm ba lần.", "Con có thể thở chậm vài lần rồi nói điều mình cần với người lớn tin cậy."]
+          },
+          {
+            id: "worried", label: "Lo lắng", icon: "😰",
+            messages: ["Khi lo lắng, con hãy tìm người lớn con tin và kể cho họ nghe nhé.", "Con có thể gọi tên điều khiến mình lo lắng và cùng người lớn tin cậy nghĩ về bước tiếp theo."],
+            activities: ["Con kể với người lớn con tin điều khiến mình lo nhé.", "Con có thể viết ra điều mình lo và nhờ người lớn tin cậy cùng tìm cách xử lý."]
+          },
+          {
+            id: "calm", label: "Bình yên", icon: "😌",
+            messages: ["Thật dễ chịu khi thấy bình yên. Con có thể tận hưởng khoảnh khắc này nhé.", "Con thử để ý điều gì đang giúp mình cảm thấy bình yên hôm nay nhé."],
+            activities: ["Con thử để ý hơi thở chậm rãi của mình nhé.", "Con có thể ghi nhớ điều đang giúp mình cảm thấy bình yên."]
+          }
+        ];
+        $("#routeView").innerHTML = pageShell("emotions", "Chọn cảm xúc gần với con nhất hôm nay. Cảm xúc nào cũng bình thường; đây là hoạt động học tập, không phải công cụ chẩn đoán.", `
+          <section class="emotion-map" aria-label="Bản đồ cảm xúc">
+            <h2 class="emotion-map-prompt">Chọn một cảm xúc</h2>
+            <div class="emotion-map-options" role="group" aria-label="Chọn cảm xúc">
+              ${emotions.map((emotion) => `<button type="button" class="emotion-map-option" data-emotion="${emotion.id}" aria-pressed="false">
+                <span class="emotion-map-face" aria-hidden="true">${emotion.icon}</span><span>${emotion.label}</span>
+              </button>`).join("")}
+            </div>
+            <section class="emotion-map-response" id="emotionMapResponse" aria-live="polite" hidden>
+              <span class="emotion-map-hero" aria-hidden="true">🦸</span>
+              <div><span class="kicker">Hero nhắn con</span><p id="emotionMapMessage"></p>
+                <div class="emotion-map-activity"><strong>Con có thể thử:</strong> <span id="emotionMapActivity"></span></div>
+              </div>
+            </section>
+          </section>`);
+        $("#routeView").querySelectorAll("[data-emotion]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const emotion = emotions.find((item) => item.id === button.dataset.emotion);
+            if (!emotion) return;
+            $("#routeView").querySelectorAll("[data-emotion]").forEach((option) => {
+              const selected = option === button;
+              option.classList.toggle("is-selected", selected);
+              option.setAttribute("aria-pressed", String(selected));
+            });
+            const ageIndex = state.age <= 6 ? 0 : 1;
+            $("#emotionMapMessage").textContent = translateString(emotion.messages[ageIndex]);
+            $("#emotionMapActivity").textContent = translateString(emotion.activities[ageIndex]);
+            $("#emotionMapResponse").hidden = false;
+          });
+        });
       };
 
       const { getScene, renderSceneBackdrop, renderSceneActor } = window.createLittleHeroSceneModel({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, renderLessonCharacterSvg, state });
@@ -1654,6 +2281,14 @@
         const meetDistance = Math.min(135, Math.max(95, Math.abs(gap) * .46));
         const interactionDistance = Math.min(125, Math.max(90, Math.abs(gap) * .42));
         const retreatPartner = scene.querySelector("#sceneThirdActor");
+        if (["action-give", "action-hug"].includes(movement)) {
+          moveLessonActor(scene, protagonist, towardPartner * meetDistance, { gesture: "meet", duration: 1100 });
+          moveLessonActor(scene, partner, -towardPartner * meetDistance, { gesture: "meet", duration: 1100 });
+          return;
+        }
+        if (["action-jump", "action-wave", "action-clap", "action-sweep", "action-carry", "action-fold", "action-tidy", "action-dance", "action-point", "action-read", "action-draw", "action-drink", "action-eat", "action-brush-teeth"].includes(movement)) {
+          return;
+        }
         if (["action-greet", "action-handshake", "action-apologize"].includes(movement)) {
           moveLessonActor(scene, protagonist, towardPartner * meetDistance, { gesture: "meet" });
           moveLessonActor(scene, partner, -towardPartner * meetDistance, { gesture: "meet" });
@@ -1848,7 +2483,7 @@
         if (choice.includes("xin lỗi")) return "💛";
         return lesson.category === "emotion" ? "💬" : lesson.category === "social" ? "🤝" : "✨";
       };
-      const animateSceneChoice = (sceneId, heroId, friendId, propId, answer, lesson, correct) => {
+      const animateSceneChoice = (sceneId, heroId, friendId, propId, answer, lesson, correct, choiceIndex = -1, question = null) => {
         const scene = $(`#${sceneId}`);
         if (!scene) return;
         const protagonist = $(`#${heroId}`);
@@ -1864,8 +2499,20 @@
           void actor.offsetWidth;
         });
         playSceneEnvironment(sceneId);
-        const movement = actionForAnswer(answer, correct, lesson);
-        const partnerMovement = correct
+        const fallbackMovement = actionForAnswer(answer, correct, lesson);
+        const actionPlan = window.LittleHeroCharacterEngine?.resolve({
+          answer, choiceIndex, question, lesson, correct,
+          fallbackAction: fallbackMovement,
+          fallbackEmotion: emotionForAnswer(answer, correct, fallbackMovement)
+        }) || {
+          action: fallbackMovement,
+          emotion: emotionForAnswer(answer, correct, fallbackMovement),
+          partnerAction: "",
+          objectIcon: "",
+          target: ""
+        };
+        const movement = actionPlan.action;
+        const partnerMovement = actionPlan.partnerAction || (correct
           ? ({
             "action-wash": "action-guide",
             "action-pickup": "action-assist",
@@ -1883,20 +2530,28 @@
             "action-run": "action-call",
             "action-hide": "action-search",
             "action-pause": "action-encourage"
-          }[movement] || "action-warn");
+          }[movement] || "action-warn"));
         const responseEmotion = correct
           ? ["action-apologize", "action-assist", "action-greet", "action-handshake", "action-pickup"].includes(movement) ? "happy" : "calm"
           : emotionForAnswer(answer, false, movement);
         const involvedActors = new Set([lead, companion, ...mentioned]);
         involvedActors.forEach((actor) => {
           const actorMovement = actor === lead ? movement : partnerMovement;
-          const actorEmotion = actor === lead ? emotionForAnswer(answer, correct, movement) : responseEmotion;
-          actor.classList.add(actorMovement, `mood-${actorEmotion}`);
-          setCharacterExpression(actor, actorEmotion);
+          const actorEmotion = actor === lead ? actionPlan.emotion : responseEmotion;
+          if (window.LittleHeroCharacterEngine) {
+            window.LittleHeroCharacterEngine.play(actor, {
+              action: actorMovement,
+              emotion: actorEmotion
+            }, setCharacterExpression);
+          } else {
+            actor.classList.add(actorMovement, `mood-${actorEmotion}`);
+            setCharacterExpression(actor, actorEmotion);
+          }
         });
         if (lead.querySelector(".lesson-character-svg")) {
           choreographLessonAnswer(scene, lead, companion, movement);
         }
+        window.LittleHeroCharacterEngine?.showObject(lead, companion, actionPlan);
         const stranger = scene.querySelector("#sceneThirdActor");
         if (stranger?.querySelector(".actor-name")?.textContent.trim() === "Người lạ") {
           stranger.classList.remove("action-protect", "action-stay", "mood-happy", "mood-sad", "mood-concerned");
@@ -1906,7 +2561,11 @@
           );
           setCharacterExpression(stranger, "concerned");
         }
-        $(`#${propId}`).textContent = correct ? propForChoice(answer, lesson) : "⚡";
+        const sceneProp = $(`#${propId}`);
+        const objectIsHeld = ["action-carry", "action-give", "action-fold", "action-tidy"].includes(movement);
+        if (sceneProp) sceneProp.textContent = correct ? (objectIsHeld ? "" : (actionPlan.objectIcon || propForChoice(answer, lesson))) : "⚡";
+        scene.dataset.activeAction = movement.replace(/^action-/, "");
+        if (actionPlan.target) scene.dataset.actionTarget = actionPlan.target;
       };
 
       const renderLessonRoute = (lessonId) => {
@@ -1929,29 +2588,62 @@
         const lesson = { ...sourceLesson, age: currentAgeLabel() };
         const category = categories.find((item) => item.id === lesson.category);
         const scene = getScene(lesson);
+        const shuffleQuestionAnswers = (question) => {
+          const answerCount = question.answers.length;
+          if (answerCount < 2) return question;
+          const answerOrder = Array.from({ length: answerCount }, (_, index) => index);
+          for (let index = answerCount - 1; index > 0; index -= 1) {
+            const swapIndex = Math.floor(Math.random() * (index + 1));
+            [answerOrder[index], answerOrder[swapIndex]] = [answerOrder[swapIndex], answerOrder[index]];
+          }
+          const correctIndex = Number.isInteger(question.correct)
+            && question.correct >= 0
+            && question.correct < answerCount
+            ? question.correct
+            : 0;
+          const shuffled = {
+            ...question,
+            answers: answerOrder.map((index) => question.answers[index]),
+            correct: answerOrder.indexOf(correctIndex)
+          };
+          ["animations", "answerAnimations", "answerActions"].forEach((key) => {
+            if (Array.isArray(question[key]) && question[key].length === answerCount) {
+              shuffled[key] = answerOrder.map((index) => question[key][index]);
+            }
+          });
+          return shuffled;
+        };
         const questions = [
-          { story: lesson.story, prompt: "Bé sẽ chọn cách nào?", answers: lesson.answers, correct: lesson.correct },
+          {
+            story: lesson.story,
+            prompt: "Bé sẽ chọn cách nào?",
+            answers: lesson.answers,
+            correct: lesson.correct,
+            answerAnimations: lesson.answerAnimations,
+            answerActions: lesson.answerActions
+          },
           ...(lessonFollowUps[lesson.id] || []).map((question) => ({ ...question, correct: Number.isInteger(question.correct) ? question.correct : 0 }))
-        ];
+        ].map(shuffleQuestionAnswers);
         let questionIndex = 0;
         const done = state.completed.includes(lesson.id);
-        const prior = state.lessonMistakes?.[lesson.id] || 0;
         $("#routeView").innerHTML = pageShell("lessons", `${category.icon} ${category.name} · ${lesson.age} · ${lesson.duration}`, `
           <p class="lesson-demo-notice" role="note">Hiện tại đây chỉ là giao diện demo, LITTLE HERO sẽ được phát triển và nâng cấp trong tương lai.</p>
           <div class="lesson-layout">
-            <div>
+            <div class="lesson-scene-column">
               <div class="lesson-progress"><span>📖 Mạch câu chuyện</span><span id="questionProgress">Câu hỏi 1/${questions.length}${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}</span></div>
               <article class="scene-card">
-                <div class="scene ${scene.type} scene-${scene.variant} scene-lesson-${lesson.category}${scene.thirdCharacter ? " scene-with-third-character" : ""}${lessonSceneImages[lesson.id] ? " has-illustration" : ""}" id="lessonScene">
-                    ${lessonSceneImages[lesson.id]
-                      ? `<img class="lesson-scene-illustration" src="${lessonSceneImages[lesson.id].src}" alt="${escapeHtml(lessonSceneImages[lesson.id].alt)}">`
-                      : `${renderSceneBackdrop(scene)}
-                        <span class="scene-kicker">📍 ${scene.place}</span><span class="scene-prop" id="sceneProp">${scene.prop}</span>
-                        ${scene.thirdCharacter ? renderSceneActor("sceneThirdActor", scene.thirdCharacter.name, false, scene.thirdCharacter, true) : ""}
-                        ${renderSceneActor("lessonProtagonist", scene.protagonist.name, false, scene.protagonist, true)}
-                        ${renderSceneActor("lessonPartner", scene.friend.name, false, scene.friend, true)}`}
+                <div class="scene ${scene.type} scene-${scene.variant} scene-lesson-${lesson.category}${scene.thirdCharacter ? " scene-with-third-character" : ""}" id="lessonScene">
+                    ${renderSceneBackdrop(scene)}
+                    <span class="scene-kicker">📍 ${scene.place}</span><span class="scene-prop" id="sceneProp">${scene.prop}</span>
+                    ${scene.thirdCharacter ? renderSceneActor("sceneThirdActor", scene.thirdCharacter.name, false, scene.thirdCharacter, true) : ""}
+                    ${renderSceneActor("lessonProtagonist", scene.protagonist.name, false, scene.protagonist, true)}
+                    ${renderSceneActor("lessonPartner", scene.friend.name, false, scene.friend, true)}
                 </div>
               </article>
+              <div class="lesson-context"><span class="kicker">HỌC QUA TRẢI NGHIỆM</span><h3>${escapeHtml(lesson.goal)}</h3>
+                <div class="lesson-meta"><span>♧ ${lesson.age}</span><span>◷ ${lesson.duration}</span></div>
+                <strong>🌱 Thử thách ngoài đời</strong><p>${escapeHtml(lesson.activity)}</p>
+              </div>
             </div>
             <section class="lesson-question-panel">
               <div class="score-card lesson-question-card">
@@ -1965,24 +2657,21 @@
                 </div>
                 <p class="lesson-voice-status" id="lessonVoiceStatus" aria-live="polite"></p>
                 <div class="lesson-choices" id="lessonChoices"></div>
-                <p class="lesson-feedback" id="lessonRouteFeedback" aria-live="polite">${prior ? `Bé đã thử ${prior} lựa chọn chưa phù hợp. Hãy bình tĩnh suy nghĩ lại nhé.` : "Bé hãy chọn phương án mình nghĩ là phù hợp."}</p>
+                <p class="lesson-feedback" id="lessonRouteFeedback" aria-live="polite"></p>
                 <details class="lesson-hint">
                   <summary>💡 Gợi ý để bé suy nghĩ</summary>
-                  <div>${lesson.prompts.slice(0, 2).map((prompt) => `<p>${escapeHtml(prompt)}</p>`).join("")}</div>
+                  <div>${lesson.prompts.slice(0, 1).map((prompt) => `<p>${escapeHtml(prompt)}</p>`).join("")}</div>
                 </details>
-                <p class="lesson-safety-note">Nếu tình huống xảy ra ngoài đời và bé cảm thấy không an toàn, hãy rời đi và báo ngay người lớn đáng tin cậy.</p>
+                <p class="lesson-safety-note" id="lessonSafetyNote" hidden>Nếu tình huống xảy ra ngoài đời và bé cảm thấy không an toàn, hãy rời đi và báo ngay người lớn đáng tin cậy.</p>
                 <button class="btn btn-light btn-small" data-route="lessons/${category.id}">← Quay lại chủ đề</button>
               </div>
             </section>
-          </div>
-          <div class="lesson-context"><span class="kicker">HỌC QUA TRẢI NGHIỆM</span><h3>${escapeHtml(lesson.goal)}</h3>
-            <div class="lesson-meta"><span>♧ ${lesson.age}</span><span>◷ ${lesson.duration}</span></div>
-            <strong>🌱 Thử thách ngoài đời</strong><p>${escapeHtml(lesson.activity)}</p>
           </div>
         `, "BÀI HỌC TƯƠNG TÁC");
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const voiceStatus = $("#lessonVoiceStatus");
         const voiceButton = $("#lessonVoiceAnswer");
+        let voiceConsentGranted = false;
         let voiceSilenceTimer = 0;
         let voiceNoSpeechTimer = 0;
         let voiceMaxDurationTimer = 0;
@@ -2058,6 +2747,9 @@
         };
         const renderQuestion = () => {
           stopLessonRecognition();
+          $("#lessonScene")?.querySelectorAll(".character-held-object").forEach((object) => object.remove());
+          $("#lessonScene")?.removeAttribute("data-active-action");
+          $("#lessonScene")?.removeAttribute("data-action-target");
           const sceneProp = $("#sceneProp");
           if (sceneProp) {
             sceneProp.getAnimations().forEach((animation) => animation.cancel());
@@ -2069,14 +2761,16 @@
           $("#questionProgress").textContent = `Câu hỏi ${questionIndex + 1}/${questions.length}${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}`;
           $("#questionStory").textContent = question.story;
           $("#questionPrompt").textContent = question.prompt;
+          $("#lessonRouteFeedback").textContent = "";
+          $("#lessonSafetyNote").hidden = true;
           voiceStatus.textContent = "";
           $("#lessonChoices").innerHTML = question.answers.map((answer, index) =>
             `<button type="button" class="lesson-choice" data-choice="${index}"><span class="choice-letter">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(answer)}</span></button>`
           ).join("");
-          $("#lessonRouteFeedback").textContent = "Bé hãy chọn phương án mình nghĩ là phù hợp.";
           $("#lessonChoices").querySelectorAll("[data-choice]").forEach((button) => button.addEventListener("click", () => {
             if (button.disabled) return;
             stopLessonRecognition();
+            $("#lessonSafetyNote").hidden = false;
             const choice = Number(button.dataset.choice);
             const correct = choice === question.correct;
             if (state.authenticated) recordLearningAttempt(lesson, choice, questionIndex, question.correct);
@@ -2084,14 +2778,10 @@
             choices.forEach((option) => { option.disabled = true; });
             const selectedAnswer = question.answers[choice];
             const selectedAnswerText = translateString(selectedAnswer);
-            animateSceneChoice("lessonScene", "lessonProtagonist", "lessonPartner", "sceneProp", selectedAnswer, lesson, correct);
-            speak(state.language === "en"
-              ? correct
-                ? `Great job! You chose a safe and helpful response: ${selectedAnswerText}.`
-                : `Not quite. Let's try again. "${selectedAnswerText}" may not be the safest choice. Choose another option.`
-              : correct
-                ? `Tuyệt vời! Con đã chọn cách phù hợp: ${selectedAnswer}. ${lesson.prompts[2] || lesson.goal}`
-                : `Không sao, con hãy thử lại nhé. Cách "${selectedAnswer}" chưa phù hợp vì ${lesson.prompts[1] || lesson.goal} Con có thể chọn một cách khác an toàn hơn.`);
+            animateSceneChoice("lessonScene", "lessonProtagonist", "lessonPartner", "sceneProp", selectedAnswer, lesson, correct, choice, question);
+            speak(correct
+              ? `${translateString("Tuyệt vời! Con đã chọn cách phù hợp:")} ${selectedAnswerText}.`
+              : translateString("Không sao, con hãy thử lại nhé."));
             window.setTimeout(() => {
               if (!button.isConnected) return;
               if (!correct) {
@@ -2101,23 +2791,19 @@
                   state.lessonMistakes[lesson.id] = (state.lessonMistakes[lesson.id] || 0) + 1;
                   persist();
                 }
-                $("#lessonRouteFeedback").textContent = state.language === "en"
-                  ? "Not quite. Think about what would keep everyone safe, then try another answer."
-                  : `Chưa phù hợp, mình thử lại nhé. ${lesson.prompts[1] || "Bé hãy suy nghĩ lại và thử một lựa chọn khác nhé."}`;
+                $("#lessonRouteFeedback").textContent = "";
                 choices.forEach((option) => { option.disabled = false; });
                 return;
               }
               button.classList.add("correct");
-              if (state.authenticated) state.xp += 3;
+              celebrateCorrectAnswer(button);
+              if (state.authenticated) awardXp(3, button);
               $("#lessonChoices").querySelectorAll("[data-choice]").forEach((option) => { option.disabled = true; });
               if (questionIndex < questions.length - 1) {
-                $("#lessonRouteFeedback").textContent = state.language === "en"
-                  ? state.authenticated
-                    ? "That's right! You chose a helpful and safe response. +3 stars 🌟"
-                    : "That's right! Sign in to save your learning progress and stars."
-                  : state.authenticated
-                    ? `Đúng rồi! ${lesson.prompts[2] || "Con đã chọn cách phù hợp."} +3 sao 🌟`
-                    : `Đúng rồi! ${lesson.prompts[2] || "Con đã chọn cách phù hợp."} Đăng nhập để lưu tiến độ nhé.`;
+                const responsePrompt = translateString(lesson.prompts[2] || "Con đã chọn cách phù hợp.");
+                $("#lessonRouteFeedback").textContent = state.authenticated
+                  ? translateTemplate("Đúng rồi! {prompt} +3 sao 🌟", { prompt: responsePrompt })
+                  : translateTemplate("Đúng rồi! {prompt} Đăng nhập để lưu tiến độ nhé.", { prompt: responsePrompt });
                 const nextQuestion = document.createElement("button");
                 nextQuestion.className = "btn btn-mint btn-small";
                 nextQuestion.id = "nextQuestion";
@@ -2139,7 +2825,7 @@
               const firstCompletion = !state.completed.includes(lesson.id);
               if (firstCompletion) {
                 state.completed.push(lesson.id);
-                state.xp += lesson.reward;
+                awardXp(lesson.reward, button);
                 state.completedDays = [...new Set([...state.completedDays, currentDay()])];
                 state.dailyLessons += 1;
               }
@@ -2151,7 +2837,7 @@
               $("#lessonRouteFeedback").textContent = firstCompletion
                 ? `Hoàn thành cả 3 câu chuyện! Bé nhận thêm +${lesson.reward} ⭐ và +25 RP.`
                 : "Hoàn thành lượt luyện tập cả 3 câu chuyện! Bé đã nhận sao cho từng câu trả lời đúng.";
-              speak(`Chúc mừng con đã hoàn thành bài học ${lesson.title}! Con đã nhận thêm ${firstCompletion ? lesson.reward : 0} sao. ${lesson.goal}`);
+              speak(`${translateString("Chúc mừng con đã hoàn thành bài học")} ${translateString(lesson.title)}! ${translateString("Bé nhận được")} ${firstCompletion ? lesson.reward : 0} ${translateString("ngôi sao")}.`);
               const nextLesson = lessons[lessons.indexOf(lesson) + 1];
               const continueButton = document.createElement("button");
               continueButton.className = "btn btn-mint btn-small";
@@ -2162,15 +2848,13 @@
               $("#lessonChoices").insertAdjacentElement("afterend", continueButton);
             }, 620);
           }));
-          const spokenOptionLabel = state.language === "en" ? "Option" : "Phương án";
-          speak(`${translateString(question.story)} ${translateString(question.prompt)} ${question.answers.map((answer, index) => `${spokenOptionLabel} ${index + 1}: ${translateString(answer)}`).join(". ")} ${state.language === "en" ? "You can answer by voice or choose an option below." : "Bé có thể trả lời bằng giọng nói hoặc chọn một phương án bên dưới."}`, () => {
-            if (voiceStatus.isConnected && !activeLessonRecognition) voiceStatus.textContent = "Đến lượt bé trả lời nhé. Bé có thể nói hoặc chọn một phương án.";
-          });
+          const spokenOptionLabel = translateString("Phương án");
+          speak(`${translateString(question.story)} ${translateString(question.prompt)} ${question.answers.map((answer, index) => `${spokenOptionLabel} ${index + 1}: ${translateString(answer)}`).join(". ")}`);
         };
         renderQuestion();
         $("#lessonSpeak").addEventListener("click", () => {
           const question = questions[questionIndex];
-          const spokenOptionLabel = state.language === "en" ? "Option" : "Phương án";
+          const spokenOptionLabel = translateString("Phương án");
           speak(`${translateString(question.story)} ${translateString(question.prompt)} ${question.answers.map((answer, index) => `${spokenOptionLabel} ${index + 1}: ${translateString(answer)}`).join(". ")}`);
         });
         $("#lessonStopSpeech").addEventListener("click", stopSpeech);
@@ -2184,6 +2868,14 @@
             activeLessonRecognition.stop();
             return;
           }
+          if (!voiceConsentGranted) {
+            const consent = window.confirm("Trả lời bằng giọng nói là tùy chọn. Âm thanh có thể được xử lý bởi dịch vụ nhận diện của trình duyệt; Little Hero không lưu bản ghi hoặc bản chép. Bé có thể chọn đáp án bằng nút thay thế. Cho phép dùng micro lần này?");
+            if (!consent) {
+              voiceStatus.textContent = "Không bật micro. Bé có thể chọn một phương án bằng nút nhé.";
+              return;
+            }
+            voiceConsentGranted = true;
+          }
 
           const recognition = new SpeechRecognition();
           let handledResult = false;
@@ -2191,7 +2883,7 @@
           let speechCandidates = [];
           let receivedSpeech = false;
           let recognitionFailed = false;
-          recognition.lang = state.language === "en" ? "en-US" : "vi-VN";
+          recognition.lang = languageSpeechLocale();
           recognition.continuous = false;
           recognition.interimResults = true;
           recognition.maxAlternatives = 3;
@@ -2262,7 +2954,7 @@
                 .find((candidate) => candidate.answerIndex !== null);
               if (!matchedAnswer) {
                 voiceStatus.textContent = `Hero nghe bé nói: “${transcript}”. Bé có thể trả lời về tình huống này hoặc chọn một phương án bên dưới nhé.`;
-                speak("Không sao, Hero chưa hiểu rõ câu trả lời. Bé có thể nói ngắn gọn điều con nghĩ về tình huống này, hoặc chọn một phương án bên dưới nhé.");
+                speak(translateString("Không sao, con hãy thử lại nhé."));
                 return;
               }
               voiceStatus.textContent = `Hero nghe bé nói: “${matchedAnswer.transcript}”. Đang kiểm tra câu trả lời…`;
@@ -2287,7 +2979,11 @@
       };
 
       const renderStoriesPage = (page = "stories") => {
-        $("#routeView").innerHTML = pageShell(page, "", storyComingSoonNotice, "GÓC TRUYỆN");
+        $("#routeView").innerHTML = page === "stories"
+          ? `<button class="route-back" type="button" data-route-back>← Quay lại</button>
+            <div class="page-heading stories-page-heading"><span class="kicker stories-page-kicker">LITTLE HERO - GÓC TRUYỆN TRANH</span></div>
+            ${storyComingSoonNotice}`
+          : pageShell(page, "", storyComingSoonNotice);
       };
 
       const miniGames = {
@@ -2327,7 +3023,7 @@
         const key = dailyGameRewardKey(gameId);
         if (state.gameRewards.includes(key)) return false;
         state.gameRewards.push(key);
-        state.xp += miniGames[gameId].reward;
+        awardXp(miniGames[gameId].reward);
         persist();
         return true;
       };
@@ -2414,7 +3110,7 @@
           }).join("");
           body = `<div class="game-welcome"><span>🌟</span><div><h2>Chơi vui, luyện trí mỗi ngày!</h2><p>Cùng bé luyện trí nhớ, quan sát, suy luận, giải quyết vấn đề và gọi tên cảm xúc. Mỗi trò chỉ mất vài phút, có thể chơi lại thoải mái.</p></div></div><div class="game-grid">${cards}</div>`;
         }
-        $("#routeView").innerHTML = pageShell("games", "Chọn một trò chơi ngắn để luyện tư duy và thư giãn sau giờ học. Không có thi đấu trực tuyến hay thu thập thông tin trẻ.", body, "CHƠI & KHÁM PHÁ");
+        $("#routeView").innerHTML = pageShell("games", "Chọn một trò chơi ngắn để luyện tư duy và thư giãn sau giờ học. Không có thi đấu trực tuyến hay thu thập thông tin trẻ.", body);
       };
 
       const renderQuestPage = () => {
@@ -2422,17 +3118,25 @@
         const rows = questSpecs.map((quest) => {
           const value = dailyProgress(quest.id);
           const claimed = state.questClaims.includes(`${currentDay()}:${quest.id}`);
-          return `<article class="score-card"><span class="catalog-icon" style="--tile:#fff2d7">${quest.icon}</span><h3 style="margin:10px 0 4px;font-size:14px">${quest.label}</h3>
-            <p class="note">Tiến độ: ${value}/${quest.target} · Thưởng ${quest.reward} ⭐</p><div class="progress"><i style="width:${Math.round(value / quest.target * 100)}%"></i></div>
-            <button class="btn btn-small ${claimed ? "btn-light" : "btn-mint"}" style="margin-top:12px" data-claim-quest="${quest.id}" ${state.authenticated && (claimed || value < quest.target) ? "disabled" : ""}>${claimed ? "Đã nhận" : "Nhận thưởng"}</button></article>`;
+          const progressText = translateTemplate("Tiến độ: {value}/{goal} · Thưởng {reward} ⭐", {
+            value,
+            goal: quest.target,
+            reward: quest.reward
+          });
+          return `<article class="score-card"><span class="catalog-icon" style="--tile:#fff2d7">${quest.icon}</span><h3 class="quest-card-title">${quest.label}</h3>
+            <p class="note">${progressText}</p><div class="progress"><i style="width:${Math.round(value / quest.target * 100)}%"></i></div>
+            <button class="btn btn-small ${claimed ? "btn-light" : "btn-mint"}" style="margin-top:12px" data-claim-quest="${quest.id}" ${state.authenticated && (claimed || value < quest.target) ? "disabled" : ""}>${translateString(claimed ? "Đã nhận" : "Nhận thưởng")}</button></article>`;
         }).join("");
-        $("#routeView").innerHTML = pageShell("quests", "Nhiệm vụ và tiến độ được lưu trên thiết bị hiện tại.", `<div class="page-actions"><span class="stat-pill">🎮 ${state.dailyLessons}/3 bài</span><span class="stat-pill">⏱ ${Math.floor(state.sessionSeconds / 60)}/10 phút</span><span class="stat-pill">📝 ${state.dailyQuiz}/1 bài kiểm tra</span></div><div class="lesson-catalog">${rows}</div>`, "MỖI NGÀY MỘT CHÚT");
+        const stats = `<span class="stat-pill">🎮 ${state.dailyLessons}/3 ${translateString("bài học")}</span><span class="stat-pill">⏱ ${Math.floor(state.sessionSeconds / 60)}/10 ${translateString("phút")}</span><span class="stat-pill">📝 ${state.dailyQuiz}/1 ${translateString("bài kiểm tra")}</span>`;
+        $("#routeView").innerHTML = pageShell("quests", "Nhiệm vụ và tiến độ được lưu trên thiết bị hiện tại.", `<div class="page-actions">${stats}</div><div class="lesson-catalog">${rows}</div>`);
       };
 
       const quizFormats = [
         { id: "choice", icon: "🧭", title: "Chọn cách phù hợp", description: "Đọc tình huống, chọn cách xử lý an toàn. Có thể thử lại." },
         { id: "matching", icon: "🔗", title: "Nối chủ đề với điều đã học", description: "Ghép các chủ đề kỹ năng với mục tiêu phù hợp." },
-        { id: "ordering", icon: "🔢", title: "Sắp xếp các bước", description: "Sắp xếp hành động theo thứ tự hợp lý." }
+        { id: "ordering", icon: "🔢", title: "Sắp xếp các bước", description: "Sắp xếp hành động theo thứ tự hợp lý." },
+        { id: "memory", icon: "🃏", title: "Lật thẻ tìm cặp", description: "Lật thẻ, ghi nhớ vị trí và tìm cặp chủ đề với điều đã học." },
+        { id: "creative", icon: "💡", title: "Xưởng ý tưởng", description: "Tưởng tượng cách giải quyết tình huống và chia sẻ ý tưởng của con." }
       ];
       const shuffleItems = (items) => items.slice().sort(() => Math.random() - 0.5);
       const orderedSteps = {
@@ -2450,7 +3154,7 @@
         quizRun.completed = true;
         state.quiz += 1;
         state.dailyQuiz += 1;
-        state.xp += 10;
+        awardXp(10);
         state.rp += 25;
         persist();
         renderStats();
@@ -2471,29 +3175,43 @@
           const category = availableCategories[Math.floor(Math.random() * availableCategories.length)];
           const steps = orderedSteps[category.id];
           quizRun = { mode, category, steps, items: shuffleItems(steps), message: "" };
+        } else if (mode === "memory") {
+          const pairs = shuffleItems(availableCategories).slice(0, 3).map((category) => ({
+            id: category.id,
+            name: category.name,
+            icon: category.icon,
+            goal: lessonById(category.lesson).goal
+          }));
+          const cards = shuffleItems(pairs.flatMap((pair) => [
+            { pairId: pair.id, icon: pair.icon, label: pair.name },
+            { pairId: pair.id, icon: "✨", label: pair.goal }
+          ]));
+          quizRun = { mode, cards, flipped: [], matched: [], moves: 0, resolving: false, message: "" };
+        } else if (mode === "creative") {
+          quizRun = { mode, lesson: shuffleItems(availableLessons)[0] };
         }
         renderQuizPage();
       };
       const renderQuizPage = () => {
         const intro = `<div class="quiz-format-grid">${quizFormats.map((format) => `
           <article class="quiz-format-card"><span class="quiz-format-icon">${format.icon}</span><h2>${format.title}</h2><p>${format.description}</p>
-            <button type="button" class="btn btn-mint btn-small" data-quiz-start="${format.id}">Bắt đầu dạng này →</button>
-          </article>`).join("")}</div><p class="quiz-note">Bài ôn tập không có video hay hoạt cảnh. Mỗi dạng có cách làm riêng và cho phép bé suy nghĩ lại.</p>`;
+            <button type="button" class="btn btn-mint btn-small" data-quiz-start="${format.id}">Bắt đầu</button>
+          </article>`).join("")}</div>`;
         if (!quizRun) {
-          $("#routeView").innerHTML = pageShell("quiz", "Chọn một cách ôn tập phù hợp với bé.", intro, "ÔN TẬP CÙNG HERO");
+          $("#routeView").innerHTML = pageShell("quiz", "Chọn một cách ôn tập phù hợp với bé.", intro);
           return;
         }
         if (quizRun.completed) {
           $("#routeView").innerHTML = pageShell("quiz", "Bé đã hoàn thành một lượt ôn tập.", `
             <section class="quiz-result"><span>🏆</span><h2>Con làm tốt lắm!</h2><p>Con nhận thêm 10 sao và 25 điểm RP. Hãy chọn một dạng khác để tiếp tục luyện tập.</p>
               <button type="button" class="btn btn-mint" data-quiz-reset>Chọn dạng ôn tập khác</button></section>
-          `, "HOÀN THÀNH");
+          `);
           return;
         }
         if (quizRun.mode === "choice") {
           const lesson = quizRun.questions[quizRun.round];
           const answers = lesson.answers.map((answer, index) => `<button type="button" class="lesson-choice quiz-answer ${quizRun.selected === index ? "correct" : ""} ${quizRun.wrong === index ? "incorrect" : ""}" data-quiz-answer="${index}" ${quizRun.selected !== null ? "disabled" : ""}>${escapeHtml(answer)}</button>`).join("");
-          $("#routeView").innerHTML = pageShell("quiz", "Đọc tình huống rồi chọn cách xử lý phù hợp. Bé có thể thử lại nếu chưa đúng.", `
+          $("#routeView").innerHTML = pageShell("quiz", "Đọc tình huống rồi chọn cách xử lý phù hợp.", `
             <section class="quiz-task score-card">
               <div class="lesson-progress"><span>🧠 Câu ${quizRun.round + 1}/${quizRun.questions.length}</span><span>⭐ ${state.xp} · Lv ${Math.floor(state.xp / 100) + 1}</span></div>
               <span class="kicker">${escapeHtml(lesson.title)}</span><p class="quiz-story">${escapeHtml(lesson.story)}</p>
@@ -2501,7 +3219,7 @@
               <p class="quiz-feedback" role="status">${quizRun.selected !== null
                 ? `Chính xác! ${lesson.prompts[2] || lesson.goal}`
                 : quizRun.wrong !== null
-                  ? `Chưa phù hợp. ${lesson.prompts[1] || "Con hãy thử suy nghĩ lại nhé."}`
+                  ? ""
                   : "Chọn cách con nghĩ là phù hợp nhé."}</p>
               <div class="page-actions"><button type="button" class="btn btn-light btn-small" id="quizPageSpeak">♫ Nghe tình huống</button>
                 <button type="button" class="btn btn-mint btn-small" id="nextQuiz" ${quizRun.selected === null ? "disabled" : ""}>${quizRun.round + 1 === quizRun.questions.length ? "Hoàn thành →" : "Câu tiếp theo →"}</button></div>
@@ -2531,6 +3249,46 @@
               <p class="quiz-feedback" role="status">${escapeHtml(quizRun.message || "Dùng mũi tên để đổi vị trí các bước.")}</p>
               <button type="button" class="btn btn-mint btn-small" id="checkQuizOrder">Kiểm tra thứ tự</button>
             </section>`, "SẮP XẾP THỨ TỰ");
+          return;
+        }
+        if (quizRun.mode === "memory") {
+          const matched = new Set(quizRun.matched);
+          const cards = quizRun.cards.map((card, index) => {
+            const isOpen = quizRun.flipped.includes(index) || matched.has(card.pairId);
+            return `<button type="button" class="quiz-memory-card ${isOpen ? "is-open" : ""} ${matched.has(card.pairId) ? "is-matched" : ""}"
+                data-quiz-memory-card="${index}" aria-label="${isOpen ? escapeHtml(card.label) : "Lật thẻ bí mật"}"
+                aria-pressed="${isOpen}" ${matched.has(card.pairId) || quizRun.resolving ? "disabled" : ""}>
+              <span aria-hidden="true">${isOpen ? card.icon : "❔"}</span>
+              <strong>${isOpen ? escapeHtml(card.label) : "Thẻ bí mật"}</strong>
+            </button>`;
+          }).join("");
+          $("#routeView").innerHTML = pageShell("quiz", "Lật hai thẻ mỗi lượt để tìm chủ đề và điều bé đã học.", `
+            <section class="quiz-task score-card">
+              <div class="lesson-progress"><span>🃏 Đã tìm ${quizRun.matched.length}/${quizRun.cards.length / 2} cặp</span><span>🔎 ${quizRun.moves} lượt lật</span></div>
+              <div class="quiz-memory-board">${cards}</div>
+              <p class="quiz-feedback" role="status">${escapeHtml(quizRun.message || "Con thử ghi nhớ vị trí các thẻ nhé!")}</p>
+            </section>`, "THỬ THÁCH TRÍ NHỚ");
+          return;
+        }
+        if (quizRun.mode === "creative") {
+          const lesson = quizRun.lesson;
+          $("#routeView").innerHTML = pageShell("quiz", "Một tình huống mới đang chờ ý tưởng của bé.", `
+            <section class="quiz-task score-card">
+              <div class="lesson-progress"><span>💡 Xưởng ý tưởng</span><span>${escapeHtml(lesson.icon)} ${escapeHtml(lesson.title)}</span></div>
+              <p class="quiz-story">${escapeHtml(lesson.story)}</p>
+              <h2 class="quiz-question">Nếu là con, con sẽ nghĩ ra cách nào?</h2>
+              <p class="creative-prompt">${escapeHtml(lesson.prompts[3] || lesson.activity)}</p>
+              <label class="creative-response-label" for="creativeQuizResponse">Ý tưởng của con
+                <textarea id="creativeQuizResponse" maxlength="240" rows="3" placeholder="Con có thể viết hoặc kể cho người lớn nghe..."></textarea>
+              </label>
+              <p class="creative-privacy-note">Câu trả lời chỉ dùng trong lượt chơi này, không được gửi hay lưu lại.</p>
+              <p class="quiz-feedback" id="creativeQuizFeedback" role="status">Mỗi ý tưởng đều đáng để khám phá. Hãy nghĩ thêm một chút nhé!</p>
+              <div class="page-actions">
+                <button type="button" class="btn btn-light btn-small" id="creativeQuizSpeak">♫ Nghe tình huống</button>
+                <button type="button" class="btn btn-mint btn-small" id="completeCreativeQuiz">Hoàn thành ý tưởng →</button>
+              </div>
+            </section>`, "SÁNG TẠO CÙNG HERO");
+          $("#creativeQuizSpeak").addEventListener("click", () => speak(`${lesson.title}. ${lesson.story} ${lesson.prompts[3] || lesson.activity}`));
         }
       };
 
@@ -2551,10 +3309,19 @@
             <div class="achievement-progress" role="progressbar" aria-label="Tiến độ ${name}" aria-valuemin="0" aria-valuemax="${goal}" aria-valuenow="${Math.min(progress, goal)}">
               <span style="width:${percent}%"></span>
             </div>
-            <small class="achievement-count">${Math.min(progress, goal)} / ${goal} ${goal === 1 ? "lần" : "mốc"}</small>
+            <small class="achievement-count">${translateTemplate("Tiến độ: {current} / {goal} {unit}", {
+              current: Math.min(progress, goal),
+              goal,
+              unit: translateString(goal === 1 ? "lần" : "mốc")
+            })}</small>
           </article>`;
         }).join("");
-        $("#routeView").innerHTML = pageShell("achievements", `Bé đã khám phá ${completedCount()} bài, tích lũy ${state.xp} sao và có chuỗi ${streak()} ngày.`, `<div class="achievement-grid">${badges}</div>`, "GHI NHẬN NỖ LỰC");
+        const overview = translateTemplate("Bé đã khám phá {lessons} bài, tích lũy {stars} sao và có chuỗi {days} ngày.", {
+          lessons: completedCount(),
+          stars: state.xp,
+          days: streak()
+        });
+        $("#routeView").innerHTML = pageShell("achievements", overview, `<div class="achievement-grid">${badges}</div>`);
       };
 
       const renderForumPage = () => {
@@ -2589,7 +3356,7 @@
             <form class="social-comment-form" data-comment-post="${escapeHtml(id)}"><input name="comment" required maxlength="240" aria-label="Viết bình luận" placeholder="Viết bình luận tử tế…"><button class="btn btn-light btn-small">Gửi</button></form>
           </article>`;
         }).join("");
-        $("#routeView").innerHTML = pageShell("forum", "Bảng tin chia sẻ trạng thái, ảnh, video, cảm xúc, bình luận và đăng lại. Bài mẫu được đánh dấu; bài đăng mới chỉ lưu trên thiết bị này.", `
+        $("#routeView").innerHTML = pageShell("forum", "", `
           <div class="social-layout">
             <div class="social-column">
               <form class="social-composer" id="forumForm">
@@ -2606,7 +3373,7 @@
               <article class="settings-card"><h3 style="font-size:13px">Cộng đồng an toàn</h3><p class="note">Bài viết chỉ lưu trên thiết bị này. Chỉ chia sẻ nội dung phù hợp và tránh đăng thông tin nhận dạng trẻ.</p></article>
               <article class="settings-card"><h3 style="font-size:13px">Tương tác</h3><p class="note">Thích, cảm xúc, bình luận và đăng lại chỉ hiển thị trên thiết bị này.</p></article>
             </aside>
-          </div>`, "BẢNG TIN GIA ĐÌNH");
+          </div>`);
         let selectedFile = null;
         let selectedUrl = null;
         $("#forumMedia").addEventListener("change", (event) => {
@@ -2699,7 +3466,7 @@
           ["Thanh toán Premium có thể chuyển khoản chưa?", "Có thể chuyển khoản theo thông tin tại trang thanh toán. Sau khi chuyển, tải ảnh bill lên để mở Premium ngay. Hệ thống chưa đối soát ảnh với ngân hàng."],
           ["Ứng dụng lưu những thông tin nào?", "Họ tên phụ huynh, email, số điện thoại, trạng thái Premium và ảnh bill mới nhất được lưu trong SQLite trên máy chủ; ảnh cũ được thay thế khi tải ảnh mới. Hồ sơ và tiến độ học của bé vẫn lưu cục bộ trên trình duyệt. Hosting miễn phí hiện dùng dữ liệu tạm nên thông tin máy chủ có thể mất khi khởi động lại hoặc triển khai lại."]
         ];
-        $("#routeView").innerHTML = pageShell("faq", "Một số câu hỏi thường gặp về cách sử dụng Little Hero.", `<div class="faq-grid">${questions.map(([question, answer]) => `<details class="faq-card"><summary>${question}</summary><p>${answer}</p></details>`).join("")}</div>`, "HỖ TRỢ GIA ĐÌNH");
+        $("#routeView").innerHTML = pageShell("faq", "Một số câu hỏi thường gặp về cách sử dụng Little Hero.", `<div class="faq-grid">${questions.map(([question, answer]) => `<details class="faq-card"><summary>${question}</summary><p>${answer}</p></details>`).join("")}</div>`);
       };
 
       const renderReviewsPage = () => {
@@ -2713,8 +3480,10 @@
         }).join("");
         const reviews = displayedReviews.map((review, index) => {
           const reviewId = review.id || `review-${index}`;
+          const stars = Number(review.stars) || 0;
+          const ratingLabel = translateTemplate("{stars} trên 5 sao", { stars });
           return `<article class="store-review ${review.isSample ? "is-sample" : ""}">
-            <span class="review-stars" aria-label="${Number(review.stars)} trên 5 sao">${"★".repeat(Number(review.stars) || 0)}${"☆".repeat(5 - (Number(review.stars) || 0))}</span>
+            <span class="review-stars" aria-label="${ratingLabel}">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</span>
             <h3>${escapeHtml(review.title || "Đánh giá Little Hero")}</h3>
             <p>${escapeHtml(review.body)}</p>
             <small>${escapeHtml(review.author)}</small>
@@ -2734,7 +3503,7 @@
                 <div class="social-feed">${reviews || '<article class="store-review"><p>Chưa có đánh giá nào.</p></article>'}</div>
               </div>
               <form class="review-form" id="reviewForm"><h3 style="font-size:14px">Viết đánh giá</h3>
-                <label class="form-label">Tên hiển thị *<input name="author" required maxlength="50" value="${escapeHtml(state.childName || "")}" placeholder="Tên người đánh giá"></label>
+                <label class="form-label">Tên hiển thị *<input name="author" required maxlength="50" value="${escapeHtml(localizedChildName())}" placeholder="Tên người đánh giá"></label>
                 <label class="form-label">Số sao</label><div class="stars-input" id="starsInput">${[1,2,3,4,5].map((star) => `<button type="button" data-star="${star}" aria-label="${star} sao">${star <= selectedStars ? "★" : "☆"}</button>`).join("")}</div>
                 <label class="form-label">Tiêu đề<input name="title" maxlength="70" placeholder="Tóm tắt trải nghiệm"></label>
                 <label class="form-label">Nhận xét<textarea name="review" required maxlength="400" placeholder="Chia sẻ trải nghiệm thực tế của bạn…"></textarea></label>
@@ -2742,7 +3511,7 @@
                 <p class="note" style="margin-top:10px">Lưu cục bộ trên thiết bị. Tên và trải nghiệm chưa được xác minh; không đồng bộ hoặc đăng lên Google Play/App Store.</p>
               </form>
             </div>
-          </div>`, "ĐÁNH GIÁ ỨNG DỤNG");
+          </div>`);
         $("#starsInput").addEventListener("click", (event) => {
           const star = event.target.closest("[data-star]");
           if (!star) return;
@@ -2770,40 +3539,47 @@
       };
 
       const renderLanguagePage = () => {
-        $("#routeView").innerHTML = pageShell("language", "Chọn ngôn ngữ giao diện. Nội dung bài học hiện có bằng tiếng Việt.", `
+        $("#routeView").innerHTML = pageShell("language", "Chọn ngôn ngữ cho giao diện, nội dung, câu trả lời của Hero và giọng đọc.", `
           <div class="score-card"><h3 style="font-size:15px">Ngôn ngữ giao diện</h3><div class="language-options">
-            <button class="pick-card" data-language="vi" aria-pressed="${state.language === "vi"}"><span class="pick-icon">🇻🇳</span><strong>Tiếng Việt</strong><span class="note">Nội dung bài học</span></button>
-            <button class="pick-card" data-language="en" aria-pressed="${state.language === "en"}"><span class="pick-icon">🇬🇧</span><strong>English</strong><span class="note">AI replies and voice input/output</span></button>
-          </div><p class="note" style="margin-top:12px">Hero sẽ trả lời và nhận diện giọng nói theo ngôn ngữ đã chọn. Một số nội dung bài học hiện chỉ có tiếng Việt.</p></div>`, "TÙY CHỌN NGÔN NGỮ");
+            ${window.LittleHeroLanguages.map(({ code, flag, label }) => `<button class="pick-card" data-language="${code}" aria-pressed="${state.language === code}"><span class="pick-icon">${flag}</span><strong>${label}</strong></button>`).join("")}
+          </div><p class="note" style="margin-top:12px">Giọng đọc dùng giọng tổng hợp có sẵn trên thiết bị; khả năng phát âm tùy thuộc vào các giọng đã cài đặt.</p></div>`);
         $("#routeView").querySelectorAll("[data-language]").forEach((button) => button.addEventListener("click", () => {
-          state.language = button.dataset.language === "en" ? "en" : "vi";
+          state.language = window.LittleHeroLanguages.some(({ code }) => code === button.dataset.language)
+            ? button.dataset.language
+            : "vi";
           document.documentElement.lang = state.language;
           translateElement(document.body);
-          persist(); setRoute(route, { restore: true, pop: true });
+          persist();
+          setRoute(route, { restore: true, pop: true });
         }));
       };
 
       const renderArenaPage = () => {
         const ageGroup = currentAgeGroup();
+        const ageGroupLabel = ageGroup.replace("-", "–");
+        arenaLeaderboardAgeGroup = ageGroup;
         const provinces = window.LittleHeroLocations.provinces;
         const modes = [["duel", "Cùng nhóm tuổi"], ["region", "Miền"], ["city", "Tỉnh/thành"], ["nation", "Toàn quốc"]];
         const provinceOptions = provinces.map(({ name }) =>
           `<option value="${escapeHtml(name)}" ${state.leaderboardProvince === name ? "selected" : ""}>${escapeHtml(name)}</option>`
         ).join("");
-        $("#routeView").innerHTML = pageShell("arena", `Đấu trường nhóm ${ageGroup.replace("-", "–")} tuổi · nội dung và câu hỏi được chọn theo độ tuổi của bé.`, `
+        $("#routeView").innerHTML = pageShell("arena", translateTemplate("Đấu trường nhóm {age} tuổi · nội dung và câu hỏi được chọn theo độ tuổi của bé.", { age: ageGroupLabel }), `
           <div class="arena-grid">
             <article class="arena-card">
-              <span class="kicker">HERO ARENA · NHÓM ${ageGroup.replace("-", "–")} TUỔI</span><h3>Thi đấu qua tình huống kỹ năng</h3>
+              <span class="kicker">${translateTemplate("HERO ARENA · NHÓM {age} TUỔI", { age: ageGroupLabel })}</span><h3>Thi đấu qua tình huống kỹ năng</h3>
               <p>Mỗi lượt là một tình huống kỹ năng cùng Hero. Điểm RP được xếp hạng theo nhóm tuổi, tỉnh/thành, miền hoặc toàn quốc.</p>
-              <div class="rank-big"><strong>${Number(state.rp).toLocaleString("vi-VN")}</strong><span>RP của bé</span></div>
+              <div class="rank-big"><strong>${Number(state.rp).toLocaleString(languageSpeechLocale())}</strong><span>RP của bé</span></div>
               <div class="arena-tabs" id="arenaPageTabs">${modes.map(([id, label]) => `<button class="arena-tab ${arenaMode === id ? "active" : ""}" data-mode="${id}" aria-pressed="${arenaMode === id}">${label}</button>`).join("")}</div>
-              <div class="arena-search" id="arenaSearchStatus" aria-live="polite"><p class="note">Sẵn sàng luyện tập? Mỗi câu đúng giúp bé tích lũy RP.</p></div>
-              <button class="btn btn-mint" id="arenaFindOpponent">🔎 Bắt đầu thử thách</button>
+              <div class="arena-search" id="arenaSearchStatus" aria-live="polite"><p class="note">Tìm người chơi thật cùng nhóm tuổi; nếu chưa có, sau 10 giây hệ thống sẽ bắt đầu thử thách với bot.</p></div>
+              <button class="btn btn-mint" id="arenaFindOpponent">⚡ Bắt đầu thử thách</button>
             </article>
             <article class="leader-card">
               <div class="leader-title"><h3>🏆 Bảng vinh danh</h3><span id="leaderScope"></span></div>
               <div class="leader-controls">
-                ${leaderboardLocationControl("arenaLeaderboardProvince")}
+                <div class="leaderboard-filters">
+                  ${leaderboardAgeGroupControl("arenaLeaderboardAgeGroup")}
+                  ${leaderboardLocationControl("arenaLeaderboardProvince")}
+                </div>
                 <form id="leaderboardPreferencesForm" class="leaderboard-preferences">
                   ${state.authenticated && !state.demoAccount ? `
                     <label>Biệt danh hiển thị
@@ -2816,35 +3592,39 @@
                       <span>Phụ huynh đồng ý công khai biệt danh và điểm RP trong bảng xếp hạng.</span>
                     </label>
                     <button class="btn btn-primary btn-small" type="submit">Lưu lựa chọn</button>
-                  ` : `<p class="note">Bảng xếp hạng có thể xem công khai. Đăng nhập hoặc đăng ký để chọn biệt danh và tham gia.</p><a class="btn btn-primary btn-small" href="#/auth" data-route="auth">Đăng nhập / đăng ký</a>`}
+                  ` : state.demoAccount
+                    ? ""
+                    : `<a class="btn btn-primary btn-small" href="#/auth" data-route="auth">Đăng nhập / đăng ký để tham gia</a>`}
                 </form>
               </div>
               <p class="leaderboard-status" id="leaderboardStatus" aria-live="polite"></p>
               <div class="leaderboard-podium" id="leaderboardPodium"></div>
               <div id="leaderboard"></div><div class="leader-you" id="leaderYou"></div>
             </article>
-          </div>`, "THỬ THÁCH");
+          </div>`);
         const setLeaderboardScope = () => {
-          $("#leaderScope", $("#routeView")).textContent = leaderboardScopeLabel(arenaMode);
+          $("#leaderScope", $("#routeView")).textContent = leaderboardScopeLabel(arenaMode, arenaLeaderboardAgeGroup);
           $("#arenaLeaderboardProvinceWrap").hidden = !["region", "city"].includes(arenaMode);
         };
         const refreshLeaderboard = () => {
           setLeaderboardScope();
-          renderLeaderboard($("#routeView"), arenaMode);
+          renderLeaderboard($("#routeView"), arenaMode, arenaLeaderboardAgeGroup);
         };
         refreshLeaderboard();
         if (arenaLeaderboardInterval) window.clearInterval(arenaLeaderboardInterval);
         arenaLeaderboardInterval = window.setInterval(() => {
           if (route === "arena" && document.visibilityState === "visible") refreshLeaderboard();
         }, 10000);
-        if (arenaMatchTimeout) { window.clearInterval(arenaMatchTimeout); arenaMatchTimeout = null; }
+        if (arenaMatchTimeout) { window.clearTimeout(arenaMatchTimeout); arenaMatchTimeout = null; }
         $("#arenaPageTabs").addEventListener("click", (event) => {
           const tab = event.target.closest("[data-mode]");
           if (!tab) return;
-          if (arenaMatchTimeout) { window.clearInterval(arenaMatchTimeout); arenaMatchTimeout = null; }
+          if (arenaMatchTimeout) { window.clearTimeout(arenaMatchTimeout); arenaMatchTimeout = null; }
+          arenaSearchRequestId += 1;
+          void releaseArenaSearch();
           arenaOpponent = null;
           $("#arenaFindOpponent").disabled = false;
-          $("#arenaSearchStatus").innerHTML = '<p class="note">Sẵn sàng luyện tập? Mỗi câu đúng giúp bé tích lũy RP.</p>';
+          $("#arenaSearchStatus").innerHTML = '<p class="note">Tìm người chơi thật cùng nhóm tuổi; nếu chưa có, sau 10 giây hệ thống sẽ bắt đầu thử thách với bot.</p>';
           arenaMode = tab.dataset.mode;
           $("#arenaLeaderboardProvinceWrap").hidden = !["region", "city"].includes(arenaMode);
           $("#arenaPageTabs").querySelectorAll("[data-mode]").forEach((item) => {
@@ -2857,6 +3637,10 @@
         $("#arenaLeaderboardProvince").addEventListener("change", (event) => {
           leaderboardViewProvince = event.currentTarget.value;
           syncLeaderboardLocationControls();
+          refreshLeaderboard();
+        });
+        $("#arenaLeaderboardAgeGroup").addEventListener("change", (event) => {
+          arenaLeaderboardAgeGroup = event.currentTarget.value;
           refreshLeaderboard();
         });
         const preferencesForm = $("#leaderboardPreferencesForm");
@@ -2889,26 +3673,85 @@
           syncLeaderboardScore();
         });
         $("#arenaFindOpponent").addEventListener("click", (event) => {
-          if (arenaMatchTimeout) window.clearInterval(arenaMatchTimeout);
+          if (arenaMatchTimeout) window.clearTimeout(arenaMatchTimeout);
           const button = event.currentTarget;
           button.disabled = true;
           arenaOpponent = null;
-          $("#arenaSearchStatus").innerHTML = `<div class="arena-spinner" role="status" aria-label="Đang chuẩn bị thử thách"></div><p class="arena-result">Đang chuẩn bị tình huống · ${modes.find(([id]) => id === arenaMode)[1]}… <span id="arenaCountdown">5</span></p>`;
-          let elapsed = 0;
-          arenaMatchTimeout = window.setInterval(() => {
-            elapsed += 1;
-            const countdown = $("#arenaCountdown");
-            if (countdown) countdown.textContent = String(Math.max(0, 5 - elapsed));
-            if (elapsed < 5) return;
-            window.clearInterval(arenaMatchTimeout);
-            arenaMatchTimeout = null;
-            arenaOpponent = { name: "Hero", level: "Cùng luyện tập" };
-            $("#arenaSearchStatus").innerHTML = `<div class="arena-result">✨ Tình huống đã sẵn sàng · ${modes.find(([id]) => id === arenaMode)[1]}<br><button class="btn btn-mint btn-small" id="startArenaMatch" style="margin-top:9px">Vào thử thách →</button></div>`;
-            button.disabled = false;
-          }, 1000);
+          const requestId = ++arenaSearchRequestId;
+          const searchStartedAt = Date.now();
+          $("#arenaSearchStatus").innerHTML = '<div class="arena-spinner" role="status" aria-label="Đang tìm đối thủ"></div><p class="arena-result">Đang tìm người chơi cùng nhóm tuổi… <span id="arenaCountdown">10</span></p><button class="btn btn-light btn-small" id="cancelArenaSearch" type="button">Hủy tìm</button>';
+          const checkForOpponent = async () => {
+            if (requestId !== arenaSearchRequestId) return;
+            if (route !== "arena") {
+              void releaseArenaSearch();
+              return;
+            }
+            try {
+              const token = await arenaMatchmakingToken();
+              if (!token) {
+                $("#arenaSearchStatus").innerHTML = '<p class="note">Hãy đăng nhập hoặc dùng tài khoản trải nghiệm để tham gia thử thách với người chơi.</p>';
+                button.disabled = false;
+                return;
+              }
+              if (requestId !== arenaSearchRequestId || route !== "arena") return;
+              arenaSearchRequest = fetch(apiUrl("/api/arena/matchmaking"), {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                  ageGroup: currentAgeGroup(),
+                  allowBot: Date.now() - searchStartedAt >= 10000
+                })
+              }).then(async (response) => ({ response, result: await response.json() }));
+              const { response, result } = await arenaSearchRequest;
+              arenaSearchRequest = null;
+              if (requestId !== arenaSearchRequestId) return;
+              if (route !== "arena") {
+                void releaseArenaSearch();
+                return;
+              }
+              if (response.status === 401) {
+                if (state.demoAccount) {
+                  arenaDemoSessionToken = "";
+                } else {
+                  try { sessionStorage.removeItem(leaderboardTokenKey(state.accountEmail)); }
+                  catch (error) { console.warn("Không thể xóa phiên đăng nhập đã hết hạn.", error); }
+                }
+              }
+              if (!response.ok) throw new Error(result.error || "Không thể bắt đầu thử thách lúc này.");
+              if (result.status === "matched" && result.match?.opponent) {
+                arenaOpponent = result.match.opponent;
+                arenaMatchTimeout = null;
+                $("#arenaSearchStatus").innerHTML = `<div class="arena-result">✨ ${translateTemplate("Đối thủ đã sẵn sàng: {name}", { name: escapeHtml(arenaOpponent.name) })}<br><button class="btn btn-mint btn-small" id="startArenaMatch" style="margin-top:9px">Vào trận →</button></div>`;
+                return;
+              }
+              const secondsLeft = Math.max(0, 10 - Math.floor((Date.now() - searchStartedAt) / 1000));
+              const countdown = $("#arenaCountdown");
+              if (countdown) countdown.textContent = String(secondsLeft);
+              arenaMatchTimeout = window.setTimeout(checkForOpponent, 1000);
+            } catch (error) {
+              arenaSearchRequest = null;
+              if (requestId !== arenaSearchRequestId || route !== "arena") return;
+              console.error("Không thể ghép trận đấu trường.", error);
+              $("#arenaSearchStatus").innerHTML = `<p class="note">${escapeHtml(error.message || "Không thể bắt đầu thử thách lúc này. Vui lòng thử lại.")}</p>`;
+              button.disabled = false;
+              void releaseArenaSearch();
+            }
+          };
+          void checkForOpponent();
         });
         $("#routeView").addEventListener("click", (event) => {
+          if (event.target.closest("#cancelArenaSearch")) {
+            if (arenaMatchTimeout) window.clearTimeout(arenaMatchTimeout);
+            arenaMatchTimeout = null;
+            arenaSearchRequestId += 1;
+            void releaseArenaSearch();
+            arenaOpponent = null;
+            $("#arenaFindOpponent").disabled = false;
+            $("#arenaSearchStatus").innerHTML = '<p class="note">Đã hủy tìm thử thách. Bé có thể bắt đầu lại khi sẵn sàng.</p>';
+            return;
+          }
           if (!event.target.closest("#startArenaMatch")) return;
+          if (!arenaOpponent) return;
           const availableLessons = ageAppropriateLessons();
           arenaMatchLesson = availableLessons[Math.floor(Math.random() * availableLessons.length)];
           arenaMatchChoice = null;
@@ -2917,16 +3760,22 @@
       };
 
       const renderArenaMatchPage = () => {
+        if (!arenaOpponent) {
+          toast("Hãy bắt đầu thử thách từ đấu trường trước khi vào lượt chơi.");
+          setRoute("arena");
+          return;
+        }
         const availableLessons = ageAppropriateLessons();
         const lesson = arenaMatchLesson && ageCategories[currentAgeGroup()].includes(arenaMatchLesson.category)
           ? arenaMatchLesson
           : availableLessons[Math.floor(Math.random() * availableLessons.length)];
         arenaMatchLesson = lesson;
         const scene = getScene(lesson);
-        const opponent = arenaOpponent || { name: "Bạn đồng hành", level: "Cùng luyện tập" };
-        $("#routeView").innerHTML = pageShell("arena", `Đấu ${escapeHtml(opponent.name)} · ${escapeHtml(opponent.level)}. Một lựa chọn duy nhất cho câu hỏi này.`, `
+        const opponent = arenaOpponent;
+        const opponentType = opponent.type === "player" ? "người chơi thật" : "bot";
+        $("#routeView").innerHTML = pageShell("arena", translateTemplate("Thử thách với {name}. Mỗi câu chỉ chọn một phương án.", { name: escapeHtml(opponent.name) }), `
           <article class="score-card">
-            <div class="lesson-progress"><span>⚔ ${escapeHtml(opponent.name)} · ${escapeHtml(opponent.level)}</span><span>${arenaMatchChoice === null ? "Cùng Hero luyện tập" : "Lựa chọn đã khóa"}</span></div>
+            <div class="lesson-progress"><span>⚔ ${escapeHtml(opponent.name)} · ${escapeHtml(opponent.level)}</span><span>${arenaMatchChoice === null ? `Đối thủ: ${opponentType}` : "Lựa chọn đã khóa"}</span></div>
             <article class="scene-card">
               <div class="scene ${scene.type}" id="arenaScene">
                 ${renderSceneBackdrop(scene)}
@@ -2950,19 +3799,28 @@
           animateSceneChoice("arenaScene", "arenaHeroActor", "arenaFriendActor", "arenaSceneProp", lesson.answers[arenaMatchChoice], lesson, success);
           $("#arenaMatchChoices").querySelectorAll("button").forEach((choice) => { choice.disabled = true; });
           button.classList.add(success ? "correct" : "incorrect");
+          if (success) celebrateCorrectAnswer(button);
           $("#arenaMatchFeedback").textContent = success
             ? "Đúng rồi! Đáp án đã khóa, bé nhận +10 ⭐ và +25 RP."
-            : "Chưa phù hợp. Đáp án đã khóa, không thể chọn lại; bé có thể học lại trong kho bài.";
-          if (success) { state.xp += 10; state.rp += 25; }
+            : "";
+          if (success) { awardXp(10, button); state.rp += 25; }
           else { state.xp = Math.max(0, state.xp - 3); state.rp = Math.max(0, state.rp - 5); }
           state.quiz += 1;
           state.dailyQuiz += 1;
           persist();
           speak(success ? `Kết quả thành công! ${lesson.prompts[2]}` : `Kết quả chưa thành công. ${lesson.prompts[1]} Câu đấu đã khóa.`);
           $("#arenaMatchFeedback").insertAdjacentHTML("afterend", '<button class="btn btn-mint btn-small" id="leaveArenaAfterResult">Kết thúc lượt đấu →</button>');
-          $("#leaveArenaAfterResult").addEventListener("click", () => setRoute("arena"));
+          $("#leaveArenaAfterResult").addEventListener("click", () => {
+            arenaOpponent = null;
+            void releaseArenaSearch();
+            setRoute("arena");
+          });
         });
-        $("#leaveArenaMatch").addEventListener("click", () => setRoute("arena"));
+        $("#leaveArenaMatch").addEventListener("click", () => {
+          arenaOpponent = null;
+          void releaseArenaSearch();
+          setRoute("arena");
+        });
       };
 
       const renderAuthPage = () => {
@@ -3120,7 +3978,8 @@
           pendingAuthRoute = "";
           persist();
           setRoute(nextRoute);
-          showOnboardingIfNeeded(true);
+          renderStats();
+          showOnboardingIfNeeded();
           toast("Đã vào tài khoản trải nghiệm. Tiến độ chỉ lưu trên trình duyệt này.");
         };
         $("#demoAccountLogin").addEventListener("click", enterDemoAccount);
@@ -3319,7 +4178,7 @@
             pendingAuthRoute = "";
             persist();
             setRoute(nextRoute);
-            showOnboardingIfNeeded(true);
+            showOnboardingIfNeeded();
             toast(`Chào mừng ${result.user.name} trở lại Little Hero!`);
           } catch (error) {
             console.error("Không thể kết nối tới máy chủ đăng nhập.", error);
@@ -3373,43 +4232,56 @@
         });
       };
 
+      const formatPlanPrice = (price) => new Intl.NumberFormat(languageSpeechLocale(), {
+        style: "currency",
+        currency: "VND",
+        maximumFractionDigits: 0
+      }).format(price);
       const renderPaymentPage = (planId = "monthly") => {
         const plan = subscriptionPlans[planId] || subscriptionPlans.monthly;
+        const priceText = formatPlanPrice(plan.price);
+        const durationText = translateString(planId === "yearly" ? "năm" : "tháng");
         const transferNote = planId === "yearly" ? "LITTLEHERO NAM" : "LITTLEHERO THANG";
         const featureList = plan.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join("");
-        const canUploadReceipt = state.authenticated && !state.demoAccount && Boolean(leaderboardToken());
-        const uploadPrompt = canUploadReceipt
+        const isDemoCheckout = state.demoAccount;
+        const canSelectReceipt = isDemoCheckout || (state.authenticated && Boolean(leaderboardToken()));
+        const uploadPrompt = isDemoCheckout
+          ? "Chế độ trải nghiệm: Premium đã mở. Có thể chọn ảnh để xem trước trên thiết bị; ảnh không được gửi lên máy chủ và không thực hiện thanh toán."
+          : canSelectReceipt
           ? "Chọn ảnh bill PNG, JPEG hoặc WebP (tối đa 5 MB). Sau khi gửi ảnh, Premium được mở ngay."
-          : state.demoAccount
-            ? "Tài khoản trải nghiệm không hỗ trợ thanh toán. Hãy đăng nhập tài khoản chính để gửi bill."
-            : state.authenticated
-              ? "Phiên đăng nhập không hợp lệ. Hãy đăng xuất rồi đăng nhập lại để tải bill."
-              : "Hãy đăng nhập tài khoản để tải ảnh bill và kích hoạt Premium.";
-        $("#routeView").innerHTML = pageShell("payment", `Gói đã chọn: ${plan.name} · ${plan.price.toLocaleString("vi-VN")}đ`, `
+          : state.authenticated
+            ? "Phiên đăng nhập không hợp lệ. Hãy đăng xuất rồi đăng nhập lại để tải bill."
+            : "Hãy đăng nhập tài khoản để tải ảnh bill và kích hoạt Premium.";
+        $("#routeView").innerHTML = pageShell("payment", translateTemplate("Gói đã chọn: {name} · {price}", {
+          name: translateString(plan.name),
+          price: priceText
+        }), `
           <article class="settings-card checkout-pending">
             <span class="catalog-icon" aria-hidden="true">💳</span>
             <h2>${escapeHtml(plan.name)}</h2>
-            <p class="price">${plan.price.toLocaleString("vi-VN")}đ <span>/${planId === "yearly" ? "năm" : "tháng"}</span></p>
+            <p class="price">${priceText} <span>/${durationText}</span></p>
             <ul class="features">${featureList}</ul>
-            <h3 class="payment-section-title">Thông tin chuyển khoản</h3>
-            <div class="payment-details">
-              <div class="payment-row"><span>Ngân hàng</span><strong>${PAYMENT_CONFIG.bankName}</strong></div>
-              <div class="payment-row"><span>Người nhận</span><strong>${PAYMENT_CONFIG.accountName}</strong></div>
-              <div class="payment-row"><span>Số tài khoản</span><strong id="paymentAccountNumber">${PAYMENT_CONFIG.accountNumber}</strong></div>
-              <div class="payment-row"><span>Số tiền</span><strong>${plan.price.toLocaleString("vi-VN")}đ</strong></div>
-              <div class="payment-row"><span>Nội dung</span><strong id="paymentTransferNote">${transferNote}</strong></div>
-            </div>
-            <div class="page-actions payment-copy-actions"><button class="btn btn-light btn-small" id="copyPaymentAccount" type="button">Sao chép số tài khoản</button><button class="btn btn-light btn-small" id="copyPaymentNote" type="button">Sao chép nội dung</button></div>
-            <div class="payment-note">Sau khi chuyển khoản, tải ảnh bill lên và nhấn xác nhận để mở Premium ngay. Ảnh được lưu riêng theo tài khoản; hệ thống chưa đối soát ảnh với ngân hàng, nên chỉ tải bill của giao dịch thực tế. Hãy kiểm tra kỹ người nhận và số tiền trước khi chuyển.</div>
+            ${isDemoCheckout
+              ? `<div class="payment-note">Chế độ trải nghiệm: Premium đã mở. Không cần chuyển khoản; ảnh chỉ để xem trước trên thiết bị và sẽ không được gửi lên máy chủ.</div>`
+              : `<h3 class="payment-section-title">Thông tin chuyển khoản</h3>
+                <div class="payment-details">
+                  <div class="payment-row"><span>Ngân hàng</span><strong>${PAYMENT_CONFIG.bankName}</strong></div>
+                  <div class="payment-row"><span>Người nhận</span><strong>${PAYMENT_CONFIG.accountName}</strong></div>
+                  <div class="payment-row"><span>Số tài khoản</span><strong id="paymentAccountNumber">${PAYMENT_CONFIG.accountNumber}</strong></div>
+                  <div class="payment-row"><span>Số tiền</span><strong>${priceText}</strong></div>
+                  <div class="payment-row"><span>Nội dung</span><strong id="paymentTransferNote">${transferNote}</strong></div>
+                </div>
+                <div class="page-actions payment-copy-actions"><button class="btn btn-light btn-small" id="copyPaymentAccount" type="button">Sao chép số tài khoản</button><button class="btn btn-light btn-small" id="copyPaymentNote" type="button">Sao chép nội dung</button></div>
+                <div class="payment-note">Mở ứng dụng ngân hàng, chọn chuyển khoản đến MB Bank rồi nhập đúng người nhận, số tài khoản, số tiền và nội dung bên trên. Sau khi chuyển khoản thành công, tải ảnh bill lên để xác nhận. Ảnh chưa được đối soát tự động với ngân hàng; hãy kiểm tra kỹ thông tin trước khi chuyển.</div>`}
             <form class="payment-upload-form" id="paymentConfirmForm">
-              <h3 class="payment-section-title">Tải ảnh bill chuyển khoản</h3>
+              <h3 class="payment-section-title">${isDemoCheckout ? "Xem trước ảnh (tài khoản trải nghiệm)" : "Tải ảnh bill chuyển khoản"}</h3>
               <label class="payment-upload-label" for="paymentReceipt">
                 <span>🖼️ Chọn ảnh bill từ thiết bị</span>
-                <input id="paymentReceipt" name="receipt" type="file" accept="image/png,image/jpeg,image/webp" required ${canUploadReceipt ? "" : "disabled"}>
+                <input id="paymentReceipt" name="receipt" type="file" accept="image/png,image/jpeg,image/webp" required ${canSelectReceipt ? "" : "disabled"}>
               </label>
               <img class="payment-receipt-preview" id="paymentReceiptPreview" alt="Ảnh bill đã chọn" hidden>
               <p class="payment-upload-status" id="paymentUploadStatus" role="status" aria-live="polite">${escapeHtml(uploadPrompt)}</p>
-              <button class="btn btn-primary" id="paymentConfirmBtn" type="submit" disabled>Xác nhận & mở Premium</button>
+              <button class="btn btn-primary" id="paymentConfirmBtn" type="submit" disabled>${isDemoCheckout ? "Tiếp tục trải nghiệm Premium" : "Xác nhận & mở Premium"}</button>
             </form>
             <div class="page-actions">${routeLink("pricing", "Chọn gói khác", "←")}${routeLink("faq", "Hỏi đáp thanh toán", "❔")}</div>
           </article>`, "THANH TOÁN AN TOÀN");
@@ -3421,8 +4293,10 @@
             toast("Không thể sao chép tự động trên trình duyệt này. Bạn có thể chọn và sao chép thông tin thủ công.");
           }
         };
-        $("#copyPaymentAccount").addEventListener("click", () => copyPaymentValue(PAYMENT_CONFIG.accountNumber, "Số tài khoản"));
-        $("#copyPaymentNote").addEventListener("click", () => copyPaymentValue(transferNote, "Nội dung chuyển khoản"));
+        const copyAccountButton = $("#copyPaymentAccount");
+        const copyNoteButton = $("#copyPaymentNote");
+        copyAccountButton?.addEventListener("click", () => copyPaymentValue(PAYMENT_CONFIG.accountNumber, "Số tài khoản"));
+        copyNoteButton?.addEventListener("click", () => copyPaymentValue(transferNote, "Nội dung chuyển khoản"));
         const form = $("#paymentConfirmForm");
         const receiptInput = $("#paymentReceipt", form);
         const confirmButton = $("#paymentConfirmBtn", form);
@@ -3436,6 +4310,7 @@
           previewUrl = "";
           preview.hidden = true;
           preview.removeAttribute("src");
+          confirmButton.disabled = true;
           if (!file) {
             status.textContent = uploadPrompt;
             return;
@@ -3448,22 +4323,33 @@
             status.textContent = "Ảnh bill phải có dung lượng từ 1 byte đến 5 MB.";
             return;
           }
-          if (!canUploadReceipt) {
+          if (!canSelectReceipt) {
             status.textContent = uploadPrompt;
             return;
           }
           previewUrl = URL.createObjectURL(file);
           preview.src = previewUrl;
           preview.hidden = false;
-          status.textContent = `Đã chọn ${file.name}. Nhấn xác nhận để mở gói Premium ngay.`;
+          status.textContent = isDemoCheckout
+            ? "Ảnh được chọn để xem trước trên thiết bị; không tải lên máy chủ."
+            : `Đã chọn ${file.name}. Nhấn xác nhận để mở gói Premium ngay.`;
           confirmButton.disabled = false;
         });
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
           const file = receiptInput.files[0];
+          if (isDemoCheckout) {
+            if (!file || !canSelectReceipt) {
+              status.textContent = uploadPrompt;
+              return;
+            }
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            setRoute("premium-success");
+            return;
+          }
           const token = leaderboardToken();
-          if (!canUploadReceipt || !file || !token) {
-            status.textContent = canUploadReceipt
+          if (!canSelectReceipt || !file || !token) {
+            status.textContent = canSelectReceipt
               ? "Phiên đăng nhập không hợp lệ. Hãy đăng nhập lại rồi thử lại."
               : uploadPrompt;
             return;
@@ -3494,12 +4380,13 @@
       };
 
       const renderPremiumSuccessPage = () => {
+        const isDemoPremium = state.demoAccount;
         const plan = activeSubscription && subscriptionPlans[activeSubscription.plan];
         $("#routeView").innerHTML = pageShell("pricing", "Thông tin gói Premium của bé.", `
           <article class="score-card" style="max-width:680px;text-align:center">
-            <div style="font-size:42px">♛</div><h2 style="margin:4px 0">${hasActivePremium() ? "Gói Premium đang hoạt động" : "Chưa có gói Premium đang hoạt động"}</h2>
-            <p>${hasActivePremium() ? `Gói ${escapeHtml(plan.name)} có hiệu lực đến ${new Date(activeSubscription.expiresAt).toLocaleDateString("vi-VN")}.` : "Chọn gói và gửi ảnh bill để mở quyền lợi Premium."}</p>
-            <div class="story-box">${hasActivePremium() ? "Ảnh bill đã được gửi và gói Premium đã mở. Bé có thể tiếp tục khám phá các bài học." : "Gói Premium sẽ được mở ngay khi máy chủ nhận ảnh bill."}</div>
+            <div style="font-size:42px">♛</div><h2 style="margin:4px 0">${isDemoPremium ? "Premium đã mở cho tài khoản trải nghiệm." : hasActivePremium() ? "Gói Premium đang hoạt động" : "Chưa có gói Premium đang hoạt động"}</h2>
+            <p>${isDemoPremium ? "Tài khoản trải nghiệm được dùng các tính năng Premium mà không cần chuyển khoản." : hasActivePremium() ? `Gói ${escapeHtml(plan.name)} có hiệu lực đến ${new Date(activeSubscription.expiresAt).toLocaleDateString(languageSpeechLocale())}.` : "Chọn gói và gửi ảnh bill để mở quyền lợi Premium."}</p>
+            <div class="story-box">${isDemoPremium ? "Ảnh bill chỉ được xem trước trên thiết bị; không có giao dịch hoặc tải ảnh lên máy chủ." : hasActivePremium() ? "Ảnh bill đã được gửi và gói Premium đã mở. Bé có thể tiếp tục khám phá các bài học." : "Gói Premium sẽ được mở ngay khi máy chủ nhận ảnh bill."}</div>
             <div class="page-actions" style="justify-content:center">${routeLink("home", "Về trang chủ", "⌂")}${routeLink("lessons", "Tiếp tục học", "📚")}</div>
           </article>`, "TRẠNG THÁI GÓI");
       };
@@ -3551,7 +4438,18 @@
             : { text: "I couldn't connect to the online AI right now. You can ask about lessons, stories, games, your character, or try again later.", route: "faq", label: "Open help" };
         }
         if (/(nguy hiem|bi danh|bi bat nat|bi lac|nguoi la|khong an toan|muon tu lam dau)/.test(normalized)) {
-          return { text: "Nếu con hoặc ai đó đang gặp nguy hiểm ngay lúc này, hãy tìm người lớn đáng tin cậy ở gần và liên hệ dịch vụ khẩn cấp tại nơi con sống. Hero chỉ có thể chia sẻ hướng dẫn chung, không thay thế người hỗ trợ trực tiếp.", route: "parent-news", label: "Xem cẩm nang an toàn" };
+          return {
+            text: translateString("Nếu con hoặc ai đó đang gặp nguy hiểm ngay lúc này, hãy tìm người lớn đáng tin cậy ở gần và liên hệ dịch vụ khẩn cấp tại nơi con sống. Hero chỉ có thể chia sẻ hướng dẫn chung, không thay thế người hỗ trợ trực tiếp."),
+            route: "parent-news",
+            label: translateString("Xem cẩm nang an toàn")
+          };
+        }
+        if (state.language !== "vi") {
+          return {
+            text: translateString("Hiện mình chưa kết nối được trợ lý AI trực tuyến. Hãy thử lại sau hoặc mở hướng dẫn sử dụng."),
+            route: "faq",
+            label: translateString("Xem hướng dẫn sử dụng")
+          };
         }
         if (destination?.route === "parents") {
           return { text: "Ba mẹ có thể quản lý hồ sơ từng bé, xem nhật ký thực hành, thời gian sử dụng, biểu đồ tiến độ và gợi ý hoạt động tại khu vực phụ huynh. Dữ liệu hiện được lưu trên thiết bị này.", ...destination };
@@ -3609,7 +4507,7 @@
           <section class="chat-shell" aria-label="Trò chuyện với trợ lý Little Hero">
             <header class="chat-top"><span class="chat-avatar" aria-hidden="true">✦</span><div><h2>Hỏi Hero</h2><p>Trợ lý AI · Gemini</p></div><button class="chat-voice-mode" id="assistantVoiceMode" type="button" aria-pressed="false" title="Bật hội thoại rảnh tay">🎧 Hội thoại rảnh tay</button><span class="chat-status" id="assistantStatus">ĐANG KẾT NỐI</span></header>
             <div class="chat-messages" id="assistantMessages" aria-live="polite" aria-label="Tin nhắn trò chuyện">
-              <article class="chat-message assistant">Chào bạn! Mình có thể hướng dẫn các mục trong Little Hero và mở trang phù hợp. Bạn muốn tìm hiểu điều gì?</article>
+              <article class="chat-message assistant">${escapeHtml(languageConfig(state.language).greeting(languageConfig(state.language).friend))}</article>
             </div>
             <div class="chat-suggestions" aria-label="Câu hỏi gợi ý">
               <button type="button" data-assistant-prompt="Mở bản đồ ốc đảo">🗺️ Bản đồ ốc đảo</button>
@@ -3818,7 +4716,9 @@
             assistantIdleStatus = "HỖ TRỢ CƠ BẢN";
             assistantStatus.textContent = assistantIdleStatus;
             const fallback = answerAssistantQuestion(question);
-            const fallbackText = `AI trực tuyến chưa khả dụng (${detail}). Hero vẫn có thể hướng dẫn cơ bản: ${fallback.text}`;
+            const fallbackText = state.language === "vi"
+              ? `AI trực tuyến chưa khả dụng (${detail}). Hero vẫn có thể hướng dẫn cơ bản: ${fallback.text}`
+              : fallback.text;
             appendChatMessage(messages, "assistant", fallbackText, fallback.route === "faq" && fallback.label === "Xem hướng dẫn sử dụng" ? null : fallback);
             if (speakVoiceReply || handsFreeMode) {
               speak(fallbackText, () => {
@@ -3841,7 +4741,7 @@
         const resetVoiceButton = () => {
           voiceButton.setAttribute("aria-pressed", "false");
           voiceButton.setAttribute("aria-label", "Hỏi Hero bằng giọng nói");
-          voiceButton.title = "Bật micro, nói câu hỏi rồi nhấn lần nữa để gửi";
+          voiceButton.title = translateString("Bật micro, nói câu hỏi rồi nhấn lần nữa để gửi");
           voiceButton.textContent = "🎙️";
           if (assistantStatus.textContent === "ĐANG NGHE..." || assistantStatus.textContent === "ĐANG CHỜ GIỌNG NÓI...") {
             assistantStatus.textContent = assistantIdleStatus;
@@ -3860,7 +4760,7 @@
           if (!voiceListening || !Recognition) return;
           recognition = new Recognition();
           const activeRecognition = recognition;
-          activeRecognition.lang = state.language === "en" ? "en-US" : "vi-VN";
+          activeRecognition.lang = languageSpeechLocale();
           activeRecognition.continuous = true;
           activeRecognition.interimResults = true;
           activeRecognition.onstart = () => {
@@ -4026,9 +4926,10 @@
         const [name, param] = route.split("/");
         const routes = {
           map: () => {
-            $("#routeView").innerHTML = pageShell("map", "Khám phá 8 ốc đảo kỹ năng; chọn một hòn đảo để mở bài học. Rê chuột hoặc dùng phím Tab để xem nội dung điểm dừng.", `<div class="map-guide"><div><strong>✨ Chọn một ốc đảo để bắt đầu</strong><p>Di chuột, chạm hoặc dùng phím Tab để hiện tên chủ đề và bài học, rồi chọn đảo để bắt đầu.</p></div></div><div class="journey-map detailed" id="mapPageIslands" aria-label="Bản đồ chi tiết gồm 8 ốc đảo và các bài học"></div>`, "HERO WORLD");
+            $("#routeView").innerHTML = pageShell("map", "Khám phá 8 ốc đảo kỹ năng; chọn một hòn đảo để mở bài học. Rê chuột hoặc dùng phím Tab để xem nội dung điểm dừng.", `<div class="map-guide"><div><strong>✨ Chọn một ốc đảo để bắt đầu</strong><p>Di chuột, chạm hoặc dùng phím Tab để hiện tên chủ đề và bài học, rồi chọn đảo để bắt đầu.</p></div></div><div class="journey-map detailed" id="mapPageIslands" aria-label="Bản đồ chi tiết gồm 8 ốc đảo và các bài học"></div>`);
             renderJourneyMap($("#mapPageIslands"), true);
           },
+          emotions: renderEmotionMap,
           lessons: renderLessonCatalog,
           stories: renderStoriesPage,
           storybook: () => renderStoriesPage("storybook"),
@@ -4042,6 +4943,32 @@
           quests: renderQuestPage,
           quiz: renderQuizPage,
           achievements: renderAchievementsPage,
+          child: () => {
+            const level = Math.floor(state.xp / 100) + 1;
+            const progress = state.xp % 100;
+            const displayName = state.childName && state.childName !== "Bé"
+              ? state.childName
+              : languageConfig(state.language).friend;
+            $("#routeView").innerHTML = pageShell("child", "Góc riêng để bé xem hành trình và chọn hoạt động tiếp theo.", `
+              <div class="child-profile-page">
+                <section class="child-profile-banner">
+                  <span class="child-profile-avatar" aria-hidden="true">${state.closet?.gender === "girl" ? "👧" : "🧒"}</span>
+                  <div><span class="kicker">${currentAgeLabel()}</span><h2>${escapeHtml(translateTemplate("Chào {name}!", { name: displayName }))}</h2><p>Mỗi bước con thử sức đều đáng tự hào.</p></div>
+                </section>
+                <section class="child-profile-level" aria-label="Tiến độ cấp độ">
+                  <div><strong>⭐ ${state.xp} sao</strong><span>Cấp ${level} · ${progress}% đến cấp tiếp theo</span></div>
+                  <div class="progress"><i style="width:${progress}%"></i></div>
+                </section>
+                <div class="child-profile-links">
+                  ${routeLink("map", "Bản đồ khám phá", "🗺️")}
+                  ${routeLink("emotions", "Bản đồ cảm xúc", "💛")}
+                  ${routeLink("quiz", "Ôn tập cùng Hero", "🧩")}
+                  ${routeLink("achievements", "Huy hiệu của bé", "🏅")}
+                  ${routeLink("quests", "Nhiệm vụ hôm nay", "🎯")}
+                  <a class="btn btn-light btn-small" href="#/parents" data-route="parents" data-parent>👨‍👩‍👧 Góc phụ huynh</a>
+                </div>
+              </div>`);
+          },
           reviews: renderReviewsPage,
           forum: renderForumPage,
           faq: renderFaqPage,
@@ -4052,11 +4979,11 @@
               <article class="subscription-row ${id === "yearly" ? "is-yearly" : "is-monthly"}">
                 <div class="subscription-art"><img src="${plan.image}" alt="${escapeHtml(plan.imageAlt)}" loading="lazy"><span class="course-art-badge">${escapeHtml(plan.badge)}</span></div>
                 <div class="subscription-copy"><span class="course-plan-kicker">${escapeHtml(plan.caption)}</span><h3>${escapeHtml(plan.title)}</h3><ul class="features">${plan.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join("")}</ul></div>
-                <div class="subscription-action"><strong>${plan.price.toLocaleString("vi-VN")}đ <span>/${id === "yearly" ? "năm" : "tháng"}</span></strong><button class="btn btn-primary btn-small" data-route="payment/${id}">Chọn hành trình</button></div>
+                <div class="subscription-action"><strong>${formatPlanPrice(plan.price)} <span>/${translateString(id === "yearly" ? "năm" : "tháng")}</span></strong><button class="btn btn-primary btn-small" data-route="payment/${id}">Chọn hành trình</button></div>
               </article>`).join("");
             $("#routeView").innerHTML = pageShell("pricing", "Chọn thời hạn phù hợp. Tải ảnh bill lên ở bước thanh toán để mở Premium ngay.", `
               <div class="subscription-list">${planRows}</div>
-              <div class="free-plan-note"><span>${lessons.filter((lesson) => !isPremiumLesson(lesson)).length} bài học miễn phí; nội dung Premium chiếm khoảng một nửa kho bài học.</span><button class="text-link" id="freePlanBtn">Khám phá nội dung miễn phí →</button></div>`, "GÓI HỌC");
+              <div class="free-plan-note"><span>${translateTemplate("{count} bài học miễn phí; nội dung Premium chiếm khoảng một nửa kho bài học.", { count: lessons.filter((lesson) => !isPremiumLesson(lesson)).length })}</span><button class="text-link" id="freePlanBtn">Khám phá nội dung miễn phí →</button></div>`, "");
             $("#freePlanBtn").addEventListener("click", () => setRoute("lessons"));
           },
           payment: () => renderPaymentPage(param),
@@ -4105,7 +5032,7 @@
           const x = 74 + index * 86;
           const usageHeight = usage[index] / max * 112;
           const studyHeight = study[index] / max * 112;
-          const label = new Date(`${day}T00:00:00`).toLocaleDateString("vi-VN", { weekday: "short" });
+          const label = new Date(`${day}T00:00:00`).toLocaleDateString(languageSpeechLocale(), { weekday: "short" });
           return `<rect x="${x}" y="${174 - usageHeight}" width="24" height="${usageHeight}" rx="6" fill="#9bdcc1"/>
             <rect x="${x + 28}" y="${174 - studyHeight}" width="24" height="${studyHeight}" rx="6" fill="#ffbd75"/>
             <text x="${x + 25}" y="196" text-anchor="middle">${escapeHtml(label)}</text>`;
@@ -4127,7 +5054,7 @@
         });
         const line = points.filter((point) => point.y !== null).map((point) => `${point.x},${point.y}`).join(" ");
         const dots = points.filter((point) => point.y !== null).map((point) => `<circle cx="${point.x}" cy="${point.y}" r="5" fill="#fff" stroke="#568fc7" stroke-width="3"><title>${point.score}% lựa chọn đúng</title></circle>`).join("");
-        const labels = points.map((point) => `<text x="${point.x}" y="198" text-anchor="middle">${escapeHtml(new Date(`${point.day}T00:00:00`).toLocaleDateString("vi-VN", { weekday: "short" }))}</text>`).join("");
+        const labels = points.map((point) => `<text x="${point.x}" y="198" text-anchor="middle">${escapeHtml(new Date(`${point.day}T00:00:00`).toLocaleDateString(languageSpeechLocale(), { weekday: "short" }))}</text>`).join("");
         return `<svg class="parent-chart" viewBox="0 0 680 215" role="img" aria-label="Tỷ lệ lựa chọn phù hợp theo ngày, dựa trên lượt thực hành">
           <line x1="56" y1="172" x2="660" y2="172" stroke="#dfe9e3"/><line x1="56" y1="109" x2="660" y2="109" stroke="#edf2ee"/><line x1="56" y1="47" x2="660" y2="47" stroke="#edf2ee"/>
           <text x="16" y="52">100%</text><text x="31" y="113">50%</text><text x="39" y="176">0%</text>
@@ -4190,7 +5117,7 @@
           ? recentAttempts.map((entry) => {
             const lesson = lessonById(entry.lessonId);
             const answer = lesson?.answers[entry.choice] || "Lựa chọn";
-            const date = new Date(entry.at).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" });
+            const date = new Date(entry.at).toLocaleString(languageSpeechLocale(), { dateStyle: "short", timeStyle: "short" });
             return `<article><span>${escapeHtml(lesson?.title || "Bài học")}<small>${escapeHtml(answer)} · ${escapeHtml(date)}</small></span><span aria-label="${entry.correct ? "Lựa chọn phù hợp" : "Lần thử cần luyện tập"}">${entry.correct ? "✅" : "🌱"}</span></article>`;
           }).join("")
           : `<p class="note">Nhật ký sẽ ghi lại lựa chọn của bé khi bé thực hành tình huống.</p>`;
@@ -4198,7 +5125,7 @@
           <div class="parent-dashboard">
             <div class="parent-profile-bar">
               <label for="parentProfileSelect">👨‍👩‍👧 Hồ sơ đang xem
-                <select id="parentProfileSelect">${state.children.map((profile) => `<option value="${escapeHtml(profile.id)}" ${profile.id === state.activeChildId ? "selected" : ""}>${escapeHtml(profile.name || "Bé")} · ${Number(profile.age) || 6} tuổi</option>`).join("")}</select>
+                <select id="parentProfileSelect">${state.children.map((profile) => `<option value="${escapeHtml(profile.id)}" ${profile.id === state.activeChildId ? "selected" : ""}>${escapeHtml(localizedChildName(profile.name))} · ${Number(profile.age) || 6} tuổi</option>`).join("")}</select>
               </label>
               <span class="stat-pill">Dữ liệu trên thiết bị · riêng tư</span><div class="parent-hero" id="parentHero" aria-hidden="true"></div>
             </div>
@@ -4206,7 +5133,7 @@
               <section class="parent-panel">
                 <h2>👧 Hồ sơ của con</h2><p>Tạo nhiều hồ sơ và chuyển đổi để xem tiến trình riêng của mỗi trẻ.</p>
                 <form class="profile-add" id="profileDetailsForm">
-                  <input name="name" maxlength="40" required aria-label="Tên hoặc biệt danh" value="${escapeHtml(child?.name || state.childName || "Bé")}" placeholder="Tên hoặc biệt danh">
+                  <input name="name" maxlength="40" required aria-label="Tên hoặc biệt danh" value="${escapeHtml(localizedChildName(child?.name || state.childName))}" placeholder="Tên hoặc biệt danh">
                   <input name="age" type="number" min="3" max="10" required aria-label="Độ tuổi" value="${Number(child?.age) || 6}" placeholder="Tuổi">
                   <button class="btn btn-light btn-small">Cập nhật hồ sơ</button>
                 </form>
@@ -4217,7 +5144,7 @@
                 </form>
               </section>
               <section class="parent-panel">
-                <h2>📈 Tổng quan tiến độ</h2><p>Chỉ số tổng hợp từ dữ liệu thực hành của ${escapeHtml(child?.name || state.childName || "bé")}.</p>
+                <h2>📈 Tổng quan tiến độ</h2><p>Chỉ số tổng hợp từ dữ liệu thực hành của ${escapeHtml(localizedChildName(child?.name || state.childName))}.</p>
                 <div class="parent-stats"><div><strong>${completedCount()}</strong><span>Bài hoàn thành</span></div><div><strong>${attempts.length}</strong><span>Lượt thực hành</span></div><div><strong>${state.xp}</strong><span>Sao tích lũy</span></div></div>
                 <p class="note" style="margin:12px 0 0">Chuỗi ngày học: ${streak()} ngày · Hôm nay: ${minutesToday} phút dùng app.</p>
               </section>
@@ -4225,16 +5152,13 @@
             <div class="parent-grid">
               <section class="parent-panel"><h2>⏱ Thời gian sử dụng & học</h2><p>7 ngày gần nhất · xanh là thời gian app mở, cam là thời gian ở trang bài học.</p>
                 <div style="display:flex;gap:16px;font-size:11px"><span>🟩 Sử dụng ứng dụng</span><span>🟧 Ở trang bài học</span></div>${renderUsageChart()}
-                <div class="parent-notice">Thời gian được tính khi trang đang hiển thị; đây là thống kê cục bộ, không phải bộ hẹn giờ/ngăn truy cập chính xác.</div>
               </section>
               <section class="parent-panel"><h2>🎯 Kết quả theo thời gian</h2><p>Tỷ lệ lựa chọn đúng trong các lượt bé đã thực hành mỗi ngày.</p>${renderScoreChart()}
-                <div class="parent-notice">Chỉ số phản ánh các lựa chọn trong bài học, không phải điểm số hay chẩn đoán năng lực của trẻ.</div>
               </section>
             </div>
             <div class="parent-grid">
               <section class="parent-panel"><h2>🕸 Chỉ số nhóm kỹ năng</h2><p>Radar dựa trên tỷ lệ lựa chọn phù hợp ở các tình huống đã làm.</p>
                 <div class="parent-radar">${radar.svg}<div class="skill-list">${radar.list}</div></div>
-                <div class="parent-notice">Các nhóm kỹ năng là gợi ý tham khảo, không thay thế đánh giá chuyên môn.</div>
               </section>
               <section class="parent-panel"><h2>💛 Bài học bé quan tâm</h2><p>Sắp xếp theo số lượt bé đã chọn thực hành, không suy diễn cảm xúc/thích thú.</p>${recommendations}
                 <div class="page-actions">${routeLink("lessons", "Khám phá bài học", "📚")}${routeLink("parent-news", "Cẩm nang gia đình", "📰")}</div>
@@ -4242,7 +5166,7 @@
             </div>
             <section class="parent-panel"><h2>🌱 Gợi ý bước tiếp theo</h2>
               <p>${repeatedDifficulty ? "Các lượt gần đây có nhiều lựa chọn chưa phù hợp trong cùng một chủ đề. Ba mẹ có thể cùng con thực hành lại khi con sẵn sàng." : "Chọn một nội dung vừa sức, khuyến khích con tự suy nghĩ và trao đổi sau bài học."}</p>
-              ${repeatedDifficulty ? `<div class="parent-notice">Lưu ý để ba mẹ quan tâm: ${escapeHtml(lessonById(recentMisses[0].lessonId)?.title || "một chủ đề")} có từ hai lượt chọn cần luyện tập trong sáu lượt gần đây. Đây chỉ là gợi ý đồng hành, không phải đánh giá chuyên môn.</div>` : ""}
+              ${repeatedDifficulty ? `<p class="note">Lưu ý để ba mẹ quan tâm: ${escapeHtml(lessonById(recentMisses[0].lessonId)?.title || "một chủ đề")} có từ hai lượt chọn cần luyện tập trong sáu lượt gần đây. Đây chỉ là gợi ý đồng hành, không phải đánh giá chuyên môn.</p>` : ""}
               <div class="page-actions">${routeLink(`lesson/${ageAppropriateLessons().find((lesson) => !state.completed.includes(lesson.id))?.id || ageAppropriateLessons()[0].id}`, "Mở bài học gợi ý", "▶")}${routeLink("parent-news", "Xem gợi ý trò chuyện", "💬")}</div>
               <p class="note">Gợi ý được suy ra từ nhật ký cục bộ; chưa có AI Tutor, cá nhân hóa máy chủ hoặc cảnh báo đẩy.</p>
             </section>
@@ -4251,7 +5175,6 @@
               <section class="parent-panel"><h2>💬 Gợi ý trò chuyện cùng con</h2><p>Câu hỏi gợi mở để lắng nghe, không phán xét hay áp đặt.</p>
                 <div class="story-box">“${escapeHtml(coachPrompt)}”</div>
                 <div class="thinking-prompts"><div>“Con muốn ba/mẹ lắng nghe hay cùng con nghĩ cách giải quyết?”</div><div>“Nếu thử lại, con muốn chọn điều gì khác?”</div><div>“Con cần người lớn giúp gì để cảm thấy an toàn?”</div></div>
-                <p class="note">Đây là câu hỏi mẫu tĩnh, chưa phải nhận xét hoặc tư vấn được AI tạo ra.</p>
               </section>
             </div>
             <div class="parent-grid">
@@ -4270,7 +5193,7 @@
                   <label for="parentNotifyPractice">Nhắc nhiệm vụ thực hành tại nhà <input id="parentNotifyPractice" type="checkbox" ${state.parentControls.notifyPractice ? "checked" : ""}></label>
                 </div>
                 <p class="note">Đã dùng ${minutesToday}/${dailyLimit} phút mục tiêu hôm nay. Thiết lập chỉ lưu làm lựa chọn; chưa có cơ chế giới hạn/đẩy thông báo.</p>
-                ${minutesToday >= dailyLimit ? `<div class="parent-notice">Đã chạm mục tiêu thời gian ba mẹ chọn hôm nay. Hãy cùng bé nghỉ mắt/đổi hoạt động; website chưa tự khóa ứng dụng.</div>` : ""}
+                ${minutesToday >= dailyLimit ? `<p class="note">Đã chạm mục tiêu thời gian ba mẹ chọn hôm nay. Hãy cùng bé nghỉ mắt/đổi hoạt động; website chưa tự khóa ứng dụng.</p>` : ""}
               </section>
             </div>
             <section class="parent-panel"><h2>🛍 Dịch vụ & trợ giúp</h2><p>Khám phá các mục LITTLE HERO dành cho gia đình.</p>
@@ -4350,48 +5273,35 @@
       };
       const renderParentNews = () => {
         const articles = [
-          { id: "brand-story", kind: "Thương hiệu", group: "brand", icon: "🦸‍♀️", art: "#d5efe1", featured: true, title: "Không chỉ xem cho vui: Bé học kỹ năng sống cùng LITTLE HERO như thế nào?", excerpt: "Khám phá cách những câu chuyện tương tác biến tình huống đời thường thành cơ hội để trẻ quan sát, suy nghĩ và trò chuyện cùng gia đình.", body: ["Một tình huống gần gũi thường mở ra cuộc trò chuyện tự nhiên hơn một lời nhắc dài. Trong LITTLE HERO, trẻ theo dõi câu chuyện, thử chọn cách xử lý và quan sát diễn biến tiếp theo trong môi trường luyện tập.", "Ứng dụng hướng tới việc khuyến khích trẻ tự suy nghĩ, gọi tên cảm xúc và tìm người lớn đáng tin cậy khi cần. Bài học không thay thế sự đồng hành của gia đình hay tư vấn chuyên môn.", "Ba mẹ có thể cùng con đọc, hỏi con vì sao nhân vật chọn cách đó, rồi liên hệ nhẹ nhàng với một việc nhỏ trong ngày."] },
-          { id: "skill-future", kind: "Tin tức", group: "family", icon: "🧩", art: "#f8e3c8", featured: true, title: "Dạy con kỹ năng sống từ đâu? Bắt đầu với 5 kỹ năng quan trọng này", excerpt: "Ở tuổi 3–5, những thói quen nhỏ về cảm xúc, giao tiếp và tự lập có thể bắt đầu ngay trong sinh hoạt hằng ngày.", body: ["Kỹ năng sống không nhất thiết bắt đầu từ một bài học lớn. Trẻ có thể luyện gọi tên cảm xúc, chờ đến lượt, nói lời nhờ giúp đỡ, giữ an toàn và tự làm việc phù hợp với lứa tuổi.", "Hãy chọn một kỹ năng mỗi lần, làm mẫu bằng lời nói và hành động, sau đó để trẻ thực hành trong tình huống quen thuộc. Ghi nhận nỗ lực thay vì đòi hỏi trẻ luôn làm đúng ngay.", "Nếu trẻ chưa sẵn sàng, ba mẹ có thể quay lại vào thời điểm khác. Nhịp phát triển của mỗi trẻ khác nhau."] },
-          { id: "skill-thinking", kind: "Phát triển tư duy", group: "family", icon: "🧠", art: "#fde2e8", title: "Giúp trẻ tập suy nghĩ và giải quyết vấn đề qua việc nhỏ", excerpt: "Câu hỏi gợi mở và những lựa chọn vừa sức giúp trẻ tập dừng lại, suy nghĩ và thử cách xử lý an toàn.", body: ["Khi gặp một việc khó, ba mẹ có thể cùng trẻ gọi tên vấn đề rồi hỏi: “Con nghĩ mình có thể thử cách nào?”. Hãy cho trẻ thời gian suy nghĩ thay vì vội đưa ra đáp án.", "Bắt đầu từ việc nhỏ, quen thuộc và phù hợp với độ tuổi. Người lớn ở gần để hỗ trợ, đặc biệt khi tình huống có yếu tố nguy hiểm.", "Khen sự cố gắng và cách trẻ suy nghĩ; kết quả chưa như ý là cơ hội để cùng thử một phương án khác."] },
-          { id: "skill-confidence", kind: "Tự tin & tự lập", group: "family", icon: "❤️", art: "#fff0d2", title: "Nuôi dưỡng sự tự tin và tính tự lập theo từng bước", excerpt: "Việc để trẻ thử sức với lựa chọn phù hợp giúp con rèn tính chủ động trong môi trường an toàn.", body: ["Chia việc thành những bước nhỏ mà trẻ có thể thực hiện, như tự cất đồ chơi hoặc chọn quần áo giữa hai phương án phù hợp.", "Làm mẫu khi cần, ở gần để bảo đảm an toàn và tránh làm thay ngay khi trẻ đang cố gắng.", "Ghi nhận nỗ lực cụ thể giúp trẻ hiểu điều mình đã làm tốt và có động lực thử lại lần sau."] },
-          { kind: "Đời sống gia đình", group: "family", icon: "💛", art: "#fce6cb", title: "Lắng nghe cảm xúc của trẻ: bắt đầu bằng một câu hỏi mở", excerpt: "Một khoảng dừng để lắng nghe giúp trẻ có thêm thời gian gọi tên điều mình đang cảm nhận.", body: ["Ba mẹ có thể hỏi “Điều gì làm con vui nhất hôm nay?” hoặc “Có chuyện nào khiến con chưa thoải mái không?”. Câu hỏi mở cho trẻ cơ hội kể theo cách và nhịp của mình.", "Hãy lắng nghe hết câu chuyện trước khi đưa lời khuyên. Nếu trẻ chưa muốn chia sẻ, có thể nói rằng ba mẹ luôn sẵn sàng ở bên khi con cần.", "Cảm xúc không phải hành vi. Người lớn có thể công nhận cảm xúc của trẻ đồng thời hướng dẫn cách thể hiện an toàn."] },
-          { kind: "An toàn số", group: "family", icon: "🛡️", art: "#dcecff", title: "Cùng con xây dựng thói quen an toàn trên mạng", excerpt: "Thống nhất quy tắc dễ nhớ: không chia sẻ thông tin riêng tư và tìm người lớn tin cậy khi thấy bất an.", body: ["Cùng trẻ luyện cách dừng lại khi gặp tin nhắn hoặc nội dung khiến con lo lắng. Trẻ không cần tự trả lời hay tự xử lý tình huống vượt quá khả năng.", "Nhắc trẻ không chia sẻ địa chỉ, mật khẩu, hình ảnh riêng tư hoặc thông tin nhận dạng. Người lớn có thể cùng con xem cài đặt riêng tư phù hợp độ tuổi.", "Giữ không khí trò chuyện bình tĩnh để trẻ biết rằng con có thể kể lại sự việc mà không bị trách mắng."] },
-          { id: "skill-communication", kind: "Kỹ năng xã hội", group: "family", icon: "🤝", art: "#e4f0e5", title: "Giúp trẻ tập giải quyết bất đồng với bạn", excerpt: "Khuyến khích trẻ kể lại sự việc, nói cảm xúc và tìm sự hỗ trợ phù hợp.", body: ["Ba mẹ có thể cùng trẻ kể lại điều đã xảy ra bằng những câu trung tính, sau đó hỏi mỗi bạn mong muốn điều gì.", "Gợi ý trẻ nói bằng câu bắt đầu với “Mình cảm thấy…” và lắng nghe bạn. Người lớn nên ở gần để hỗ trợ, nhất là khi có nguy cơ mất an toàn.", "Không yêu cầu trẻ tự giải quyết tình huống vượt quá khả năng hoặc chấp nhận hành vi làm trẻ tổn thương."] },
-          { kind: "Câu chuyện thương hiệu", group: "brand", icon: "📚", art: "#e8e2ff", title: "Vì sao LITTLE HERO học qua tình huống?", excerpt: "Trẻ quan sát câu chuyện, chọn cách ứng xử và xem diễn biến tiếp theo trong một môi trường luyện tập.", body: ["Tình huống trong bài học tạo cơ hội để trẻ dừng lại, nghĩ về cảm xúc và cân nhắc các lựa chọn.", "Ba mẹ có thể dùng câu chuyện làm điểm bắt đầu cho một cuộc trò chuyện ngắn. Không cần biến mỗi lượt chơi thành bài kiểm tra.", "Nội dung ứng dụng là trải nghiệm giáo dục tham khảo, không thay thế sự hướng dẫn trực tiếp hoặc hỗ trợ chuyên môn."] },
-          { kind: "Khám phá sản phẩm", group: "brand", icon: "🗺️", art: "#d8f0ef", title: "Khám phá bản đồ 8 ốc đảo kỹ năng", excerpt: "Mỗi điểm dừng gợi mở một chủ đề để gia đình cùng đọc, suy nghĩ và thực hành.", body: ["Bản đồ kết nối các chủ đề như cảm xúc, giao tiếp, tự bảo vệ, sức khỏe, tư duy, trách nhiệm, khám phá và cộng đồng.", "Gia đình có thể chọn một đảo theo điều trẻ quan tâm rồi cùng con thực hành bài học tương ứng.", "Tiến độ được lưu trên thiết bị đang dùng."] },
-          { id: "skill-family", kind: "Đồng hành cùng con", group: "family", icon: "👨‍👩‍👧", art: "#f7dfe8", title: "Ba mẹ đồng hành cùng Hero bằng những cuộc trò chuyện nhỏ", excerpt: "Một câu hỏi không phán xét giúp trẻ nối điều vừa học với trải nghiệm ngoài đời.", body: ["Sau câu chuyện, ba mẹ có thể hỏi “Con nghĩ nhân vật đang cảm thấy thế nào?” hoặc “Nếu con ở đó, con muốn nhờ ai giúp?”.", "Hãy để trẻ tự diễn đạt, công nhận nỗ lực và đưa ra lựa chọn phù hợp với độ tuổi.", "Nếu trẻ kể về việc không an toàn, hãy lắng nghe, đảm bảo an toàn trước mắt và tìm người hỗ trợ đáng tin cậy."] }
+          { id: "brand-story", kind: "Thương hiệu", group: "product", thumbnail: "news-hero-story.svg", alt: "Hero khám phá con đường câu chuyện LITTLE HERO", title: "LITTLE HERO biến tình huống thường ngày thành bài học tương tác", excerpt: "Cùng Hero khám phá cách một câu chuyện ngắn khuyến khích trẻ quan sát, suy nghĩ và trò chuyện với gia đình.", body: ["Mỗi bài học LITTLE HERO bắt đầu bằng một tình huống gần gũi. Bé quan sát câu chuyện, cân nhắc lựa chọn và xem diễn biến tiếp theo trong một môi trường luyện tập an toàn.", "Ứng dụng khuyến khích trẻ gọi tên cảm xúc, suy nghĩ từng bước và tìm người lớn đáng tin cậy khi cần. Nội dung không thay thế sự đồng hành trực tiếp của gia đình."] },
+          { id: "skill-future", kind: "Sản phẩm", group: "product", thumbnail: "news-skill-map.svg", alt: "Bản đồ kỹ năng LITTLE HERO với những hòn đảo đầy màu sắc", title: "Bản đồ 8 chủ đề kỹ năng mở ra hành trình khám phá của bé", excerpt: "Từ cảm xúc đến an toàn, mỗi ốc đảo LITTLE HERO gợi ý một chủ đề để gia đình cùng tìm hiểu.", body: ["Bản đồ LITTLE HERO kết nối các chủ đề cảm xúc, giao tiếp, an toàn, sức khỏe, tư duy, trách nhiệm, sáng tạo và cộng đồng.", "Gia đình chọn một điểm dừng theo sở thích của bé; mỗi chủ đề dẫn đến bài học phù hợp độ tuổi và hoạt động thực hành."] },
+          { id: "skill-thinking", kind: "Tính năng", group: "features", thumbnail: "news-thinking-quiz.svg", alt: "Thẻ ôn tập và bóng đèn ý tưởng của LITTLE HERO", title: "Bài ôn tập LITTLE HERO khuyến khích bé tự tìm lời giải", excerpt: "Chọn đáp án, nối cặp, sắp xếp và lật thẻ giúp bé ôn bài theo nhiều cách.", body: ["Bài ôn tập LITTLE HERO có nhiều hình thức ngắn để trẻ nhớ lại điều vừa học: chọn cách phù hợp, nối chủ đề, sắp xếp bước, tìm cặp thẻ và sáng tạo ý tưởng.", "Phần Xưởng ý tưởng chỉ dùng câu trả lời trong lượt chơi hiện tại; nội dung không được gửi lên máy chủ hoặc lưu lại."] },
+          { id: "skill-confidence", kind: "Tính năng", group: "features", thumbnail: "news-age-path.svg", alt: "Các bậc hành trình học tập được thiết kế theo độ tuổi", title: "Bài học được gợi ý theo độ tuổi và chủ đề bé yêu thích", excerpt: "Hành trình LITTLE HERO giúp gia đình chọn bài học phù hợp với giai đoạn phát triển của trẻ.", body: ["Khi thiết lập hồ sơ, phụ huynh chọn độ tuổi và chủ đề bé quan tâm. LITTLE HERO dùng lựa chọn này để gợi ý hành trình học tập phù hợp.", "Các bài học chia kỹ năng thành tình huống nhỏ, giúp bé dễ theo dõi và có cơ hội thử lại cùng người lớn."] },
+          { id: "skill-communication", kind: "Tính năng", group: "features", thumbnail: "news-family-play.svg", alt: "Gia đình cùng trò chuyện sau khi xem một câu chuyện LITTLE HERO", title: "Một bài học LITTLE HERO có thể trở thành cuộc trò chuyện gia đình", excerpt: "Câu hỏi gợi mở giúp trẻ kể suy nghĩ và liên hệ điều vừa học với cuộc sống.", body: ["Sau mỗi câu chuyện, phụ huynh có thể hỏi bé nhân vật đang cảm thấy thế nào hoặc bé sẽ tìm ai để nhờ giúp.", "Hãy lắng nghe câu trả lời, ghi nhận nỗ lực và cùng thực hành cách xử lý phù hợp với độ tuổi."] },
+          { id: "skill-family", kind: "Hướng dẫn", group: "guide", thumbnail: "news-parent-guide.svg", alt: "Cẩm nang đồng hành cùng bé trên ứng dụng LITTLE HERO", title: "Bắt đầu cùng LITTLE HERO: hướng dẫn ngắn cho phụ huynh", excerpt: "Thiết lập hồ sơ, chọn chủ đề bé yêu thích rồi cùng Hero bắt đầu bài học đầu tiên.", body: ["Phụ huynh có thể tạo hồ sơ cho bé, chọn nhóm tuổi và chủ đề yêu thích để cá nhân hóa gợi ý.", "Bắt đầu bằng bài học ngắn, trò chuyện sau mỗi lựa chọn và dừng lại nếu trẻ cần nghỉ."] }
         ];
-        const dateLabel = "23/10/2026";
-        const articleMeta = `<div class="parent-article-meta"><time datetime="2026-10-23">${dateLabel}</time><span>• LITTLE HERO</span></div>`;
         const articleBody = (article) => article.body.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("");
-        const featured = articles.filter((article) => article.featured);
-        const latest = articles.filter((article) => !article.featured);
-        $("#routeView").innerHTML = pageShell("parent-news", "Góc đọc dành cho phụ huynh — bài viết về đời sống gia đình, kỹ năng sống và hành trình LITTLE HERO.", `
+        $("#routeView").innerHTML = pageShell("parent-news", "", `
           <div id="parentNewsContent">
-            <div class="parent-news-featured">${featured.map((article) => `<article class="parent-feature-card news-card" data-article-id="${article.id}" data-group="${article.group}" data-search="${escapeHtml(`${article.title} ${article.excerpt} ${article.kind}`.toLowerCase())}">
-              <div class="parent-feature-art" style="--article-art:${article.art}" aria-hidden="true"><span class="parent-feature-badge">★ Nổi bật</span><span class="parent-feature-art-icon">${article.icon}</span></div>
-              <div class="parent-feature-copy"><span class="parent-news-label">${escapeHtml(article.kind)}</span><h2>${escapeHtml(article.title)}</h2><p>${escapeHtml(article.excerpt)}</p>${articleMeta}<details><summary class="text-link">Đọc bài viết</summary>${articleBody(article)}</details></div>
-            </article>`).join("")}</div>
-            <div class="parent-news-toolbar"><h2><span aria-hidden="true">★</span>Bài viết mới nhất</h2><input class="parent-news-search" id="parentNewsSearch" type="search" placeholder="⌕  Tìm bài viết..." aria-label="Tìm bài viết"></div>
+            <div class="parent-news-toolbar"><h2><span aria-hidden="true">✦</span>Tin mới về LITTLE HERO</h2><input class="parent-news-search" id="parentNewsSearch" type="search" placeholder="⌕  Tìm bài viết..." aria-label="Tìm bài viết"></div>
             <div class="parent-news-filters" role="group" aria-label="Lọc bài viết">
               <button type="button" data-news-filter="all" aria-pressed="true">Tất cả</button>
-              <button type="button" data-news-filter="family" aria-pressed="false">Đời sống & kỹ năng</button>
-              <button type="button" data-news-filter="brand" aria-pressed="false">LITTLE HERO</button>
+              <button type="button" data-news-filter="product" aria-pressed="false">Sản phẩm</button>
+              <button type="button" data-news-filter="features" aria-pressed="false">Tính năng</button>
+              <button type="button" data-news-filter="guide" aria-pressed="false">Hướng dẫn</button>
             </div>
-            <div class="parent-articles">${latest.map((article) => `<article class="parent-article news-card" data-article-id="${article.id}" data-group="${article.group}" data-search="${escapeHtml(`${article.title} ${article.excerpt} ${article.kind}`.toLowerCase())}">
-              <div class="parent-article-art" style="--article-art:${article.art}" aria-hidden="true"><span>${article.icon}</span></div>
-              <div class="parent-article-content"><span class="parent-news-label">${escapeHtml(article.kind)}</span><h2>${escapeHtml(article.title)}</h2><p>${escapeHtml(article.excerpt)}</p>${articleMeta}<details><summary>Đọc bài viết →</summary>${articleBody(article)}</details></div>
+            <div class="parent-articles">${articles.map((article) => `<article class="parent-article news-card" data-article-id="${article.id}" data-group="${article.group}" data-search="${escapeHtml(translateString(`${article.title} ${article.excerpt} ${article.kind}`).toLocaleLowerCase(languageSpeechLocale()))}">
+              <div class="parent-article-art"><img src="./frontend/assets/${article.thumbnail}" alt="${escapeHtml(translateString(article.alt))}"></div>
+              <div class="parent-article-content"><span class="parent-news-label">${escapeHtml(article.kind)}</span><h2>${escapeHtml(article.title)}</h2><p>${escapeHtml(article.excerpt)}</p><details><summary>Đọc bài viết →</summary>${articleBody(article)}</details></div>
             </article>`).join("")}<p class="parent-articles-empty" id="parentNewsEmpty" hidden>Không tìm thấy bài viết phù hợp. Thử từ khóa hoặc danh mục khác nhé.</p></div>
-            <div class="parent-notice" style="margin-top:20px">Bài viết tham khảo do LITTLE HERO biên soạn; đây không phải bản tin thời gian thực hoặc tư vấn y tế, tâm lý hay pháp lý.</div>
-            <div class="page-actions">${routeLink("parents", "Về bảng điều khiển phụ huynh", "←")}${routeLink("reviews", "Gửi ý kiến", "✍")}</div>
-          </div>`, "GÓC GIA ĐÌNH");
+          </div>`, "");
         const content = $("#parentNewsContent");
         const cards = [...content.querySelectorAll(".news-card")];
         const search = $("#parentNewsSearch");
         const empty = $("#parentNewsEmpty");
         let activeFilter = "all";
         const updateVisibleArticles = () => {
-          const query = search.value.trim().toLocaleLowerCase("vi");
+          const query = search.value.trim().toLocaleLowerCase(languageSpeechLocale());
           let visible = 0;
           cards.forEach((card) => {
             const matches = (activeFilter === "all" || card.dataset.group === activeFilter)
@@ -4423,7 +5333,7 @@
       const applyTheme = () => {
         document.body.classList.toggle("dark-mode", Boolean(state.darkMode));
         $("#themeBtn").textContent = state.darkMode ? "☀" : "☾";
-        $("#themeBtn").title = state.darkMode ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối";
+        $("#themeBtn").title = translateString(state.darkMode ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối");
       };
 
       document.addEventListener("click", (event) => {
@@ -4490,8 +5400,10 @@
             run.selected = answer;
             run.correct += 1;
             run.feedback = "Chính xác! Bé quan sát thật tinh ý! ✨";
+            celebrateCorrectAnswer(miniGameAnswer);
           } else {
-            run.feedback = `${run.id === "feelings" ? "Mỗi người có thể cảm thấy khác nhau." : round.hint} Bé thử lại nha!`;
+            run.feedback = "";
+            speak(`${run.id === "feelings" ? "Mỗi người có thể cảm thấy khác nhau." : round.hint} Bé thử lại nha!`);
           }
           renderGamesPage();
           return;
@@ -4533,7 +5445,7 @@
           const key = `${currentDay()}:${quest.id}`;
           if (!state.questClaims.includes(key) && dailyProgress(quest.id) >= quest.target) {
             state.questClaims.push(key);
-            state.xp += quest.reward;
+            awardXp(quest.reward, claimQuest);
             persist(); renderQuestPage(); toast(`Đã nhận ${quest.reward} sao nhiệm vụ.`);
           }
           return;
@@ -4550,11 +5462,12 @@
           if (answer === lesson.correct) {
             quizRun.selected = answer;
             quizRun.correct += 1;
-            state.xp += 3;
+            celebrateCorrectAnswer(quizAnswer);
+            awardXp(3, quizAnswer);
             speak(`Đúng rồi! ${lesson.prompts[2] || lesson.goal}`);
           } else {
             quizRun.wrong = answer;
-            speak(`Không sao, con thử lại nhé. ${lesson.prompts[1] || lesson.goal}`);
+            speak(translateString("Không sao, con hãy thử lại nhé."));
           }
           persist();
           renderQuizPage();
@@ -4582,13 +5495,62 @@
           if (quizRun.selected === matchGoal.dataset.matchGoal) {
             quizRun.matched.push(quizRun.selected);
             quizRun.message = "Nối đúng! Con tìm được một cặp phù hợp.";
-            state.xp += 3;
+            celebrateCorrectAnswer(matchGoal);
+            awardXp(3, matchGoal);
             if (quizRun.matched.length === quizRun.pairs.length) finishQuiz();
           } else {
-            quizRun.message = "Chưa khớp, con thử nối cặp khác nhé.";
+            quizRun.message = "";
+            speak(translateString("Không sao, con hãy thử lại nhé."));
           }
           quizRun.selected = null;
           persist();
+          renderQuizPage();
+          return;
+        }
+        const quizMemoryCard = event.target.closest("#routeView [data-quiz-memory-card]");
+        if (quizMemoryCard && quizRun?.mode === "memory" && !quizRun.resolving) {
+          const index = Number(quizMemoryCard.dataset.quizMemoryCard);
+          if (!Number.isInteger(index) || index < 0 || index >= quizRun.cards.length || quizRun.flipped.includes(index)) return;
+          quizRun.flipped.push(index);
+          if (quizRun.flipped.length < 2) {
+            renderQuizPage();
+            return;
+          }
+          quizRun.moves += 1;
+          const [first, second] = quizRun.flipped;
+          if (quizRun.cards[first].pairId === quizRun.cards[second].pairId) {
+            quizRun.matched.push(quizRun.cards[first].pairId);
+            quizRun.flipped = [];
+            quizRun.message = "Tìm thấy một cặp rồi! Con nhớ rất giỏi.";
+            celebrateCorrectAnswer(quizMemoryCard);
+            awardXp(2, quizMemoryCard);
+            if (quizRun.matched.length === quizRun.cards.length / 2) finishQuiz();
+            persist();
+            renderQuizPage();
+          } else {
+            quizRun.resolving = true;
+            quizRun.message = "";
+            speak(translateString("Không sao, con hãy thử lại nhé."));
+            const activeRun = quizRun;
+            renderQuizPage();
+            window.setTimeout(() => {
+              if (quizRun !== activeRun) return;
+              quizRun.flipped = [];
+              quizRun.resolving = false;
+              quizRun.message = "";
+              if (route === "quiz") renderQuizPage();
+            }, 900);
+          }
+          return;
+        }
+        if (event.target.closest("#completeCreativeQuiz") && quizRun?.mode === "creative") {
+          const response = $("#creativeQuizResponse");
+          if (!response.value.trim()) {
+            $("#creativeQuizFeedback").textContent = "Con thử viết một ý tưởng hoặc kể cho người lớn nghe trước nhé.";
+            response.focus();
+            return;
+          }
+          finishQuiz();
           renderQuizPage();
           return;
         }
@@ -4606,10 +5568,13 @@
         if (event.target.closest("#checkQuizOrder") && quizRun?.mode === "ordering") {
           if (quizRun.items.every((step, index) => step === quizRun.steps[index])) {
             quizRun.message = "Đúng thứ tự rồi! Con đã sắp xếp các bước rất hợp lý.";
-            state.xp += 5;
+            const checkButton = event.target.closest("#checkQuizOrder");
+            celebrateCorrectAnswer(checkButton);
+            awardXp(5, checkButton);
             finishQuiz();
           } else {
-            quizRun.message = "Thứ tự này chưa hợp lý. Con hãy thử đổi vị trí các bước nhé.";
+            quizRun.message = "";
+            speak(translateString("Không sao, con hãy thử lại nhé."));
           }
           persist();
           renderQuizPage();
@@ -4630,7 +5595,7 @@
               reward += quest.reward;
             }
           });
-          if (reward) { state.xp += reward; persist(); toast(`Bé nhận được ${reward} sao nhiệm vụ! 🌟`); }
+          if (reward) { awardXp(reward, claimButton); persist(); toast(`Bé nhận được ${reward} sao nhiệm vụ! 🌟`); }
           else toast("Hoàn thành nhiệm vụ để nhận sao nhé!");
         }
         const challengeButton = event.target.closest("[data-challenge]");
@@ -4694,14 +5659,10 @@
         toast(state.darkMode ? "Đã bật giao diện tối." : "Đã bật giao diện sáng.");
       });
       $("#heroMascot").addEventListener("click", () => {
-        if (!("speechSynthesis" in window)) { toast("Trình duyệt chưa hỗ trợ giọng đọc tiếng Việt."); return; }
-        const greeting = state.language === "en"
-          ? `Hello ${state.childName || "friend"}! Let's explore the world with Hero today!`
-          : `Xin chào ${state.childName || "bạn nhỏ"}! Cùng Hero khám phá thế giới hôm nay nhé!`;
-        const utterance = new SpeechSynthesisUtterance(greeting);
-        utterance.lang = state.language === "en" ? "en-US" : "vi-VN";
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
+        if (!("speechSynthesis" in window)) { toast("Trình duyệt chưa hỗ trợ giọng đọc."); return; }
+        const language = languageConfig(state.language);
+        const greeting = language.greeting(state.childName || language.friend);
+        speak(greeting);
       });
       $("#heroMascot").addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") { event.preventDefault(); $("#heroMascot").click(); }
@@ -4730,7 +5691,7 @@
         $("#leaderScope").textContent = leaderboardScopeLabel(arenaMode);
         renderLeaderboard(document, arenaMode);
       });
-      $("#arenaStart").addEventListener("click", openQuiz);
+      $("#arenaStart").addEventListener("click", () => setRoute("arena"));
 
       $("#dailyQuests").addEventListener("click", (event) => {
         if (event.target.closest("#claimQuests")) return;

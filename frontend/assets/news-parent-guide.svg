@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title">
+  <title id="title">Parent guide for using Little Hero</title>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#e3f5e9"/><stop offset="1" stop-color="#fff0d1"/></linearGradient></defs>
+  <rect width="640" height="360" rx="28" fill="url(#bg)"/>
+  <circle cx="321" cy="183" r="124" fill="#fff" opacity=".55"/>
+  <g transform="translate(320 195)">
+    <path d="M-142-91q70-22 142 12 72-34 142-12v174q-70-22-142 12-72-34-142-12z" fill="#fffdf5" stroke="#d8c49e" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M0-79V93" stroke="#d8c49e" stroke-width="6"/>
+    <path d="M-116-49q47-12 88 8m-88 22q47-12 88 8m-88 22q47-12 88 8m54-40q47-20 88-8m-88 30q47-20 88-8m-88 30q47-20 88-8" stroke="#9ac9be" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(470 119)">
+    <circle r="35" fill="#ffcf9c"/>
+    <path d="M-36-8q6-38 39-35 31 2 34 31-20-11-36-9-21 0-37 13" fill="#63463d"/>
+    <path d="M-53 79q5-47 53-47t53 47z" fill="#5b9bcf"/>
+  </g>
+  <g transform="translate(173 229)">
+    <circle r="28" fill="#ffd7b2"/>
+    <path d="M-27-6q4-30 29-29 24 1 28 27-18-10-30-8-15 1-27 10" fill="#624337"/>
+    <path d="M-42 63q4-38 42-38t42 38z" fill="#f29e63"/>
+  </g>
+  <g fill="#fff"><path d="M57 83c0-12 10-22 22-22 8 0 15 5 18 11 3-1 6-2 9-2 9 0 17 7 17 16H57z"/><path d="M487 255c0-10 8-18 18-18 7 0 13 4 16 10 2-1 5-2 7-2 8 0 14 6 14 14h-55z"/></g>
+  <g fill="#f5bd55"><circle cx="111" cy="282" r="6"/><path d="m534 92 5 12 13 1-10 8 4 12-12-6-11 6 3-12-10-8 13-1z"/></g>
+</svg>

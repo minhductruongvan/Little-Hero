@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title">
+  <title id="title">Hero follows a story path</title>
+  <defs>
+    <linearGradient id="sky" x2="1" y2="1"><stop stop-color="#e4f8ff"/><stop offset="1" stop-color="#d8f3e5"/></linearGradient>
+    <linearGradient id="cape" x2="1" y2="1"><stop stop-color="#ffcf62"/><stop offset="1" stop-color="#ff9168"/></linearGradient>
+  </defs>
+  <rect width="640" height="360" rx="28" fill="url(#sky)"/>
+  <circle cx="510" cy="72" r="37" fill="#ffe38b"/>
+  <path d="M0 271c96-58 168-26 244-48 84-24 157-83 243-49 57 22 107 34 153 6v180H0z" fill="#a8dfb5"/>
+  <path d="M27 303c103-64 144-3 238-52s160-111 283-47" fill="none" stroke="#fff9df" stroke-width="18" stroke-linecap="round" stroke-dasharray="2 2"/>
+  <g transform="translate(185 190)">
+    <ellipse cx="0" cy="92" rx="47" ry="12" fill="#396e5b" opacity=".16"/>
+    <path d="M-39 17 0 34l39-17-10 73H-29z" fill="url(#cape)"/>
+    <rect x="-28" y="12" width="56" height="69" rx="19" fill="#468fd4"/>
+    <circle cy="-12" r="34" fill="#ffd2aa"/>
+    <path d="M-34-20c3-29 57-35 68-3-15-7-27-13-42-10-7 1-16 7-26 13" fill="#624337"/>
+    <circle cx="-11" cy="-11" r="3" fill="#324557"/><circle cx="11" cy="-11" r="3" fill="#324557"/>
+    <path d="M-8 3q8 8 16 0" fill="none" stroke="#a9574c" stroke-width="3" stroke-linecap="round"/>
+    <path d="m-20 45 20 12 20-12" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/>
+  </g>
+  <g fill="#fff">
+    <path d="M72 91c0-15 12-27 27-27 10 0 19 6 24 14 3-2 7-3 11-3 12 0 22 10 22 22H72z"/>
+    <path d="M402 142c0-12 10-22 22-22 8 0 16 5 19 12 3-2 6-2 9-2 10 0 18 8 18 18h-68z"/>
+  </g>
+  <g fill="#fff4b7"><path d="m318 52 6 14 15 1-11 10 4 15-14-8-13 8 3-15-11-10 15-1z"/><circle cx="279" cy="126" r="5"/><circle cx="564" cy="218" r="5"/></g>
+  <g transform="translate(432 239)"><circle r="26" fill="#fff" opacity=".9"/><path d="m-8-14 21 14-21 14z" fill="#36a582"/></g>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title">
+  <title id="title">Little Hero review cards and idea lightbulb</title>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#fff3cf"/><stop offset="1" stop-color="#e5ddff"/></linearGradient></defs>
+  <rect width="640" height="360" rx="28" fill="url(#bg)"/>
+  <circle cx="500" cy="84" r="57" fill="#ffdc72"/>
+  <path d="M478 84c0-25 17-42 40-42s40 17 40 42c0 16-9 27-21 37-6 5-8 10-8 18h-23c0-8-2-13-8-18-12-10-20-21-20-37z" fill="#fff8e4" stroke="#e9a934" stroke-width="8"/>
+  <path d="M497 148h43m-38 12h33" stroke="#c67838" stroke-width="7" stroke-linecap="round"/>
+  <g transform="translate(107 77) rotate(-8)">
+    <rect width="146" height="202" rx="18" fill="#fff" stroke="#9bc7e6" stroke-width="5"/>
+    <rect x="17" y="20" width="112" height="66" rx="12" fill="#e5f5ff"/>
+    <circle cx="73" cy="53" r="22" fill="#65b4db"/>
+    <path d="m66 42 17 11-17 11z" fill="#fff"/>
+    <path d="M27 115h91m-91 22h76m-76 22h86" stroke="#bccbd5" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(287 152) rotate(8)">
+    <rect width="135" height="141" rx="18" fill="#fff" stroke="#c3a9eb" stroke-width="5"/>
+    <rect x="15" y="15" width="48" height="48" rx="10" fill="#bcead3"/>
+    <rect x="72" y="15" width="48" height="48" rx="10" fill="#ffd5aa"/>
+    <rect x="15" y="72" width="48" height="48" rx="10" fill="#c8ddff"/>
+    <rect x="72" y="72" width="48" height="48" rx="10" fill="#f3d9ec"/>
+    <path d="m36 39 5 5 12-14m58 70-12 12m0-12 12 12" fill="none" stroke="#558d77" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g fill="#fff"><path d="M55 307c0-12 10-22 22-22 8 0 15 5 18 11 3-2 6-2 9-2 9 0 17 7 17 16H55z"/></g>
+  <g fill="#fff"><path d="m566 184 5 11 12 1-9 7 3 12-11-6-10 6 3-12-9-7 12-1z"/><circle cx="400" cy="60" r="5"/></g>
+</svg>
