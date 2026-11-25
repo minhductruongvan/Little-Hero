@@ -161,14 +161,9 @@
     return ACTION_ALIASES[key] || ACTION_ALIASES[normalize(key)] || (key.startsWith("action-") ? key : "action-greet");
   };
 
-  const inferEmotion = (text, correct, action, explicit) => {
+  const inferEmotion = (correct, action, explicit) => {
     const value = String(explicit || "").toLowerCase();
     if (EMOTIONS.has(value)) return value;
-    const t = normalize(text);
-    if (/\b(gian|tuc gian|het|quat|giat|nem|do loi)\b/.test(t)) return "angry";
-    if (/\b(buon|khoc|tiec|that vong)\b/.test(t)) return "sad";
-    if (/\b(lo lang|so hai|hoi hop|boi roi|chua san sang)\b/.test(t)) return "concerned";
-    if (/\b(vui|mim cuoi|hao hung|tu tin|cam on|chuc mung|yeu thuong)\b/.test(t)) return "happy";
     if (["action-breathe", "action-listen", "action-protect", "action-report", "action-stay", "action-wash"].includes(action)) return correct ? "calm" : "concerned";
     return correct ? "happy" : "concerned";
   };
@@ -224,7 +219,7 @@
     const meta = typeof pickedMeta === "string" ? { action: pickedMeta } : (pickedMeta || {});
     const explicitAction = meta.action || meta.gesture || meta.animation || (typeof answer === "object" ? answer.action : "");
     const action = explicitAction ? normalizeAction(explicitAction) : inferAction(text, input.lesson, Boolean(input.correct), input.fallbackAction);
-    const emotion = inferEmotion(text, Boolean(input.correct), action, meta.emotion || meta.mood || answer?.emotion || input.fallbackEmotion);
+    const emotion = inferEmotion(Boolean(input.correct), action, meta.emotion || meta.mood || answer?.emotion || input.fallbackEmotion);
     const objectKey = meta.object || meta.prop || "";
     const object = typeof objectKey === "string" ? (OBJECTS[objectKey] || inferObject(text, action)) : (objectKey || inferObject(text, action));
     const partnerAction = meta.partnerAction ? normalizeAction(meta.partnerAction) : "";

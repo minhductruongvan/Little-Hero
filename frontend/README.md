@@ -5,26 +5,26 @@
 ## Tệp ứng dụng
 
 - `css/little-hero.css` — stylesheet dùng chung cho toàn bộ giao diện Little Hero; dùng Google Fonts `Be Vietnam Pro`, thống nhất thang chữ theo desktop/mobile và định dạng hai thẻ gói học với giá cùng CTA căn đáy.
-- `css/character-animation.css` — hoạt ảnh SVG cho các hành động, biểu cảm và vật thể trong cảnh bài học; tôn trọng tùy chọn giảm chuyển động.
+- `css/character-animation.css` — hoạt ảnh cho SVG dự phòng trong cảnh bài học và nhân vật ở đấu trường; tôn trọng tùy chọn giảm chuyển động.
 - `js/little-hero-app.js` — định tuyến trang, trạng thái lưu cục bộ, render giao diện và xử lý tương tác.
 - `js/motion.js` — hiệu ứng chuyển động GSAP cho các trang, thẻ nội dung được cập nhật động và điểm lấp lánh Lottie; hai thư viện được tải từ CDN trong trang chính.
 - `js/modules/lesson-catalog.js` — danh mục chủ đề, bài học, câu hỏi tiếp nối, nhiệm vụ và thử thách.
 - `js/modules/expanded-lesson-catalog.js` — 52 bài học bổ sung cho các chủ đề cảm xúc, an toàn, sức khỏe, tư duy, trách nhiệm/môi trường và cộng đồng; trang chính tải mô-đun này ngay sau danh mục bài học.
 - `js/modules/social-creative-lesson-catalog.js` — 20 bài học xã hội/giao tiếp và sáng tạo/khám phá; từng bài được gắn nhóm tuổi 3–6 hoặc 7–10 và quyền truy cập miễn phí/Premium.
 - `js/modules/lesson-locales-core.js` và `js/modules/lesson-locales-expanded.js` — bảng dịch cục bộ cho nội dung bài học; được tải sau các danh mục và trước `languages.js`/ứng dụng.
-- `js/modules/character-model.js` — dựng Hero trang chủ và nhân vật bài học SVG hoạt hình 2D; các tay, chân, đầu và khớp gối được tách thành phần nối chồng để giữ liền mạch khi cử động.
-- `js/modules/character-animation-engine.js` — suy luận hành động/cảm xúc từ đáp án hoặc metadata, điều khiển khớp theo bản đồ tọa độ cố định của SVG bằng Web Animations API để tránh xoay lệch từng bộ phận.
+- `js/modules/character-model.js` — dựng Hero trang chủ và SVG dự phòng cho nhân vật bài học khi Web Component chưa tải; Hero trang chủ tiếp tục dùng renderer này.
+- `../../little-hero-character.js` — Web Component nhân vật hoạt hình dùng riêng trong cảnh bài học; hỗ trợ hành động, cảm xúc, đạo cụ và tùy chỉnh ngoại hình.
+- `js/modules/character-animation-engine.js` — suy luận hành động/cảm xúc từ đáp án hoặc metadata, chuyển kế hoạch tới Web Component bài học và điều khiển SVG dự phòng/đấu trường bằng Web Animations API.
 - `assets/little-hero-logo.png` — logo Little Hero dùng chung ở đầu trang và chân trang.
 - `assets/hero-character.png` — ảnh Hero mặc định, hiển thị trong vòng nền và bóng đổ SVG.
 - `assets/learning-journey.png` — ảnh giới thiệu các bước học tập cùng Little Hero trên trang chủ.
 - `assets/emotion-calm-room.png`, `assets/emotion-classroom.png`, `assets/safety-supermarket.png` — ảnh chủ đề dùng cho khóa học gợi ý trên trang chủ và các thẻ trong kho bài học.
 - `assets/lesson-playground-cleanup.png`, `assets/lesson-safe-bicycle.png`, `assets/lesson-handwashing.png` — ảnh minh họa và khung cảnh của các bài học giữ sân chơi sạch, tập xe an toàn và rửa tay.
 - `assets/parent-avatar-woman-1.jpg`, `assets/parent-avatar-woman-2.jpg`, `assets/parent-avatar-woman-3.jpg`, `assets/parent-avatar-man.jpg` — ảnh chân dung minh họa cho các thẻ chia sẻ của phụ huynh trên trang chủ.
-- `js/modules/scene-model.js` — cấu hình bối cảnh và nhân vật chính/phụ theo từng bài học; cảnh dùng SVG riêng và không đưa Hero vào hoạt cảnh bài học.
-- Hoạt cảnh bài học dùng bộ nhân vật SVG hoạt hình mới, tách biệt Hero, được phân biệt qua khuôn mặt, tóc, trang phục và vai trò. Hệ thống đọc tên/vai trò cùng hành động trong đáp án để nhân vật được nhắc tới thể hiện biểu cảm và cử chỉ tương ứng; nhân vật còn lại phối hợp tương tác. Các hoạt động gồm đi, chạy, nhảy, vẫy tay, quét dọn, đọc, vẽ, uống, ăn và đánh răng. Đáp án chưa phù hợp tạo phản ứng nhắc nhở an toàn thay vì cổ vũ hành vi nguy hiểm. Hero trang chủ và mô hình ở đấu trường vẫn giữ nguyên.
+- `js/modules/scene-model.js` — dựng dàn nhân vật và cảm xúc ban đầu theo tên, vai trò và diễn biến trong từng câu chuyện; chỉ cảnh bài học dùng `<little-hero>`, còn Hero trang chủ và nhân vật ở đấu trường giữ renderer SVG cũ.
+- Hệ thống chọn hành động theo đáp án và cảm xúc an toàn theo hành động/tính đúng sai, không suy cảm xúc từ từ khóa trong câu trả lời; các nhân vật được nhắc đến cùng phối hợp trong cảnh. Hero trang chủ không bị thay đổi.
 - Đáp án mỗi lượt học được xáo trộn cùng metadata chuyển động, đồng thời cập nhật chỉ số đáp án đúng nên thứ tự hiển thị không cố định.
 - Bài học chia màn hình giữa hoạt cảnh và câu hỏi, có gợi ý thu gọn và phản hồi giọng nói. Bài ôn tập có chọn cách phù hợp, nối cặp, sắp xếp thứ tự, lật thẻ ghi nhớ và xưởng ý tưởng; nội dung trả lời sáng tạo chỉ dùng trong lượt chơi, không gửi lên máy chủ hoặc lưu lại. Không dùng video hay hoạt cảnh trong bài ôn tập.
-- Các trang bài học hiển thị ghi chú đây là giao diện demo; nút quay lại điều hướng về trang trước trong lịch sử ứng dụng.
 - Trang truyện hiển thị thông báo tính năng đang được LITTLE HERO xây dựng; các tình huống kể trong bài học vẫn được giữ lại.
 - Banner truyện giữ tỷ lệ ảnh gốc và giới hạn chiều rộng hiển thị theo độ phân giải ảnh nguồn để tránh bị phóng to mờ.
 - Bảng xếp hạng chỉ hiển thị điểm của tài khoản thật đã đồng ý công khai biệt danh và điểm; nếu chưa có người tham gia trong phạm vi đang xem, danh sách sẽ để trống. Tài khoản trải nghiệm có quyền dùng Premium cục bộ; ảnh bill ở chế độ này chỉ xem trước trên thiết bị, không tải lên và không xử lý thanh toán.

@@ -820,6 +820,30 @@
         const islandGrid = $("#islandGrid");
         if (islandGrid) renderJourneyMap(islandGrid);
       };
+      const lessonImageNumbers = {
+        "3-6": {
+          emotion: 1, social: 2, safety: 3, health: 4, thinking: 5, care: 6, creative: 7,
+          stranger: 8, "new-thing": 9, "emotion-topic-07": 10, "emotion-topic-08": 11,
+          "emotion-topic-09": 12, "safety-topic-01": 13, "safety-topic-04": 14,
+          "safety-topic-07": 15, "safety-topic-10": 16, "health-topic-02": 17,
+          "health-topic-04": 18, "health-topic-06": 19, "health-topic-08": 20,
+          "thinking-topic-01": 21, "thinking-topic-03": 22, "thinking-topic-05": 23,
+          "thinking-topic-07": 24, "thinking-topic-09": 25, "care-topic-01": 26,
+          "care-topic-03": 27, "care-topic-05": 28, "care-topic-07": 29, "care-topic-09": 30
+        },
+        "7-10": {
+          calm: 1, sorry: 2, "emotion-topic-04": 3, "emotion-topic-05": 4,
+          "emotion-topic-10": 5, "safety-topic-02": 6, "safety-topic-05": 7,
+          "safety-topic-06": 8, "safety-topic-08": 9, "safety-topic-09": 10,
+          community: 10, "health-topic-03": 11, "health-topic-05": 9,
+          "health-topic-07": 12, "health-topic-09": 13, "health-topic-10": 14,
+          "thinking-topic-02": 15, "thinking-topic-04": 16, "thinking-topic-06": 17,
+          "thinking-topic-08": 18, "thinking-topic-10": 19, "care-topic-02": 20,
+          "care-topic-04": 21, "care-topic-06": 22, "care-topic-08": 23,
+          "care-topic-10": 24, "community-topic-03": 25, "community-topic-05": 26,
+          "community-topic-07": 27, "community-topic-08": 28
+        }
+      };
       const lessonImages = {
         emotion: { src: "./frontend/assets/emotion-calm-room.png", width: 1024, height: 765, alt: "Các bạn nhỏ cùng Hero nhận biết cảm xúc trong phòng chơi" },
         social: { src: "./frontend/assets/emotion-classroom.png", width: 1024, height: 637, alt: "Hero và bạn cùng học trong lớp mỹ thuật" },
@@ -835,14 +859,25 @@
         care: lessonImages.care,
         creative: lessonImages.creative
       };
-      const lessonImage = (categoryId) => lessonImages[categoryId] || lessonImages.emotion;
+      const lessonImage = (lesson) => {
+        const imageNumber = lessonImageNumbers[lesson.ageGroup]?.[lesson.id];
+        if (imageNumber) {
+          return {
+            src: `./frontend/assets/lesson-art/${lesson.ageGroup}/${imageNumber}.webp`,
+            width: 1600,
+            height: 900,
+            alt: `Minh họa bài học: ${lesson.title}`
+          };
+        }
+        return lessonImages[lesson.category] || lessonImages.emotion;
+      };
       const renderFeatured = (lesson) => {
         const available = ageAppropriateLessons();
         if (!available.some((item) => item.id === lesson?.id)) {
           lesson = available.find((item) => !state.completed.includes(item.id)) || available[0];
         }
         const category = categories.find((item) => item.id === lesson.category);
-        const image = lessonImage(lesson.category);
+        const image = lessonImage(lesson);
         $("#featuredLesson").innerHTML = `<div class="lesson-art" style="--lesson-color:${category.color}">
           <img class="lesson-art-image" src="${image.src}" width="${image.width}" height="${image.height}" alt="${escapeHtml(image.alt)}" loading="lazy">
           <span class="lesson-emoji" aria-hidden="true">${lesson.icon}</span><span class="lesson-note">✦ TÌNH HUỐNG GẦN GŨI</span>
@@ -1835,7 +1870,6 @@
         "English": "English",
         "Cập nhật lúc": "Updated at",
         "Chưa thể tải bảng xếp hạng. Vui lòng thử lại sau.": "Could not load the leaderboard. Please try again later.",
-        "Hiện tại đây chỉ là giao diện demo, LITTLE HERO sẽ được phát triển và nâng cấp trong tương lai.": "This is currently a demo interface. LITTLE HERO will be developed and improved in the future.",
         "Bảng vinh danh": "Leaderboard",
         "Đánh giá của người dùng": "User reviews",
         "Viết đánh giá": "Write a review",
@@ -2157,7 +2191,7 @@
         const unavailableCategory = selectedCategory && !allowedCategories.some((category) => category.id === selectedCategory);
         const cards = available.map((lesson) => {
           const category = categories.find((item) => item.id === lesson.category);
-          const image = lessonImage(lesson.category);
+          const image = lessonImage(lesson);
           const locked = state.authenticated && isPremiumLesson(lesson) && !hasActivePremium();
           const actionLabel = !state.authenticated
             ? "Đăng nhập để học →"
@@ -2234,6 +2268,10 @@
       };
 
       const { getScene, renderSceneBackdrop, renderSceneActor } = window.createLittleHeroSceneModel({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, renderLessonCharacterSvg, state });
+      const renderLessonSceneActors = (scene) => scene.actors.map((profile, index) => {
+        const id = index === 0 ? "lessonProtagonist" : index === 1 ? "lessonPartner" : `lessonActor${index + 1}`;
+        return renderSceneActor(id, profile.name, false, profile, true);
+      }).join("");
       const lessonTravelAnimations = new WeakMap();
       const moveLessonActor = (scene, actor, distance, options = {}) => {
         const previous = lessonTravelAnimations.get(actor);
@@ -2280,7 +2318,7 @@
         const towardPartner = gap < 0 ? -1 : 1;
         const meetDistance = Math.min(135, Math.max(95, Math.abs(gap) * .46));
         const interactionDistance = Math.min(125, Math.max(90, Math.abs(gap) * .42));
-        const retreatPartner = scene.querySelector("#sceneThirdActor");
+        const retreatPartner = scene.querySelector('[data-character-role="stranger"]') || scene.querySelector("#sceneThirdActor");
         if (["action-give", "action-hug"].includes(movement)) {
           moveLessonActor(scene, protagonist, towardPartner * meetDistance, { gesture: "meet", duration: 1100 });
           moveLessonActor(scene, partner, -towardPartner * meetDistance, { gesture: "meet", duration: 1100 });
@@ -2395,7 +2433,7 @@
       const actionForAnswer = (answer, correct, lesson) => {
         const choice = answer.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
           .toLocaleLowerCase("vi").replace(/đ/g, "d");
-        if (/\b(giat|nem|het|quat|mang|do loi|ep ban|bat ban|lam dau|danh ban|su dung do dien|cam may say|bo mu)\b/.test(choice)) return "action-unsafe";
+        if (/\b(giat|nem|het|quat|la mang|mang ban|do loi|ep ban|bat ban|lam dau|danh ban|su dung do dien|cam may say|bo mu)\b/.test(choice)) return "action-unsafe";
         if (lesson.category === "community" && /\b(tra loi|phan hoi|gui anh|gui dia chi|tiep tuc tro chuyen)\b/.test(choice)) return "action-unsafe";
         if (/\b(khong di theo|khong tra loi|khong phan hoi|khong gui|khong chia se|giu khoang cach|tu choi|chan tai khoan|khong cham|khong bao gio)\b/.test(choice)) return "action-protect";
         if (/\b(di theo|theo nguoi|di voi nguoi la)\b/.test(choice)) return "action-approach";
@@ -2436,33 +2474,65 @@
         };
         return lessonGestures[lesson.id] || categoryGestures[lesson.category] || "action-greet";
       };
-      const emotionForAnswer = (answer, correct, movement) => {
-        const choice = answer.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-          .toLocaleLowerCase("vi").replace(/đ/g, "d");
-        if (/\b(gian|tuc gian|het|quat|mang|giat|nem|do loi|ep ban|bat ban)\b/.test(choice)) return "angry";
-        if (/\b(buon|khoc|tiec)\b/.test(choice)) return "sad";
-        if (/\b(lo lang|so hai|hoi hop|boi roi|chua san sang)\b/.test(choice)) return "concerned";
-        if (/\b(vui|mim cuoi|hao hung|tu tin|cam on|chuc mung)\b/.test(choice)) return "happy";
-        if (correct && ["action-breathe", "action-listen", "action-protect", "action-report", "action-stay", "action-wash"].includes(movement)) return "calm";
-        return correct ? "happy" : "concerned";
+      const emotionForAnswer = (correct, actor) => {
+        if (!correct) return "concerned";
+        return ["sad", "angry", "worry"].includes(actor?.dataset.storyMood) ? "calm" : "happy";
+      };
+      const lessonCharacterKinds = {
+        "action-run": "run", "action-ride": "run", "action-walk": "walk", "action-approach": "walk",
+        "action-wave": "wave", "action-greet": "wave", "action-call": "wave",
+        "action-jump": "cheer", "action-clap": "cheer", "action-dance": "cheer", "action-encourage": "cheer",
+        "action-give": "give", "action-assist": "give", "action-handshake": "give", "action-handshake-partner": "give",
+        "action-hug": "hug", "action-pickup": "pick", "action-clean": "clean", "action-sweep": "sweep",
+        "action-carry": "carry", "action-fold": "fold", "action-tidy": "tidy", "action-point": "point",
+        "action-guide": "point", "action-report": "point", "action-search": "think", "action-pause": "think",
+        "action-read": "read", "action-draw": "draw", "action-drink": "drink", "action-eat": "eat",
+        "action-brush-teeth": "brush", "action-wash": "wash", "action-breathe": "breathe",
+        "action-mirror-breathe": "breathe", "action-listen": "listen", "action-sit": "sit",
+        "action-apologize": "bow", "action-forgive": "bow", "action-protect": "stop",
+        "action-stay": "stop", "action-hide": "hide", "action-unsafe": "stop", "action-warn": "stop"
+      };
+      const lessonCharacterMoods = {
+        happy: "happy", calm: "calm", sad: "sad", angry: "angry",
+        concerned: "worry", surprised: "surprise", excited: "happy", shy: "worry"
+      };
+      const hasReadyLessonCharacter = (actor) => {
+        const character = actor.querySelector("little-hero");
+        return !!character && typeof character.perform === "function";
+      };
+      const animateLessonCharacter = (actor, target, answer, correct, movement, emotion, objectIcon) => {
+        const character = actor.querySelector("little-hero");
+        if (!character || typeof character.perform !== "function") return false;
+        const mood = lessonCharacterMoods[emotion] || "happy";
+        const actorBounds = actor.getBoundingClientRect();
+        const targetBounds = target.getBoundingClientRect();
+        const toward = Math.max(-110, Math.min(110,
+          targetBounds.left + targetBounds.width / 2 - actorBounds.left - actorBounds.width / 2
+        ));
+        character.reset();
+        if (correct && objectIcon) character.setProp(objectIcon, "hand");
+        const animation = character.perform(answer, {
+          correct,
+          kind: lessonCharacterKinds[movement],
+          mood,
+          towards: toward,
+          returnHome: true
+        });
+        animation.then((completed) => {
+          if (completed && character.isConnected) character.act("idle", mood);
+        });
+        return true;
       };
       const resolveChoiceActors = (answer, scene, protagonist, partner) => {
         const text = answer.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("vi").replace(/[^a-z0-9]+/g, " ").trim();
-        const aliases = {
-          "me": ["me", "ma"],
-          "bo": ["bo", "ba", "cha"],
-          "co giao": ["co giao", "thay co"],
-          "nhan vien": ["nhan vien", "bao ve"],
-          "nguoi la": ["nguoi la", "nguoi do"],
-          "ban": ["ban"],
-          "em": ["em"],
-          "hero": ["hero"]
-        };
         const actors = [...scene.querySelectorAll(".scene-actor")];
         const tokensFor = (actor) => {
           const label = actor.querySelector(".actor-name")?.textContent?.trim() || "";
           const normalized = label.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("vi").replace(/[^a-z0-9]+/g, " ").trim();
-          return [...new Set([normalized, ...(aliases[normalized] || []), ...(actor === protagonist ? aliases.hero : [])].filter(Boolean))];
+          const characterAliases = (actor.dataset.characterAliases || "").split("|").map((alias) =>
+            alias.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("vi").replace(/[^a-z0-9]+/g, " ").trim()
+          );
+          return [...new Set([normalized, ...characterAliases, ...(actor === protagonist ? ["hero"] : [])].filter(Boolean))];
         };
         const matches = (actor, atStart = false) => tokensFor(actor).some((token) =>
           atStart ? text === token || text.startsWith(`${token} `) : ` ${text} `.includes(` ${token} `)
@@ -2486,11 +2556,11 @@
       const animateSceneChoice = (sceneId, heroId, friendId, propId, answer, lesson, correct, choiceIndex = -1, question = null) => {
         const scene = $(`#${sceneId}`);
         if (!scene) return;
-        const protagonist = $(`#${heroId}`);
-        const partner = $(`#${friendId}`);
-        if (!protagonist || !partner) return;
-        const { lead, companion, mentioned } = resolveChoiceActors(answer, scene, protagonist, partner);
         const actors = [...scene.querySelectorAll(".scene-actor")];
+        const protagonist = $(`#${heroId}`) || actors[0];
+        const partner = $(`#${friendId}`) || actors.find((actor) => actor !== protagonist) || protagonist;
+        if (!protagonist) return;
+        const { lead, companion, mentioned } = resolveChoiceActors(answer, scene, protagonist, partner);
         actors.forEach((actor) => {
           [...actor.classList].forEach((className) => {
             if (className.startsWith("action-")) actor.classList.remove(className);
@@ -2503,10 +2573,10 @@
         const actionPlan = window.LittleHeroCharacterEngine?.resolve({
           answer, choiceIndex, question, lesson, correct,
           fallbackAction: fallbackMovement,
-          fallbackEmotion: emotionForAnswer(answer, correct, fallbackMovement)
+          fallbackEmotion: emotionForAnswer(correct, protagonist)
         }) || {
           action: fallbackMovement,
-          emotion: emotionForAnswer(answer, correct, fallbackMovement),
+          emotion: emotionForAnswer(correct, protagonist),
           partnerAction: "",
           objectIcon: "",
           target: ""
@@ -2531,35 +2601,44 @@
             "action-hide": "action-search",
             "action-pause": "action-encourage"
           }[movement] || "action-warn"));
-        const responseEmotion = correct
-          ? ["action-apologize", "action-assist", "action-greet", "action-handshake", "action-pickup"].includes(movement) ? "happy" : "calm"
-          : emotionForAnswer(answer, false, movement);
+        const responseEmotion = emotionForAnswer(correct, companion);
         const involvedActors = new Set([lead, companion, ...mentioned]);
         involvedActors.forEach((actor) => {
           const actorMovement = actor === lead ? movement : partnerMovement;
           const actorEmotion = actor === lead ? actionPlan.emotion : responseEmotion;
-          if (window.LittleHeroCharacterEngine) {
+          const target = actor === lead ? companion : lead;
+          if (!animateLessonCharacter(
+            actor,
+            target,
+            answer,
+            correct,
+            actorMovement,
+            actorEmotion,
+            actor === lead ? actionPlan.objectIcon : ""
+          ) && window.LittleHeroCharacterEngine) {
             window.LittleHeroCharacterEngine.play(actor, {
               action: actorMovement,
               emotion: actorEmotion
             }, setCharacterExpression);
-          } else {
+          } else if (!hasReadyLessonCharacter(actor)) {
             actor.classList.add(actorMovement, `mood-${actorEmotion}`);
             setCharacterExpression(actor, actorEmotion);
           }
         });
-        if (lead.querySelector(".lesson-character-svg")) {
+        if (lead !== companion && !hasReadyLessonCharacter(lead) && lead.querySelector(".lesson-character-svg")) {
           choreographLessonAnswer(scene, lead, companion, movement);
         }
-        window.LittleHeroCharacterEngine?.showObject(lead, companion, actionPlan);
-        const stranger = scene.querySelector("#sceneThirdActor");
-        if (stranger?.querySelector(".actor-name")?.textContent.trim() === "Người lạ") {
+        if (!hasReadyLessonCharacter(lead)) window.LittleHeroCharacterEngine?.showObject(lead, companion, actionPlan);
+        const stranger = actors.find((actor) => actor.dataset.characterRole === "stranger");
+        if (stranger) {
           stranger.classList.remove("action-protect", "action-stay", "mood-happy", "mood-sad", "mood-concerned");
           stranger.classList.add(
             ["action-protect", "action-approach"].includes(movement) || !correct ? "action-step-back" : "action-stay",
             "mood-concerned"
           );
-          setCharacterExpression(stranger, "concerned");
+          const strangerCharacter = stranger.querySelector("little-hero");
+          if (strangerCharacter && typeof strangerCharacter.act === "function") strangerCharacter.reset().act("scared", "worry");
+          else setCharacterExpression(stranger, "concerned");
         }
         const sceneProp = $(`#${propId}`);
         const objectIsHeld = ["action-carry", "action-give", "action-fold", "action-tidy"].includes(movement);
@@ -2624,23 +2703,31 @@
           },
           ...(lessonFollowUps[lesson.id] || []).map((question) => ({ ...question, correct: Number.isInteger(question.correct) ? question.correct : 0 }))
         ].map(shuffleQuestionAnswers);
+        const updateLessonSceneCast = (question) => {
+          const sceneElement = $("#lessonScene");
+          if (!sceneElement) return;
+          const questionScene = getScene({ ...lesson, sceneStory: question.story });
+          const count = questionScene.actors.length;
+          sceneElement.querySelectorAll(".scene-actor").forEach((actor) => actor.remove());
+          sceneElement.classList.toggle("scene-with-third-character", count > 2);
+          sceneElement.classList.toggle("scene-with-many-characters", count > 3);
+          sceneElement.style.setProperty("--scene-character-count", String(count));
+          sceneElement.insertAdjacentHTML("beforeend", renderLessonSceneActors(questionScene));
+        };
         let questionIndex = 0;
         const done = state.completed.includes(lesson.id);
         $("#routeView").innerHTML = pageShell("lessons", `${category.icon} ${category.name} · ${lesson.age} · ${lesson.duration}`, `
-          <p class="lesson-demo-notice" role="note">Hiện tại đây chỉ là giao diện demo, LITTLE HERO sẽ được phát triển và nâng cấp trong tương lai.</p>
           <div class="lesson-layout">
             <div class="lesson-scene-column">
               <div class="lesson-progress"><span>📖 Mạch câu chuyện</span><span id="questionProgress">Câu hỏi 1/${questions.length}${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}</span></div>
               <article class="scene-card">
-                <div class="scene ${scene.type} scene-${scene.variant} scene-lesson-${lesson.category}${scene.thirdCharacter ? " scene-with-third-character" : ""}" id="lessonScene">
+                <div class="scene ${scene.type} scene-${scene.variant} scene-lesson-${lesson.category}${scene.actors.length > 2 ? " scene-with-third-character" : ""}${scene.actors.length > 3 ? " scene-with-many-characters" : ""}" id="lessonScene" style="--scene-character-count:${scene.actors.length}">
                     ${renderSceneBackdrop(scene)}
                     <span class="scene-kicker">📍 ${scene.place}</span><span class="scene-prop" id="sceneProp">${scene.prop}</span>
-                    ${scene.thirdCharacter ? renderSceneActor("sceneThirdActor", scene.thirdCharacter.name, false, scene.thirdCharacter, true) : ""}
-                    ${renderSceneActor("lessonProtagonist", scene.protagonist.name, false, scene.protagonist, true)}
-                    ${renderSceneActor("lessonPartner", scene.friend.name, false, scene.friend, true)}
+                    ${renderLessonSceneActors(scene)}
                 </div>
               </article>
-              <div class="lesson-context"><span class="kicker">HỌC QUA TRẢI NGHIỆM</span><h3>${escapeHtml(lesson.goal)}</h3>
+              <div class="lesson-context">
                 <div class="lesson-meta"><span>♧ ${lesson.age}</span><span>◷ ${lesson.duration}</span></div>
                 <strong>🌱 Thử thách ngoài đời</strong><p>${escapeHtml(lesson.activity)}</p>
               </div>
@@ -2758,6 +2845,7 @@
             sceneProp.textContent = scene.prop;
           }
           const question = questions[questionIndex];
+          updateLessonSceneCast(question);
           $("#questionProgress").textContent = `Câu hỏi ${questionIndex + 1}/${questions.length}${done ? " · Đã hoàn thành, có thể luyện tập lại" : ""}`;
           $("#questionStory").textContent = question.story;
           $("#questionPrompt").textContent = question.prompt;
@@ -3080,8 +3168,10 @@
         const round = rounds[run.round];
         const choices = round.options.map((option, index) => `<button class="mini-game-option ${run.selected === index ? "is-correct" : ""}" data-mini-game-answer="${index}" ${run.selected !== null ? "disabled" : ""}><span>${String.fromCharCode(65 + index)}</span>${option}</button>`).join("");
         const promptContent = prompt(round);
+        const progress = Math.round(((run.round + 1) / rounds.length) * 100);
         return `${miniGameHeader(game)}<section class="mini-game-board">
           <div class="mini-game-stats"><span>🧠 Câu ${run.round + 1}/${rounds.length}</span><span>✅ Đúng: ${run.correct}</span></div>
+          <div class="mini-game-progress" role="progressbar" aria-label="Tiến độ trò chơi" aria-valuemin="0" aria-valuemax="${rounds.length}" aria-valuenow="${run.round + 1}"><span style="width:${progress}%"></span></div>
           ${promptContent}
           <div class="mini-game-options">${choices}</div>
           ${run.feedback ? `<p class="mini-game-feedback ${run.selected === null ? "try-again" : ""}" role="status">${run.feedback}</p>` : ""}
@@ -3102,6 +3192,7 @@
           } else {
             body = renderQuestionGame(game, feelingsRounds, (round) => `<div class="feelings-question"><p>Hãy đọc tình huống:</p><blockquote>“${round.situation}”</blockquote><p>Bạn nhỏ có thể cảm thấy thế nào?</p></div>`);
           }
+          body = `<div class="mini-game-experience">${body}</div>`;
         } else {
           const cards = Object.entries(miniGames).map(([id, game]) => {
             const played = miniGameRewardEarned(id);
@@ -3110,7 +3201,9 @@
           }).join("");
           body = `<div class="game-welcome"><span>🌟</span><div><h2>Chơi vui, luyện trí mỗi ngày!</h2><p>Cùng bé luyện trí nhớ, quan sát, suy luận, giải quyết vấn đề và gọi tên cảm xúc. Mỗi trò chỉ mất vài phút, có thể chơi lại thoải mái.</p></div></div><div class="game-grid">${cards}</div>`;
         }
-        $("#routeView").innerHTML = pageShell("games", "Chọn một trò chơi ngắn để luyện tư duy và thư giãn sau giờ học. Không có thi đấu trực tuyến hay thu thập thông tin trẻ.", body);
+        $("#routeView").innerHTML = miniGameRun
+          ? body
+          : pageShell("games", "Chọn một trò chơi ngắn để luyện tư duy và thư giãn sau giờ học. Không có thi đấu trực tuyến hay thu thập thông tin trẻ.", body);
       };
 
       const renderQuestPage = () => {

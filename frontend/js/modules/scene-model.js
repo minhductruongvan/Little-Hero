@@ -1,23 +1,22 @@
 (() => {
   window.createLittleHeroSceneModel = ({ escapeHtml, freshState, safeWardrobe, renderHeroCharacterSvg, renderLessonCharacterSvg, state }) => {
-const getScene = (lesson) => {
-  const characters = {
-    na: { name: "Na", gender: "girl", hair: "short", hairAccessory: "flower", shirt: "#a36d9e", pants: "#245d72", shoes: "#568fc7" },
-    ha: { name: "Hà", gender: "girl", hair: "ponytail", hairAccessory: "bow", shirt: "#ed9d66", pants: "#5386a4" },
-    nam: { name: "Nam", gender: "boy", hair: "short", shirt: "#6c9f72", pants: "#536f92" },
-    bin: { name: "Bin", gender: "boy", hair: "curly", shirt: "#e4a85a", pants: "#547391" },
-    mia: { name: "Mia", gender: "girl", hair: "long", hairAccessory: "flower", shirt: "#b47d9b", pants: "#584d70" },
-    an: { name: "An", gender: "boy", hair: "short", shirt: "#607d9e", pants: "#46586f" },
-    linh: { name: "Linh", gender: "girl", hair: "ponytail", hairAccessory: "bow", shirt: "#ed9d66", pants: "#5386a4" },
-    bo: { name: "Bố", gender: "boy", hair: "short", adult: true, shirt: "#467f89", pants: "#46586f", shoes: "#51443f" },
-    me: { name: "Mẹ", gender: "girl", hair: "long", hairAccessory: "flower", adult: true, shirt: "#6d759e", pants: "#4b536d", shoes: "#66504a" },
-    teacher: { name: "Cô giáo", gender: "girl", hair: "long", adult: true, shirt: "#548c73", pants: "#536f82" },
-    staff: { name: "Nhân viên", gender: "boy", hair: "short", adult: true, shirt: "#3d7482", pants: "#46586f" },
-    em: { name: "Em", gender: "girl", hair: "ponytail", hairAccessory: "flower", shirt: "#b07a9b" },
-    binh: { name: "Bình", gender: "boy", hair: "short", shirt: "#72a78c" },
-    stranger: { name: "Người lạ", gender: "boy", hair: "short", adult: true, shirt: "#8b7890", pants: "#53576c" },
-    friend: { name: "Bạn", gender: "boy", hair: "short", shirt: "#6c9f72", pants: "#536f92" }
-  };
+const characters = {
+  na: { name: "Na", gender: "girl", hair: "short", hairAccessory: "flower", shirt: "#a36d9e", pants: "#245d72", shoes: "#568fc7" },
+  ha: { name: "Hà", gender: "girl", hair: "ponytail", hairAccessory: "bow", shirt: "#ed9d66", pants: "#5386a4" },
+  nam: { name: "Nam", gender: "boy", hair: "short", shirt: "#6c9f72", pants: "#536f92" },
+  bin: { name: "Bin", gender: "boy", hair: "curly", shirt: "#e4a85a", pants: "#547391" },
+  mia: { name: "Mia", gender: "girl", hair: "long", hairAccessory: "flower", shirt: "#b47d9b", pants: "#584d70" },
+  an: { name: "An", gender: "boy", hair: "short", shirt: "#607d9e", pants: "#46586f" },
+  linh: { name: "Linh", gender: "girl", hair: "ponytail", hairAccessory: "bow", shirt: "#ed9d66", pants: "#5386a4" },
+  bo: { name: "Bố", gender: "boy", hair: "short", adult: true, shirt: "#467f89", pants: "#46586f", shoes: "#51443f" },
+  me: { name: "Mẹ", gender: "girl", hair: "long", hairAccessory: "flower", adult: true, shirt: "#6d759e", pants: "#4b536d", shoes: "#66504a" },
+  teacher: { name: "Cô giáo", gender: "girl", hair: "long", adult: true, shirt: "#548c73", pants: "#536f82" },
+  staff: { name: "Nhân viên", gender: "boy", hair: "short", adult: true, shirt: "#3d7482", pants: "#46586f" },
+  em: { name: "Em", gender: "girl", hair: "ponytail", hairAccessory: "flower", shirt: "#b07a9b" },
+  binh: { name: "Bình", gender: "boy", hair: "short", shirt: "#72a78c" },
+  stranger: { name: "Người lạ", gender: "boy", hair: "short", adult: true, shirt: "#8b7890", pants: "#53576c" },
+  friend: { name: "Bạn", gender: "boy", hair: "short", shirt: "#6c9f72", pants: "#536f92" }
+};
   const config = {
     emotion: ["class", "Lớp học của Na", "🎨", characters.na, "painting", characters.teacher],
     social: ["class", "Góc chơi trong lớp", "🧩", characters.ha, "blocks", characters.nam],
@@ -42,16 +41,220 @@ const getScene = (lesson) => {
     stranger: ["schoolyard", "Cổng công viên · gần mẹ", "🎁", characters.mia, "gate", characters.me, characters.stranger],
     "new-thing": ["outdoor", "Bãi tập xe cùng bố", "🚲", characters.bin, "bike", characters.bo]
   };
+
+  const normalize = (value) => String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .toLocaleLowerCase("vi")
+    .trim();
+  const canonicalName = (value) => String(value || "").normalize("NFC").toLocaleLowerCase("vi").trim();
+  const characterProfiles = new Map([
+    ...Object.values(characters),
+    ...Object.values(contexts).map((context) => context[3])
+  ].map((profile) => [canonicalName(profile.name), profile]));
+  const femaleNames = new Set(["ha", "hoa", "kiwi", "linh", "mai", "may", "mi", "na", "su", "soc"]);
+  const maleNames = new Set(["an", "bi", "bin", "binh", "bo", "bon", "bong", "cao", "gau", "hung", "kien", "kem", "lu", "minh", "mit", "mon", "nam", "tho", "ti", "tin", "tom"]);
+  const clothing = [
+    { shirt: "#e07f78", pants: "#536f92", shoes: "#e98257" },
+    { shirt: "#5b9b81", pants: "#665a83", shoes: "#e4b54e" },
+    { shirt: "#738dc2", pants: "#536c78", shoes: "#df8d6a" },
+    { shirt: "#d28bb0", pants: "#527c83", shoes: "#f0c45a" }
+  ];
+  const hashName = (value) => [...value].reduce((hash, character) => (hash * 31 + character.codePointAt(0)) >>> 0, 7);
+  const namedProfile = (name) => {
+    const known = characterProfiles.get(canonicalName(name));
+    if (known) return { ...known, name };
+    const key = normalize(name);
+    const hash = hashName(key);
+    const gender = femaleNames.has(key) ? "girl" : maleNames.has(key) ? "boy" : hash % 2 ? "girl" : "boy";
+    const outfit = clothing[hash % clothing.length];
+    return {
+      name,
+      gender,
+      hair: gender === "girl" ? (hash % 3 ? "long" : "ponytail") : (hash % 2 ? "curly" : "short"),
+      hairColor: ["#624337", "#392c28", "#865a3d"][hash % 3],
+      skin: ["#FFD7B5", "#E8B28D", "#C98F6D"][hash % 3],
+      ...outfit
+    };
+  };
+  const roleProfiles = [
+    { name: "Mẹ", role: "mother", aliases: ["mẹ", "má"], source: characters.me, patterns: ["mẹ", "má"] },
+    { name: "Bố", role: "father", aliases: ["bố", "ba", "cha"], source: characters.bo, patterns: ["bố", "cha"] },
+    { name: "Cô giáo", role: "teacher", aliases: ["cô giáo", "giáo viên", "cô khen", "cô nói", "cô bảo", "cô hỏi", "với cô", "hỏi cô", "nhờ cô", "báo cô", "nói với cô", "kể với cô"], source: characters.teacher, patterns: ["cô giáo", "giáo viên", "cô khen", "cô nói", "cô bảo", "cô hỏi", "với cô", "hỏi cô", "nhờ cô", "báo cô", "nói với cô", "kể với cô"] },
+    { name: "Thầy giáo", role: "teacher", aliases: ["thầy giáo", "thầy khen", "thầy nói", "thầy bảo", "thầy hỏi"], source: { ...characters.teacher, name: "Thầy giáo", gender: "boy", hair: "short" }, patterns: ["thầy giáo", "thầy khen", "thầy nói", "thầy bảo", "thầy hỏi"] },
+    { name: "Nhân viên", role: "staff", aliases: ["nhân viên", "người bảo vệ", "chú bảo vệ", "cô bảo vệ", "bác bảo vệ"], source: characters.staff, patterns: ["nhân viên", "người bảo vệ", "chú bảo vệ", "cô bảo vệ", "bác bảo vệ"] },
+    { name: "Người lạ", role: "stranger", aliases: ["người lạ", "người không quen"], source: characters.stranger, patterns: ["người lạ", "người không quen"] },
+    { name: "Anh trai", role: "sibling", aliases: ["anh trai", "anh"], source: { ...characters.binh, name: "Anh trai", gender: "boy" }, patterns: ["anh trai"] },
+    { name: "Chị gái", role: "sibling", aliases: ["chị gái", "chị"], source: { ...characters.linh, name: "Chị gái", gender: "girl" }, patterns: ["chị gái"] },
+    { name: "Em trai", role: "sibling", aliases: ["em trai"], source: { ...characters.em, name: "Em trai", gender: "boy", hair: "short" }, patterns: ["em trai"] },
+    { name: "Em gái", role: "sibling", aliases: ["em gái"], source: { ...characters.em, name: "Em gái", gender: "girl" }, patterns: ["em gái"] },
+    { name: "Em", role: "sibling", aliases: ["em của", "anh em"], source: characters.em, patterns: ["em của", "anh em"] },
+    { name: "Bà", role: "grandparent", aliases: ["bà", "bà ngoại", "bà nội"], source: { ...characters.me, name: "Bà" }, patterns: ["bà", "bà ngoại", "bà nội"] },
+    { name: "Ông", role: "grandparent", aliases: ["ông", "ông ngoại", "ông nội"], source: { ...characters.bo, name: "Ông" }, patterns: ["ông", "ông ngoại", "ông nội"] },
+    { name: "Người lớn", role: "adult", aliases: ["người lớn", "người thân"], source: characters.staff, patterns: ["người lớn", "người thân"] }
+  ];
+  const storyMoodSignals = [
+    { mood: "happy", pattern: /vui|mim cuoi|hao hung|tu tin|cam on|chuc mung|vui ve/g },
+    { mood: "sad", pattern: /buon|khoc|tiec|that vong|co don/g },
+    { mood: "angry", pattern: /tuc gian|gian du|buc minh|cau gat|nong len/g },
+    { mood: "worry", pattern: /lo lang|so hai|hoi hop|boi roi|chua san sang|ngai|ban khoan|kho chiu/g }
+  ];
+  const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const storyMood = (profile, story, cast) => {
+    let mood = "serious";
+    let latestSignal = -1;
+    let sentenceOffset = 0;
+    const aliasesFor = (actor) => {
+      const nameAliases = actor.role === "sibling" && normalize(actor.name) === "em" ? [] : [actor.name];
+      return [...nameAliases, ...(actor.aliases || []).filter((alias) =>
+        !(actor.role === "father" && normalize(alias) === "ba")
+      )].filter(Boolean);
+    };
+    for (const sourceSentence of String(story || "").split(/[.!?;]+/)) {
+      const sentence = normalize(sourceSentence);
+      const mentions = [];
+      for (const actor of cast) {
+        const positions = new Set();
+        for (const token of aliasesFor(actor)) {
+          const pattern = new RegExp(`(^|[^\\p{L}\\p{M}])${escapeRegex(token)}(?=$|[^\\p{L}\\p{M}])`, actor.role ? "giu" : "gu");
+          for (const match of sourceSentence.matchAll(pattern)) positions.add(match.index + match[1].length);
+        }
+        for (const position of positions) mentions.push({ actor, position });
+      }
+      for (const signal of storyMoodSignals) {
+        signal.pattern.lastIndex = 0;
+        let match = signal.pattern.exec(sentence);
+        while (match && mentions.length) {
+          const nearest = mentions.reduce((best, mention) => {
+            const distance = Math.abs(mention.position - match.index);
+            return !best || distance < best.distance ? { actor: mention.actor, distance } : best;
+          }, null);
+          if (nearest && canonicalName(nearest.actor.name) === canonicalName(profile.name)) {
+            const signalPosition = sentenceOffset + match.index;
+            if (signalPosition > latestSignal) {
+              mood = signal.mood;
+              latestSignal = signalPosition;
+            }
+          }
+          match = signal.pattern.exec(sentence);
+        }
+      }
+      sentenceOffset += sentence.length + 1;
+    }
+    return mood;
+  };
+  const getStoryCast = (lesson, selected) => {
+    const story = String(lesson.sceneStory || lesson.story || "");
+    const cast = [];
+    const seen = new Set();
+    const add = (profile, position, protagonist = false) => {
+      const key = canonicalName(profile.name);
+      if (seen.has(key)) return;
+      seen.add(key);
+      cast.push({ ...profile, position, isProtagonist: protagonist });
+    };
+    const namedPeople = [];
+    const addNamedPerson = (name, position, protagonist = false) => {
+      const key = canonicalName(name);
+      const existing = namedPeople.find((person) => canonicalName(person.name) === key);
+      if (existing) {
+        existing.protagonist = existing.protagonist || protagonist;
+        existing.position = Math.min(existing.position, position);
+        return;
+      }
+      namedPeople.push({ name, position, protagonist });
+    };
+    const namedPattern = /(?:[Bb][éÉ]|[Bb][ạẠ]n)\s+([\p{Lu}][\p{L}\p{M}'’-]*)/gu;
+    for (const match of story.matchAll(namedPattern)) {
+      addNamedPerson(match[1], match.index, /^bé\b/i.test(match[0]));
+    }
+    const knownChildren = [...Object.values(characters), ...Object.values(contexts).map((context) => context[3]), selected[3]].filter((profile) =>
+      !profile.adult && !["Em", "Bạn"].includes(profile.name)
+    );
+    for (const profile of knownChildren) {
+      const pattern = new RegExp(`(^|[^\\p{L}\\p{M}])${escapeRegex(profile.name)}(?=$|[^\\p{L}\\p{M}])`, "gu");
+      for (const match of story.matchAll(pattern)) {
+        addNamedPerson(profile.name, match.index + match[1].length);
+      }
+    }
+    namedPeople.sort((a, b) => a.position - b.position);
+    const protagonist = namedPeople.find((person) => person.protagonist) || namedPeople[0];
+    if (protagonist) add(namedProfile(protagonist.name), protagonist.position, true);
+    else add({ ...selected[3], name: "Bé", aliases: [] }, 0, true);
+
+    for (const person of namedPeople) {
+      if (person === protagonist) continue;
+      add(namedProfile(person.name), person.position);
+    }
+
+    const normalizedStory = normalize(story);
+    const sourceStory = story.toLocaleLowerCase("vi");
+    const roleMentions = [];
+    const findRolePosition = (pattern) => {
+      const matcher = new RegExp(`(^|[^\\p{L}\\p{M}])${escapeRegex(pattern)}(?=$|[^\\p{L}\\p{M}])`, "iu");
+      const match = matcher.exec(sourceStory);
+      return match ? match.index + match[1].length : -1;
+    };
+    for (const role of roleProfiles) {
+      const positions = role.patterns.map(findRolePosition).filter((position) => position >= 0);
+      if (positions.length) roleMentions.push({ profile: { ...role.source, name: role.name, role: role.role, aliases: role.aliases }, position: Math.min(...positions) });
+    }
+    const namedRolePattern = /(?:^|[\s"'“(])([Aa]nh|[Cc]hị|[Cc]ô|[Cc]hú|[Tt]hầy|[Bb]ác|[Bb]à|[Ôô]ng)\s+([\p{Lu}][\p{L}\p{M}'’-]*)/gu;
+    for (const match of story.matchAll(namedRolePattern)) {
+      const prefix = normalize(match[1]);
+      const gender = ["chi", "co", "ba"].includes(prefix) ? "girl" : "boy";
+      const profile = namedProfile(match[2]);
+      roleMentions.push({
+        profile: { ...profile, role: "family", adult: true, gender, aliases: [match[2], `${match[1]} ${match[2]}`] },
+        position: match.index
+      });
+    }
+    const hasNamedFriend = namedPeople.some((person) => person !== protagonist);
+    if (!hasNamedFriend && /\bbạn\b/iu.test(story)) {
+      const position = normalizedStory.indexOf("ban");
+      roleMentions.push({ profile: { ...characters.friend, role: "friend", aliases: ["bạn"] }, position });
+    }
+    roleMentions.sort((a, b) => a.position - b.position);
+    for (const mention of roleMentions) add(mention.profile, mention.position);
+
+    return cast.map((profile) => ({ ...profile, initialMood: storyMood(profile, story, cast) }));
+  };
+  const getScene = (lesson) => {
   const selected = contexts[lesson.id] || config[lesson.category] || config.social;
   return {
     type: selected[0],
     place: selected[1],
     prop: selected[2],
-    protagonist: selected[3],
-    friend: selected[5] || characters.friend,
-    thirdCharacter: selected[6] || null,
+    actors: getStoryCast(lesson, selected),
     variant: selected[4] || lesson.id
   };
+};
+
+const renderLessonCharacter = (profile, name, isLessonHero, outfit) => {
+  const color = (value, fallback) => /^#[\da-f]{6}$/i.test(value || "") ? value : fallback;
+  const hairStyle = ["short", "curly", "long", "bob", "bald"].includes(profile.hair)
+    ? profile.hair
+    : ["ponytail", "braids"].includes(profile.hair) ? "long" : "short";
+  const look = {
+    st: hairStyle,
+    hair: color(profile.hairColor, outfit.hairColor || "#624337"),
+    skin: color(profile.skin, "#FFD7B5"),
+    top: isLessonHero ? "#258bc2" : color(outfit.shirt, "#55a98c"),
+    tp: profile.gender === "girl" ? "heart" : "star",
+    bot: isLessonHero ? "#345a7a" : color(outfit.pants, "#536f92"),
+    bt: profile.gender === "girl" && !profile.adult ? "skirt" : "pants",
+    acc: profile.hairAccessory ? "bow" : outfit.accessory === "glasses" ? "glasses" : "none",
+    cape: isLessonHero ? 1 : 0,
+    capeC: "#17628e",
+    shoe: isLessonHero ? "#e96b47" : color(outfit.shoes, "#e98257"),
+    eyes: "round",
+    blush: 1
+  };
+  const ariaLabel = `${name}, ${profile.adult ? "người lớn" : "trẻ em"}`;
+  const fallback = renderLessonCharacterSvg(profile, { isLessonHero, ariaLabel });
+  const initialMood = ["happy", "worry", "sad", "angry", "serious"].includes(profile.initialMood) ? profile.initialMood : "serious";
+  return `<little-hero class="lesson-hero-character" base="${profile.gender === "girl" ? "girl" : "boy"}" size="150" mood="${initialMood}" look="${escapeHtml(JSON.stringify(look))}" aria-label="${escapeHtml(ariaLabel)}">${fallback}</little-hero>`;
 };
 
 const renderSceneBackdrop = (scene) => {
@@ -111,14 +314,13 @@ const renderSceneBackdrop = (scene) => {
       };
     const actorClass = isHero ? "hero-actor" : "friend-actor";
     const ageClass = !isHero && profile.adult ? "adult-actor" : "child-actor";
-    const characterSvg = useLessonDesign
-      ? renderLessonCharacterSvg(
-        { ...profile, name },
-        { ariaLabel: `${name}, ${profile.adult ? "người lớn" : "trẻ em"}`, isLessonHero: id === "lessonProtagonist" }
-      )
+    const storyMood = ["happy", "worry", "sad", "angry", "serious"].includes(profile.initialMood) ? profile.initialMood : "serious";
+    const aliases = [...new Set([...(profile.aliases || []), ...(profile.isProtagonist ? ["Hero"] : [])])].join("|");
+    const characterMarkup = useLessonDesign
+      ? renderLessonCharacter(profile, name, id === "lessonProtagonist", outfit)
       : renderHeroCharacterSvg(outfit, { skin: profile.skin || "#f2c39e", civilian: !isHero, adult: profile.adult, hairAccessory: profile.hairAccessory, ariaLabel: `${name}, ${profile.adult ? "người lớn" : "trẻ em"}` });
-    return `<div class="scene-actor ${actorClass} ${ageClass} ${profile.gender === "girl" ? "girl-actor" : "boy-actor"}" id="${id}" data-gender="${profile.gender || outfit.gender}" style="--hero-shirt:${outfit.shirt};--hero-pants:${outfit.pants};--hero-shoes:${outfit.shoes};--hero-cape:${outfit.accessory === "cape" ? outfit.shirt : "#f49a69"}">
-      ${characterSvg}
+    return `<div class="scene-actor ${actorClass} ${ageClass} ${profile.gender === "girl" ? "girl-actor" : "boy-actor"}" id="${id}" data-gender="${profile.gender || outfit.gender}" data-character-role="${escapeHtml(profile.role || "")}" data-character-aliases="${escapeHtml(aliases)}" data-story-mood="${storyMood}" style="--hero-shirt:${outfit.shirt};--hero-pants:${outfit.pants};--hero-shoes:${outfit.shoes};--hero-cape:${outfit.accessory === "cape" ? outfit.shirt : "#f49a69"}">
+      ${characterMarkup}
       <span class="actor-name">${escapeHtml(name)}</span>
     </div>`;
   };
