@@ -889,7 +889,8 @@
       };
       const storyComingSoonNotice = `<div class="story-coming-soon"><img src="./frontend/assets/stories-coming-soon.png" alt="Tính năng truyện đọc đang được đội ngũ LITTLE HERO xây dựng và phát triển" loading="lazy"></div>`;
       const renderStories = () => {
-        $("#storyGrid").innerHTML = storyComingSoonNotice;
+        const storyGrid = $("#storyGrid");
+        if (storyGrid) storyGrid.innerHTML = storyComingSoonNotice;
       };
 
       const dailyProgress = (id) => {
