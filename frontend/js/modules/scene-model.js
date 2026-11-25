@@ -236,19 +236,21 @@ const renderLessonCharacter = (profile, name, isLessonHero, outfit) => {
   const hairStyle = ["short", "curly", "long", "bob", "bald"].includes(profile.hair)
     ? profile.hair
     : ["ponytail", "braids"].includes(profile.hair) ? "long" : "short";
+  const isChild = !profile.adult;
+  const isGirl = profile.gender === "girl";
   const look = {
-    st: hairStyle,
-    hair: color(profile.hairColor, outfit.hairColor || "#624337"),
+    st: isChild && isGirl ? "pig" : isChild ? "spiky" : hairStyle,
+    hair: isChild ? "#5A3A22" : color(profile.hairColor, outfit.hairColor || "#624337"),
     skin: color(profile.skin, "#FFD7B5"),
-    top: isLessonHero ? "#258bc2" : color(outfit.shirt, "#55a98c"),
-    tp: profile.gender === "girl" ? "heart" : "star",
-    bot: isLessonHero ? "#345a7a" : color(outfit.pants, "#536f92"),
-    bt: profile.gender === "girl" && !profile.adult ? "skirt" : "pants",
-    acc: profile.hairAccessory ? "bow" : outfit.accessory === "glasses" ? "glasses" : "none",
-    cape: isLessonHero ? 1 : 0,
-    capeC: "#17628e",
-    shoe: isLessonHero ? "#e96b47" : color(outfit.shoes, "#e98257"),
-    eyes: "round",
+    top: isChild ? "#1478D4" : color(outfit.shirt, "#55a98c"),
+    tp: isChild ? "star" : isGirl ? "heart" : "plain",
+    bot: isChild ? "#31538B" : color(outfit.pants, "#536f92"),
+    bt: "pants",
+    acc: isChild && isGirl ? "flower" : profile.hairAccessory ? "bow" : outfit.accessory === "glasses" ? "glasses" : "none",
+    cape: isChild ? 1 : 0,
+    capeC: isChild ? "#E8323F" : "#17628e",
+    shoe: isChild ? "#E85C3A" : color(outfit.shoes, "#e98257"),
+    eyes: isChild ? "big" : "round",
     blush: 1
   };
   const ariaLabel = `${name}, ${profile.adult ? "người lớn" : "trẻ em"}`;

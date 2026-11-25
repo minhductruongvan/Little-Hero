@@ -52,13 +52,14 @@
       shades: '<rect x="64" y="48" width="32" height="18" rx="8" fill="#222"/><rect x="104" y="48" width="32" height="18" rx="8" fill="#222"/>',
       cap: '<path d="M52 44 Q54 4 100 4 Q146 4 148 44Z" fill="#4F8DF7"/><rect x="88" y="38" width="64" height="10" rx="5" fill="#2B5FD9"/>',
       bow: '<polygon points="136,26 160,14 160,40" fill="#FF4F7B"/><polygon points="136,26 112,14 112,40" fill="#FF4F7B"/><circle cx="136" cy="26" r="6" fill="#E0305F"/>',
+      flower: '<g stroke="#E3A600" stroke-width="1"><g transform="translate(52 43)"><circle cy="-5" r="4.5" fill="#FFC928"/><circle cx="4.8" cy="-1.5" r="4.5" fill="#FFC928"/><circle cx="3" cy="4" r="4.5" fill="#FFC928"/><circle cx="-3" cy="4" r="4.5" fill="#FFC928"/><circle cx="-4.8" cy="-1.5" r="4.5" fill="#FFC928"/><circle r="2.5" fill="#FFF8D6" stroke="none"/></g><g transform="translate(148 43)"><circle cy="-5" r="4.5" fill="#FFC928"/><circle cx="4.8" cy="-1.5" r="4.5" fill="#FFC928"/><circle cx="3" cy="4" r="4.5" fill="#FFC928"/><circle cx="-3" cy="4" r="4.5" fill="#FFC928"/><circle cx="-4.8" cy="-1.5" r="4.5" fill="#FFC928"/><circle r="2.5" fill="#FFF8D6" stroke="none"/></g></g>',
       crown: '<path d="M64 16 L72 -6 L86 10 L100 -10 L114 10 L128 -6 L136 16Z" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/>',
       band: '<path d="M54 38 Q100 14 146 38" stroke="#FF6B6B" stroke-width="9" fill="none" stroke-linecap="round"/>'
     }[L.acc] || '';
     const pat = {
       stripes: [0, 1, 2, 3].map(i => `<rect x="60" y="${110 + i * 16}" width="80" height="8" fill="${ink}" opacity=".4"/>`).join(''),
       dots: [[80, 118], [100, 126], [120, 118], [88, 146], [112, 146], [100, 166]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="${ink}" opacity=".55"/>`).join(''),
-      star: `<polygon points="100,116 106,130 121,130 109,139 113,154 100,145 87,154 91,139 79,130 94,130" fill="${ink}" opacity=".85"/>`,
+      star: `<polygon points="100,116 106,130 121,130 109,139 113,154 100,145 87,154 91,139 79,130 94,130" fill="#FFC928" stroke="#E3A600" stroke-width="2"/>`,
       heart: '<path d="M100 152 L84 134 Q78 120 92 118 Q100 118 100 128 Q100 118 108 118 Q122 120 116 134Z" fill="#FF4F7B"/>',
       plain: ''
     }[L.tp] || '';
@@ -73,12 +74,13 @@
 <ellipse data-j="shadow" cx="100" cy="239" rx="42" ry="7" fill="#26325B" opacity=".18"/>
 <text data-j="floorProp" x="152" y="238" font-size="30" text-anchor="middle" opacity="0"></text>
 <g data-j="rig">
+ ${L.cape ? `<path data-j="cape" d="M70 110 Q100 98 130 110 L150 215 Q100 232 50 215Z" fill="${L.capeC}"/>` : ''}
  <g data-j="legL"><rect x="-9" y="-6" width="18" height="36" rx="9" fill="${thFill}"/><g data-j="shL"><rect x="-8" y="-4" width="16" height="34" rx="8" fill="${shFill}"/><ellipse cx="2" cy="31" rx="14" ry="7" fill="${shoe}"/></g></g>
  <g data-j="legR"><rect x="-9" y="-6" width="18" height="36" rx="9" fill="${thFill}"/><g data-j="shR"><rect x="-8" y="-4" width="16" height="34" rx="8" fill="${shFill}"/><ellipse cx="-2" cy="31" rx="14" ry="7" fill="${shoe}"/></g></g>
  <g data-j="torso">
-  ${L.cape ? `<path data-j="cape" d="M70 110 Q100 98 130 110 L150 215 Q100 232 50 215Z" fill="${L.capeC}"/>` : ''}
   <defs><clipPath id="lhc"><rect x="66" y="102" width="68" height="76" rx="24"/></clipPath></defs>
   <rect x="66" y="102" width="68" height="76" rx="24" fill="${top}"/><g clip-path="url(#lhc)">${pat}</g>
+  ${L.cape ? `<path d="M72 103 Q100 121 128 103 L117 118 Q100 125 83 118Z" fill="${L.capeC}"/><circle cx="100" cy="117" r="5" fill="#FFC928" stroke="#E3A600" stroke-width="1.5"/>` : ''}
   ${L.bt === 'skirt' ? `<path d="M62 150 L138 150 L152 192 L48 192Z" fill="${bot}"/>` : ''}
   <g data-j="armL"><rect x="-8" y="-6" width="16" height="36" rx="8" fill="${top}"/><g data-j="foreL"><rect x="-7" y="-4" width="14" height="30" rx="7" fill="${sk}"/><circle cx="0" cy="28" r="9" fill="${sk}"/></g></g>
   <g data-j="armR"><rect x="-8" y="-6" width="16" height="36" rx="8" fill="${top}"/><g data-j="foreR"><rect x="-7" y="-4" width="14" height="30" rx="7" fill="${sk}"/><circle cx="0" cy="28" r="9" fill="${sk}"/>${prp('handProp')}</g></g>

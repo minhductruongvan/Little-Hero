@@ -30,7 +30,7 @@
 - Bảng xếp hạng chỉ hiển thị điểm của tài khoản thật đã đồng ý công khai biệt danh và điểm; nếu chưa có người tham gia trong phạm vi đang xem, danh sách sẽ để trống. Tài khoản trải nghiệm có quyền dùng Premium cục bộ; ảnh bill ở chế độ này chỉ xem trước trên thiết bị, không tải lên và không xử lý thanh toán.
 - Khách chưa đăng nhập có thể mở các trang ở chế độ xem trước; các thao tác ghi tiến độ, gửi nội dung, trả lời câu hỏi hoặc thay đổi hồ sơ yêu cầu đăng nhập. Khu vực phụ huynh chỉ hiển thị phần giới thiệu trước khi đăng nhập và xác nhận phụ huynh.
 
-Hero trang chủ giữ nguyên thiết kế hiện tại; giao diện đổi trang phục Hero đã được gỡ bỏ. Nhân vật trong cảnh bài học dùng mô hình SVG độc lập với cấu hình tên, giới tính, tóc, trang phục và vóc dáng người lớn/trẻ em. Nhân vật bài học không dùng hình Hero hay đồ họa nhân vật trước đây. Các chủ đề ninja, học viện, bóng đêm và robot là trang phục minh họa nguyên bản, không sao chép nhân vật hoặc logo phim hoạt hình.
+Hero trang chủ giữ nguyên thiết kế hiện tại; giao diện đổi trang phục Hero đã được gỡ bỏ. Nhân vật trong cảnh bài học dùng mô hình SVG độc lập, giữ diễn hoạt theo câu chuyện và đồng bộ nhận diện trẻ em với logo LITTLE HERO: tóc nâu, trang phục xanh, ngôi sao vàng và áo choàng đỏ; bé gái có tóc hai bím cùng hoa cài. Nhân vật người lớn giữ trang phục riêng. Các chủ đề ninja, học viện, bóng đêm và robot là trang phục minh họa nguyên bản, không sao chép nhân vật hoặc logo phim hoạt hình.
 
 Khi đăng nhập lần đầu (hoặc thêm hồ sơ bé mới), ứng dụng hỏi nhóm tuổi 3–6/7–10, độ tuổi cụ thể và chủ đề quan tâm. Lựa chọn được lưu theo hồ sơ trên thiết bị, dùng để lọc bài học, bài ôn tập và tình huống trong đấu trường; chủ đề yêu thích được ưu tiên trong gợi ý.
 
