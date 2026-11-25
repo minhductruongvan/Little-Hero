@@ -4263,6 +4263,12 @@
             }
             persist();
             loadAccountProgress(result.user.email, result.user.name);
+            if (result.isFirstLogin === true) {
+              state.age = 6;
+              state.ageGroup = "3-6";
+              state.interests = [];
+              state.onboardingComplete = false;
+            }
             try { await refreshActiveSubscription(); }
             catch (error) {
               console.error("Không thể tải trạng thái gói Premium sau khi đăng nhập.", error);

@@ -96,7 +96,8 @@ accountDatabase.exec(`
         name TEXT NOT NULL,
         phone TEXT NOT NULL,
         salt TEXT NOT NULL,
-        password_hash TEXT NOT NULL
+        password_hash TEXT NOT NULL,
+        first_login_completed INTEGER NOT NULL DEFAULT 1
     );
     CREATE INDEX IF NOT EXISTS accounts_phone_idx ON accounts (phone);
     CREATE TABLE IF NOT EXISTS leaderboard_scores (
@@ -117,6 +118,10 @@ accountDatabase.exec(`
         uploaded_at TEXT NOT NULL
     );
 `);
+const accountColumns = new Set(accountDatabase.prepare('PRAGMA table_info(accounts)').all().map(({ name }) => name));
+if (!accountColumns.has('first_login_completed')) {
+    accountDatabase.exec('ALTER TABLE accounts ADD COLUMN first_login_completed INTEGER NOT NULL DEFAULT 1');
+}
 const scrypt = promisify(crypto.scrypt);
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 let authQueue = Promise.resolve();
@@ -174,7 +179,8 @@ const detectReceiptMimeType = (buffer) => {
 const withAuthUsers = (operation) => {
     const result = authQueue.then(async () => {
         const users = accountDatabase.prepare(`
-            SELECT email, name, phone, salt, password_hash AS passwordHash
+            SELECT email, name, phone, salt, password_hash AS passwordHash,
+                first_login_completed AS firstLoginCompleted
             FROM accounts
         `).all();
         return operation(users);
@@ -185,17 +191,21 @@ const withAuthUsers = (operation) => {
 
 const saveAuthUsers = (users) => {
     const upsertAccount = accountDatabase.prepare(`
-        INSERT INTO accounts (email, name, phone, salt, password_hash)
-        VALUES (@email, @name, @phone, @salt, @passwordHash)
+        INSERT INTO accounts (email, name, phone, salt, password_hash, first_login_completed)
+        VALUES (@email, @name, @phone, @salt, @passwordHash, @firstLoginCompleted)
         ON CONFLICT(email) DO UPDATE SET
             name = excluded.name,
             phone = excluded.phone,
             salt = excluded.salt,
-            password_hash = excluded.password_hash
+            password_hash = excluded.password_hash,
+            first_login_completed = excluded.first_login_completed
     `);
     accountDatabase.exec('BEGIN IMMEDIATE');
     try {
-        users.forEach((account) => upsertAccount.run(account));
+        users.forEach((account) => upsertAccount.run({
+            ...account,
+            firstLoginCompleted: account.firstLoginCompleted === 0 ? 0 : 1
+        }));
         accountDatabase.exec('COMMIT');
     } catch (error) {
         accountDatabase.exec('ROLLBACK');
@@ -245,7 +255,8 @@ app.post('/api/auth/register', async (req, res) => {
                 email: details.email,
                 phone: details.phone,
                 salt,
-                passwordHash: passwordHash.toString('hex')
+                passwordHash: passwordHash.toString('hex'),
+                firstLoginCompleted: 0
             };
             users.push(account);
             await saveAuthUsers(users);
@@ -277,12 +288,20 @@ app.post('/api/auth/login', async (req, res) => {
             if (!account || expectedBytes.length !== actual.length || !crypto.timingSafeEqual(actual, expectedBytes)) {
                 return null;
             }
-            return { name: account.name, email: account.email, phone: account.phone };
+            const isFirstLogin = account.firstLoginCompleted === 0;
+            if (isFirstLogin) {
+                account.firstLoginCompleted = 1;
+                await saveAuthUsers(users);
+            }
+            return {
+                user: { name: account.name, email: account.email, phone: account.phone },
+                isFirstLogin
+            };
         });
         if (!user) return res.status(401).json({ error: 'Email hoặc mật khẩu không chính xác.' });
         const token = crypto.randomBytes(32).toString('base64url');
-        leaderboardSessions.set(token, { email: user.email, expiresAt: Date.now() + leaderboardSessionLifetime });
-        res.json({ user, token });
+        leaderboardSessions.set(token, { email: user.user.email, expiresAt: Date.now() + leaderboardSessionLifetime });
+        res.json({ ...user, token });
     } catch (error) {
         console.error('Lỗi đăng nhập Little Hero:', error);
         res.status(500).json({ error: 'Không thể đăng nhập lúc này. Vui lòng thử lại.' });

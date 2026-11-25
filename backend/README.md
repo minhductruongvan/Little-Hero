@@ -19,6 +19,8 @@ Máy chủ Node.js phục vụ website, xác thực tài khoản và chuyển c�
 
 Cổng mặc định là `3000`; đặt `PORT=31377` trong PowerShell trước khi chạy để dùng địa chỉ trên. API gồm `GET /api/health`, `POST /api/chat`, `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/recovery/request`, `POST /api/auth/recovery/reset`, `GET /api/premium/status`, `POST /api/premium/receipt`, `GET /api/leaderboard`, `POST /api/leaderboard/score` và `DELETE /api/leaderboard/score`.
 
+Đăng nhập thành công lần đầu của tài khoản mới trả thêm `isFirstLogin: true`; frontend dùng cờ này để yêu cầu chọn nhóm tuổi và sở thích học tập. Các tài khoản hiện có được giữ là đã đăng nhập để không bị hỏi lại.
+
 ### Ảnh bill và Premium
 
 `POST /api/premium/receipt?plan=monthly` hoặc `?plan=yearly` yêu cầu phiên đăng nhập Bearer và ảnh PNG/JPEG/WebP tối đa 5 MB. Khi nhận ảnh hợp lệ, máy chủ lưu ảnh bill mới nhất của tài khoản và kích hoạt gói Premium ngay (30 hoặc 365 ngày); ảnh cũ được thay thế. **Endpoint không xác minh giao dịch ngân hàng**: bất kỳ ảnh đúng định dạng nào cũng kích hoạt gói. Không coi trạng thái này là bằng chứng đã thanh toán; chỉ dùng nếu chấp nhận quy trình tự xác nhận này.
